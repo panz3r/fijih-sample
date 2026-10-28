@@ -8,16 +8,16 @@ source:
   revision: 2026-10-28T14:00:12.914+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-36-add-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/1
   jira_context_comment_id: null
 ---
 
@@ -170,3 +170,5 @@ Residual risks:
 - 2026-10-28: T6 implemented; implementation complete, awaiting implementation-approval
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Finalize: all tasks checked and all acceptance criteria have Validation Evidence; no blocking gaps; set checkpoint local-qa-review (gate concerns carried forward)
+- 2026-10-28: Approved: local-qa-review — approve
+- 2026-10-28: Delivery: committed change intent already on branch (.changeset/add-bookmark-tags.md, summary matches PR title without key, no change); pushed FIJIH-36-add-tags; opened draft PR #1 (base main, label enhancement, assignee panz3r); requested Copilot review (confirmed review_requested event on timeline)
