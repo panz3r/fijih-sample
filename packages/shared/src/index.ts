@@ -3,9 +3,36 @@ export interface Bookmark {
   url: string;
   title: string;
   createdAt: string;
+  tags: string[];
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title">;
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] };
+
+export const MAX_TAG_LENGTH = 32;
+
+export class InvalidTagError extends Error {
+  constructor() {
+    super("invalid tag");
+  }
+}
+
+/**
+ * Trims, lower-cases, validates, and deduplicates tags, keeping first-occurrence order.
+ * `undefined` gives `[]`. Throws InvalidTagError for a non-array, a non-string element,
+ * or a tag that is empty, contains whitespace, or exceeds MAX_TAG_LENGTH code points.
+ */
+export function normalizeTags(input: unknown): string[] {
+  if (input === undefined) return [];
+  if (!Array.isArray(input)) throw new InvalidTagError();
+  const seen = new Set<string>();
+  for (const raw of input) {
+    if (typeof raw !== "string") throw new InvalidTagError();
+    const tag = raw.trim().toLowerCase();
+    if (tag === "" || /\s/u.test(tag) || [...tag].length > MAX_TAG_LENGTH) throw new InvalidTagError();
+    seen.add(tag);
+  }
+  return [...seen];
+}
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
