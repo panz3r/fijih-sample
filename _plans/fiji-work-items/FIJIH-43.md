@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 3
 quality:
   gate: concerns
@@ -240,23 +240,24 @@ Notes:
 - CI run 40769688221 (workflow `ci`) on `9fcb896`: success.
 - Copilot review of `360f2ba` (attempt 3, requested 2026-10-28T21:22:21Z; submitted 21:24:00Z): "Approval recommended", no open issues, no new threads. The earlier thread `PRRT_kwDOVaYq_M6xUY8X` stays resolved. No fixes, replies, or re-review requests were needed.
 - CI run 40771376304 (workflow `ci`) on `360f2ba`: success (test, lint, typecheck).
-- Stale — superseded by re-entry 3. Jira handoff draft (comment, marker `FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1`), drafted at remote-review from the Quality Gate (concerns at `d325e92`), Validation Evidence, Review Record, Change Log, and PR #6 (head `9fcb896`, CI run 40769688221 success; `duckyduff369` APPROVED on `9fcb896`; the one Copilot thread resolved):
+- Jira handoff draft (comment, marker `FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1`), drafted at remote-review (attempt 3), replacing the earlier draft that was marked stale (superseded by re-entry 3). Sources: Quality Gate (concerns at reviewed head `8707c90`), Validation Evidence, Review Record, Change Log, and PR #6 (head `360f2ba`, CI run 40771376304 success on that head). Human review state as read from GitHub: `duckyduff369` (QA Engineer, required approver) has an APPROVED review on the older head `9fcb896` (2026-10-28T21:14:39Z) that the PR still shows; a re-review request (2026-10-28T21:33:30Z) for head `360f2ba` is pending; the final head is not human-approved. No unresolved review threads; Copilot's latest review (`360f2ba`) recommends approval with no open issues.
 
   > FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1
   >
-  > **Outcome.** Bookmarks now take an optional `tags` array. PR: https://github.com/panz3r/fijih-sample/pull/6 (head `9fcb896`; CI `test` passed; approved by the QA Engineer `duckyduff369`).
-  > - `POST /bookmarks` trims, lower-cases and deduplicates tags (first occurrence kept); no `tags` gives `[]`. A tag that is blank, longer than 32 characters, or contains whitespace, or a `tags` value that is not an array of strings, answers 400 `{"error":"invalid tag"}` and stores nothing. `GET /bookmarks` returns each bookmark's `tags`.
+  > **Outcome.** Bookmarks now take an optional `tags` array. PR: https://github.com/panz3r/fijih-sample/pull/6 (head `360f2ba`; CI `test` passed on that head). Review status: the QA Engineer `duckyduff369` approved an earlier head (`9fcb896`); that approval is the one the PR still shows. A re-review of the final head `360f2ba` is requested but not yet submitted, so the final head is not yet human-approved.
+  > - `POST /bookmarks` trims, lower-cases and deduplicates tags (first occurrence kept); no `tags` gives `[]`. A tag that is blank, longer than 32 characters, or contains whitespace, or a `tags` value that is not an array of strings (including `null`), answers 400 `{"error":"invalid tag"}` and stores nothing. `GET /bookmarks` returns each bookmark's `tags`.
   > - The web page shows each bookmark's tags after its title, joined by `, `, and nothing when there are none.
-  > - Scope change approved by the user during review: the web page `<h1>` and `document.title` read `Bookmarks (N)`, where N is the total number of tags across the listed bookmarks, duplicates counted (`["news"]` on two bookmarks is 2).
-  > - Validation: `pnpm test` (shared 10, api 12, web 7), `pnpm lint`, and `pnpm typecheck` pass from the root. `web_bundle_gzip_bytes` in `measure/baseline.json` went 835 to 881 (tags) to 940 (total count), delta 0 at each step.
+  > - Scope change approved by the user (criterion 8): the web page `<h1>` and `document.title` read `Bookmarks (N)`, where N is the total number of tags across the listed bookmarks, duplicates counted (`["news"]` on two bookmarks is 2); `Bookmarks (0)` with no bookmarks or no tags.
+  > - Scope change approved by the user (criterion 9): each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged.
+  > - Validation: at `8707c90` (the last head with product changes; `360f2ba` adds only the work-item file) QA re-ran `pnpm test` (shared 10, api 12, web 8), `pnpm lint`, and `pnpm typecheck`, all passing, and `pnpm build` then `pnpm measure` (950, delta 0). `web_bundle_gzip_bytes` in `measure/baseline.json` went 835 to 881 (tags) to 940 (total count) to 950 (count suffix), delta 0 at each step. CI `test` passed on `360f2ba`.
   >
   > **Decisions.** Tag validation and normalisation are pure functions in `packages/shared` (`isValidTag`, `normalizeTags`, `countTags`); the API store raises the 400. Validation runs on the trimmed tag. No tags input on the web add form (tags are set through the API only). The `README.md` `packages/shared` row is unchanged. Tags are not filterable or editable (out of scope in the issue).
   >
-  > **Review.** Copilot raised one finding: an explicit `tags: null` was treated as no tags and answered 201. Fixed in `680eb98` (default to `[]` only when `tags` is `undefined`), test added, thread resolved; Copilot's later reviews raised nothing.
+  > **Review.** Copilot raised one finding: an explicit `tags: null` was treated as no tags and answered 201. Fixed in `680eb98` (default to `[]` only when `tags` is `undefined`), test added, thread resolved; Copilot's later reviews, including the one on `360f2ba`, raised nothing.
   >
   > **Residual risks and follow-ups.**
   > - Lower-casing runs after the 32-character length check, and `toLowerCase()` can lengthen a string, so a tag can be stored longer than 32. Example: `"İ"` followed by 31 `a` characters (32 UTF-16 code units) is accepted and stored with length 33. The user accepted this as a follow-up.
-  > - The web layout (`packages/web/index.html` flex styles for tags and the Remove button) was not checked in a browser; jsdom tests cover DOM order only. Load the page with one tagged and one untagged bookmark to confirm the tags sit next to the title, Remove stays at the row end, and the heading and tab title read `Bookmarks (N)`.
+  > - The web layout (`packages/web/index.html` flex styles for tags and the Remove button) was not checked in a browser; jsdom tests cover DOM order only. Criterion 9 makes the tags text longer, so this matters a little more. To confirm, load the page with a two-tag, a one-tag, and an untagged bookmark and check that the tags and their `(N)` count sit next to the title, Remove stays at the end of the row, the untagged row shows only the title and Remove, and the heading and tab title read `Bookmarks (3)`.
   > - Unrelated to this change: `pnpm --filter @sample/api start` fails with `ERR_MODULE_NOT_FOUND` for `./app.js`; this branch changes neither `server.ts` nor the start script.
   >
   > No operational or documentation work remains.
@@ -300,3 +301,4 @@ Notes:
 - 2026-10-28: Copilot findings pass (attempt 3): Copilot review of `360f2ba` raised no findings; CI run 40771376304 passed. Set checkpoint `ready-for-review`, transition `ready-for-review`. The commit stays local.
 - 2026-10-28: Approved: ready-for-review — conditional: Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve. (verified at e4b5bbc)
 - 2026-10-28: Ready-for-review (re-request after user-request rework): PR #6 is already ready (head `360f2ba`); `duckyduff369`'s APPROVED review on `9fcb896` (21:14:39Z) predates the new head, so review was re-requested from `duckyduff369` (`review_requested` at 21:33:30Z). No other reviewer requested: the author `panz3r` is excluded. Set phase `remote-review`, checkpoint `null`, transition `review-requested`. The commit stays local.
+- 2026-10-28: Jira handoff Draft (attempt 3, rewrite): replaced the draft marked `Stale — superseded by re-entry 3` with a new draft from the Quality Gate (concerns at `8707c90`), Validation Evidence, Review Record, Change Log and PR #6 (head `360f2ba`, CI run 40771376304 success). States that `duckyduff369`'s approval is on `9fcb896` and the re-review of `360f2ba` is requested but not submitted (nothing posted to Jira). Set checkpoint `jira-handoff`, transition `handoff-drafted`. The commit stays local.
