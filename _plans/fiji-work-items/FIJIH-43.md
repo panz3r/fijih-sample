@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 2
 quality:
   gate: concerns
@@ -221,6 +221,26 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - CI run 40768132659 (workflow `ci`) on `680eb98`: success.
 - Copilot review of `9fcb896` (attempt 2, requested 2026-10-28T21:10:19Z; submitted 21:12:16Z): "Approval recommended", no open issues, no new threads. The earlier thread `PRRT_kwDOVaYq_M6xUY8X` stays resolved. No fixes, replies, or re-review requests were needed.
 - CI run 40769688221 (workflow `ci`) on `9fcb896`: success.
+- Jira handoff draft (comment, marker `FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1`), drafted at remote-review from the Quality Gate (concerns at `d325e92`), Validation Evidence, Review Record, Change Log, and PR #6 (head `9fcb896`, CI run 40769688221 success; `duckyduff369` APPROVED on `9fcb896`; the one Copilot thread resolved):
+
+  > FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1
+  >
+  > **Outcome.** Bookmarks now take an optional `tags` array. PR: https://github.com/panz3r/fijih-sample/pull/6 (head `9fcb896`; CI `test` passed; approved by the QA Engineer `duckyduff369`).
+  > - `POST /bookmarks` trims, lower-cases and deduplicates tags (first occurrence kept); no `tags` gives `[]`. A tag that is blank, longer than 32 characters, or contains whitespace, or a `tags` value that is not an array of strings, answers 400 `{"error":"invalid tag"}` and stores nothing. `GET /bookmarks` returns each bookmark's `tags`.
+  > - The web page shows each bookmark's tags after its title, joined by `, `, and nothing when there are none.
+  > - Scope change approved by the user during review: the web page `<h1>` and `document.title` read `Bookmarks (N)`, where N is the total number of tags across the listed bookmarks, duplicates counted (`["news"]` on two bookmarks is 2).
+  > - Validation: `pnpm test` (shared 10, api 12, web 7), `pnpm lint`, and `pnpm typecheck` pass from the root. `web_bundle_gzip_bytes` in `measure/baseline.json` went 835 to 881 (tags) to 940 (total count), delta 0 at each step.
+  >
+  > **Decisions.** Tag validation and normalisation are pure functions in `packages/shared` (`isValidTag`, `normalizeTags`, `countTags`); the API store raises the 400. Validation runs on the trimmed tag. No tags input on the web add form (tags are set through the API only). The `README.md` `packages/shared` row is unchanged. Tags are not filterable or editable (out of scope in the issue).
+  >
+  > **Review.** Copilot raised one finding: an explicit `tags: null` was treated as no tags and answered 201. Fixed in `680eb98` (default to `[]` only when `tags` is `undefined`), test added, thread resolved; Copilot's later reviews raised nothing.
+  >
+  > **Residual risks and follow-ups.**
+  > - Lower-casing runs after the 32-character length check, and `toLowerCase()` can lengthen a string, so a tag can be stored longer than 32. Example: `"İ"` followed by 31 `a` characters (32 UTF-16 code units) is accepted and stored with length 33. The user accepted this as a follow-up.
+  > - The web layout (`packages/web/index.html` flex styles for tags and the Remove button) was not checked in a browser; jsdom tests cover DOM order only. Load the page with one tagged and one untagged bookmark to confirm the tags sit next to the title, Remove stays at the row end, and the heading and tab title read `Bookmarks (N)`.
+  > - Unrelated to this change: `pnpm --filter @sample/api start` fails with `ERR_MODULE_NOT_FOUND` for `./app.js`; this branch changes neither `server.ts` nor the start script.
+  >
+  > No operational or documentation work remains.
 
 ## Change Log
 
@@ -248,3 +268,4 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Copilot findings pass (attempt 2): Copilot review of `9fcb896` raised no findings; CI run 40769688221 passed. Set checkpoint `ready-for-review`, transition `ready-for-review`.
 - 2026-10-28: Approved: ready-for-review — Approve.
 - 2026-10-28: Ready-for-review: marked PR #6 ready for review and requested review from `duckyduff369` (QA Engineer, owning team per TEAMS.md; the author `panz3r` is excluded). Set phase `remote-review`, checkpoint `null`, transition `review-requested`. The work-item commits stay local (`may_push` alone does not push work-item-only commits).
+- 2026-10-28: Jira handoff Draft: human review clear (`duckyduff369` APPROVED on `9fcb896`, no unresolved threads, Copilot clear); drafted the handoff comment in the Review Record (nothing posted to Jira). Set checkpoint `jira-handoff`, transition `handoff-drafted`. The commit stays local.
