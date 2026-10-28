@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T16:43:21.245+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -179,3 +179,5 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 - Quality findings still open at delivery: tag length checked after lower-casing; `"tags": null` accepted as `[]`. Plan defaults unchanged (add form unchanged, README unchanged).
 - Copilot pass: 2 findings (both matched the open QA minor findings and were in scope of AC-3 and open decision 2), fixed in c1ef1e5 and pushed; threads resolved; Copilot re-review requested.
 - Copilot re-review at c1ef1e5: approval recommended, no open issues; both threads resolved; ci run 22 on c1ef1e5 passed. Checkpoint ready-for-review.
+- Approved: ready-for-review — approve
+- Ready for review: PR #3 marked ready, review requested from `duckyduff369` (QA Engineer, owning team Bookmarks; author `panz3r` excluded). Work-item commit held locally, not pushed.
