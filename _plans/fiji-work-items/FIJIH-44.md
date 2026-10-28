@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -193,6 +193,22 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 
 - Copilot review PRR_kwDOVaYq_M8AAAABUys7Dw, thread PRRT_kwDOVaYq_M6xVq4r (`packages/shared/src/index.ts:55`, tag length checked after lower-casing): valid, in scope (AC-3, D3; same defect as F1). Fixed in d94d95b; replied with the commit and test; thread resolved. Copilot re-review (22:07:29Z) recommended approval with no open issues. CI `ci` run 40777269486 on d94d95b: success.
 
+- Jira handoff draft (comment; marker `FIJI-CONTEXT:FIJIH-44:fiji/orchestrate-development/v1`):
+
+  > FIJI-CONTEXT:FIJIH-44:fiji/orchestrate-development/v1
+  >
+  > **Outcome.** Bookmark tags are implemented and the pull request is approved: https://github.com/panz3r/fijih-sample/pull/7 (head d94d95b; QA Engineer approval from duckyduff369; CI run 40777269486 on d94d95b: test, lint, typecheck, measure, scenarios all success). `POST /bookmarks` accepts an optional `tags` array (trimmed, lower-cased, deduplicated, `[]` by default); an invalid tag answers 400 `{"error":"invalid tag"}`; `GET /bookmarks` returns the tags; the page shows them after the title, comma separated, and nothing when there are none. Unit tests were added in packages/shared, packages/api, and packages/web; `measure/baseline.json` was updated to 890 (delta 0).
+  >
+  > **Decisions taken (the issue did not settle them; the user approved the proposed answers at plan approval).** A `tags` value that is not an array, a non-string element, or a tag empty after trimming answers 400 `invalid tag`. The 32-character limit is measured on the trimmed tag (32 accepted, 33 rejected). Tags keep the order of first occurrence. Validation order is title, url, tags, then the duplicate-url check. No maximum number of tags. The page is display only: the add form has no tags input.
+  >
+  > **Implementation notes.** Tag text is rendered with `textContent`. The tags element sits in one span with the title link so the flex `li` keeps tags beside the title. During review Copilot found, and the branch now fixes in d94d95b, a defect where tag length was measured after lower-casing (non-ASCII tags of 32 or fewer characters were rejected); length is now measured in code points before lower-casing.
+  >
+  > **Validation gap.** The live-page check of the web page (task 5 page half) was not run; the user deferred it: "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." The web unit tests for AC-6 pass. Confirm by loading the page with one tagged and one untagged bookmark.
+  >
+  > **Follow-ups outside this issue.** (1) The api test "creates, lists newest first, and deletes" is flaky (two POSTs in the same millisecond tie on `createdAt`; also on `main`) and can intermittently fail the required `test` check. (2) `pnpm --filter @sample/api start` fails with `ERR_MODULE_NOT_FOUND` (`src/server.ts` imports `./app.js` under `--experimental-strip-types`); `server.ts` is unchanged by this work. (3) Out of scope per the issue: filtering or searching by tag, and editing tags of an existing bookmark.
+  >
+  > No operational or documentation steps beyond the required `test` check and one approval with squash merge, which the repository ruleset `main` already enforces.
+
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-44 at revision 2026-10-28T22:54:03.939+0100; issue assigned to Mattia Panzeri.
@@ -210,3 +226,4 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 - 2026-10-28: Delivery: changeset `.changeset/fijih-44-add-tags-to-bookmarks.md` added (commit 215c364); draft pull request #7 opened (base main, label enhancement, assignee panz3r) and Copilot review requested (timeline `review_requested` for Copilot). Work item commit held locally.
 - 2026-10-28: Copilot findings pass: 1 finding fixed (d94d95b, F1 resolved), thread resolved, re-review clean. Checkpoint set to ready-for-review.
 - 2026-10-28: Approved: ready-for-review — Approve.
+- 2026-10-28: Jira handoff drafted (comment: outcome, decisions, deferred AC-6 page check, two pre-existing issues); checkpoint set to jira-handoff. Nothing posted to Jira.
