@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-37-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/2
-  jira_context_comment_id: null
+  jira_context_comment_id: "10001"
 ---
 
 # Work Item FIJIH-37: Add tags to bookmarks
@@ -203,3 +203,4 @@ Residual risks:
 - 2026-10-28: Approved: ready-for-review — approve
 - 2026-10-28: Pull request #2 marked ready for review; review requested from duckyduff369 (QA Engineer, per TEAMS.md); author panz3r excluded.
 - 2026-10-28: Jira handoff drafted from current evidence (PR #2 head c9c88f1: QA approval by duckyduff369, Copilot review clear, checks green); nothing posted to Jira; checkpoint jira-handoff.
+- 2026-10-28: Approved: jira-handoff — approve
