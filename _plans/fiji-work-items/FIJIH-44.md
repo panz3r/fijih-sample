@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -145,6 +145,7 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - Task 4: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890` (baseline was 835, delta 55); wrote 890 into `measure/baseline.json`; re-run printed delta 0.
 - Task 5 (API half run, page half deferred by the user; checked off): User decision at the blocked Implementation result (branch tip 6bffd1f): "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." Earlier detail follows: the planned `pnpm --filter @sample/api start` fails before listening (`ERR_MODULE_NOT_FOUND` for `./app.js` imported from `src/server.ts`, because `node --experimental-strip-types` does not map `.js` specifiers to `.ts`; `server.ts` is unchanged by this work item). The API half ran instead through a temporary resolver hook outside the repo (`node --experimental-strip-types --import /tmp/fijih44-loader/register.mjs src/server.ts`), with the web dev server (`pnpm --filter @sample/web dev`) proxying to it. The page half could not run: the browser tool (Chrome DevTools MCP `new_page`) was not permitted in this session, so "news, tech" after the first title and nothing extra after the second was not seen on the live page.
 - Task 6: root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed (api test hit the pre-existing same-millisecond flake in 1 of 3 root runs; the other runs passed).
+- Copilot review fix (d94d95b): `normalizeTags` validates the trimmed tag (length in code points, whitespace) before lower-casing, so non-ASCII tags of 32 or fewer characters are accepted (also resolves quality-gate F1). Test added in shared (shared 11, api 12, web 5 pass; lint, typecheck pass; bundle 890, delta 0).
 
 ## Validation Evidence
 
@@ -190,6 +191,8 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 
 ## Review Record
 
+- Copilot review PRR_kwDOVaYq_M8AAAABUys7Dw, thread PRRT_kwDOVaYq_M6xVq4r (`packages/shared/src/index.ts:55`, tag length checked after lower-casing): valid, in scope (AC-3, D3; same defect as F1). Fixed in d94d95b; replied with the commit and test; thread resolved. Copilot re-review (22:07:29Z) recommended approval with no open issues. CI `ci` run 40777269486 on d94d95b: success.
+
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-44 at revision 2026-10-28T22:54:03.939+0100; issue assigned to Mattia Panzeri.
@@ -205,3 +208,4 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 - 2026-10-28: Finalize: evidence checked against commits 896337d..cd0fd28; all acceptance criteria have a Validation Evidence line (AC-6 deferred by the user, see its line); File List matches the branch diff; no bookkeeping slips to fix. Checkpoint set to local-qa-review. Discrepancy: Implementation Record entries for tasks 1-4 and 6 do not cite a commit hash (tasks are checked, not blocking).
 - 2026-10-28: Approved: local-qa-review — Approve.
 - 2026-10-28: Delivery: changeset `.changeset/fijih-44-add-tags-to-bookmarks.md` added (commit 215c364); draft pull request #7 opened (base main, label enhancement, assignee panz3r) and Copilot review requested (timeline `review_requested` for Copilot). Work item commit held locally.
+- 2026-10-28: Copilot findings pass: 1 finding fixed (d94d95b, F1 resolved), thread resolved, re-review clean. Checkpoint set to ready-for-review.
