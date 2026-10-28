@@ -82,12 +82,12 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
   - [x] POST with a 33-character tag and with `"my tag"` each answers 400 `{"error":"invalid tag"}`, and the following GET does not contain those bookmarks; a 32-character tag is accepted.
   - [x] (per question 2) POST with `tags: "news"` and with `tags: [1]` answers 400 `{"error":"invalid tag"}`.
   - [x] GET `/bookmarks` returns each bookmark's normalised `tags`.
-- [ ] Web rendering in `packages/web/src/render.ts` (AC: 4)
-  - [ ] After the title link, append a `<span class="tags">` whose text is `bookmark.tags.join(", ")` only when `bookmark.tags.length > 0`; append nothing otherwise. Keep the Remove button last.
-  - [ ] Adjust `packages/web/index.html` styles only as needed so the tags sit next to the title and the Remove button stays at the end of the row (the `li` is `display: flex; justify-content: space-between`).
-- [ ] Web tests in `packages/web/src/render.test.ts` (AC: 5)
-  - [ ] Update existing fixtures to include `tags: []`.
-  - [ ] A bookmark with `tags: ["news", "tech"]` renders `news, tech` after the link and before the Remove button; a bookmark with `tags: []` renders no `.tags` element and the item's text is only the title and `Remove`.
+- [x] Web rendering in `packages/web/src/render.ts` (AC: 4)
+  - [x] After the title link, append a `<span class="tags">` whose text is `bookmark.tags.join(", ")` only when `bookmark.tags.length > 0`; append nothing otherwise. Keep the Remove button last.
+  - [x] Adjust `packages/web/index.html` styles only as needed so the tags sit next to the title and the Remove button stays at the end of the row (the `li` is `display: flex; justify-content: space-between`).
+- [x] Web tests in `packages/web/src/render.test.ts` (AC: 5)
+  - [x] Update existing fixtures to include `tags: []`.
+  - [x] A bookmark with `tags: ["news", "tech"]` renders `news, tech` after the link and before the Remove button; a bookmark with `tags: []` renders no `.tags` element and the item's text is only the title and `Remove`.
 - [ ] Bundle baseline (AC: 6)
   - [ ] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value (current baseline 835) and re-run `pnpm measure` to confirm delta 0.
 - [ ] Repository checks (AC: 7)
@@ -134,11 +134,15 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - packages/api/src/store.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+- packages/web/index.html
 
 ## Implementation Record
 
 - Shared tag model/tests: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, `isValidTag` (trimmed, non-empty, <=32, no whitespace), `normalizeTags` (Set keeps first-occurrence order). Focused: `pnpm --filter @sample/shared test` 8 passed.
 - API store/route: `BookmarkStore.add` validates `input.tags ?? []` after title/url/duplicate checks (non-array, non-string, blank, >32, inner whitespace all throw `ValidationError("invalid tag")`), stores normalised tags; POST passes `body.tags` through. Focused: `pnpm --filter @sample/api test` 11 passed.
+- Web: `renderList` appends `span.tags` (textContent, joined by `, `) between link and Remove only when tags exist; index.html styles keep tags next to the title and Remove at the row end. No tags input on the add form (question 1 default). Focused: `pnpm --filter @sample/web test` 4 passed.
 
 ## Validation Evidence
 
@@ -152,4 +156,5 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - 2026-10-28: Approved: plan-approval — Approve, with the defaults for all six questions.
 - 2026-10-28: Implemented shared tag model and tests.
 - 2026-10-28: Implemented API tags handling and tests.
+- 2026-10-28: Implemented web tag rendering and tests.
 
