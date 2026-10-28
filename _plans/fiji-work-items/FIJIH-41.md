@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T18:30:03.635+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -196,3 +196,5 @@ so that I can group my bookmarks.
 - 2026-10-28: Approved: local-qa-review — approve
 - 2026-10-28: Delivery: pushed `FIJIH-41-add-bookmark-tags` (8 commits, first push) and opened draft pull request #4 (`[FIJIH-41] Add tags to bookmarks`, label `enhancement`, assignee `panz3r`, base `main`); Copilot automated review requested (timeline `review_requested` event). Changeset `.changeset/add-bookmark-tags.md` already present; no change intent added. No `(verify: ci)` criteria exist; no CI run measured. Human reviewers not requested (Ready-for-review).
 - 2026-10-28: Copilot findings pass: 1 finding, valid, fixed in b9e5e46 and pushed (carried held commit 0917a19); thread replied and resolved; Copilot re-review clear. Checkpoint ready-for-review.
+- 2026-10-28: Approved: ready-for-review — approve
+- 2026-10-28: Ready for review: pull request #4 marked ready and review requested from `duckyduff369` (QA Engineer, Bookmarks team; timeline `review_requested` event). Work-item commit held locally; no Jira writes.
