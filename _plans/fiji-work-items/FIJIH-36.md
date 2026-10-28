@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -169,3 +169,4 @@ Residual risks:
 - 2026-10-28: T5 implemented
 - 2026-10-28: T6 implemented; implementation complete, awaiting implementation-approval
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Finalize: all tasks checked and all acceptance criteria have Validation Evidence; no blocking gaps; set checkpoint local-qa-review (gate concerns carried forward)
