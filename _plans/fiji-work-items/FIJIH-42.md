@@ -62,11 +62,11 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 
 ## Tasks and Subtasks
 
-- [ ] Shared model and tag rules (AC: 1, 2, 3, 4, 7, 10)
-  - [ ] In `packages/shared/src/index.ts`, add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
-  - [ ] Add a pure `normalizeTags(tags: readonly string[]): string[]` that trims, lower-cases, and deduplicates keeping first-occurrence order.
-  - [ ] Add a pure `isValidTag(tag: string): boolean` that is false for a normalised (trimmed, lower-cased) tag that is empty, longer than 32 characters, or containing whitespace (`/\s/`).
-  - [ ] Tests in `packages/shared/src/index.test.ts`: normalisation and order, dedup across case and padding, empty input, empty and whitespace-only tags invalid, 32 vs 33 characters, internal space and tab.
+- [x] Shared model and tag rules (AC: 1, 2, 3, 4, 7, 10)
+  - [x] In `packages/shared/src/index.ts`, add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
+  - [x] Add a pure `normalizeTags(tags: readonly string[]): string[]` that trims, lower-cases, and deduplicates keeping first-occurrence order.
+  - [x] Add a pure `isValidTag(tag: string): boolean` that is false for a normalised (trimmed, lower-cased) tag that is empty, longer than 32 characters, or containing whitespace (`/\s/`).
+  - [x] Tests in `packages/shared/src/index.test.ts`: normalisation and order, dedup across case and padding, empty input, empty and whitespace-only tags invalid, 32 vs 33 characters, internal space and tab.
 - [ ] API accepts, validates, stores, and returns tags (AC: 1, 2, 3, 4, 5, 7, 9, 10)
   - [ ] In `packages/api/src/app.ts`, read `tags` from the POST body and pass it to `store.add`.
   - [ ] In `packages/api/src/store.ts`, default a missing (`undefined`) `tags` to `[]`, throw `ValidationError("invalid tag")` when `tags` is present but not an array or holds a non-string entry (before calling `normalizeTags`, so no 500), normalise with `normalizeTags`, throw `ValidationError("invalid tag")` when any normalised tag fails `isValidTag` (including empty after trimming) (after the existing title and url checks, before the duplicate-url check), and store `tags` on the bookmark.
@@ -114,8 +114,11 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
 ## Implementation Record
 
+- Task 1 (shared): added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `normalizeTags` (Set-based dedup after trim/lower-case) and `isValidTag` (non-empty, <=32, no `\s`). `pnpm --filter @sample/shared test` 10 passed; shared lint and typecheck passed.
 ## Validation Evidence
 
 ## Quality Gate

@@ -3,9 +3,10 @@ export interface Bookmark {
   url: string;
   title: string;
   createdAt: string;
+  tags: string[];
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title">;
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] };
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
@@ -34,4 +35,16 @@ export function normalizeUrl(value: string): string {
 /** Sorts newest first; ties keep their input order. */
 export function sortByCreatedDesc<T extends { createdAt: string }>(items: readonly T[]): T[] {
   return [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/** Trims and lower-cases each tag and removes duplicates, keeping first-occurrence order. */
+export function normalizeTags(tags: readonly string[]): string[] {
+  return [...new Set(tags.map((tag) => tag.trim().toLowerCase()))];
+}
+
+const MAX_TAG_LENGTH = 32;
+
+/** Returns true when a normalised tag is non-empty, at most 32 characters, and has no whitespace. */
+export function isValidTag(tag: string): boolean {
+  return tag.length > 0 && tag.length <= MAX_TAG_LENGTH && !/\s/.test(tag);
 }
