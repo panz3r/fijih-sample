@@ -8,10 +8,10 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
+  phase: implementation
+  checkpoint: null
   transition: ready-for-review
-  attempt: 1
+  attempt: 2
 quality:
   gate: concerns
 artifacts:
@@ -65,6 +65,7 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 5. Vitest unit tests in `packages/shared`, `packages/api`, and `packages/web` cover the behaviour in criteria 1 to 4, including the 32/33-character boundary, inner whitespace, case and whitespace deduplication, the default empty array, and the no-tags rendering.
 6. `measure/baseline.json` `web_bundle_gzip_bytes` equals the value `pnpm build && pnpm measure` prints on this branch (delta 0), per `AGENTS.md`.
 7. `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
+8. The web page shows the total number of tags across all listed bookmarks in its title, in the form `Bookmarks (N)`, where N is the sum of the tag counts of all bookmarks. With no bookmarks or no tags it shows `Bookmarks (0)`. The count updates when the list is rendered, including after a bookmark is added or removed.
 
 ## Tasks and Subtasks
 
@@ -92,6 +93,13 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
   - [x] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value (current baseline 835) and re-run `pnpm measure` to confirm delta 0.
 - [x] Repository checks (AC: 7)
   - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
+
+- [ ] Shared tag-count helper (AC: 8; Scope change entry, Re-entry 2)
+  - [ ] Add a pure `countTags(bookmarks: readonly { tags: readonly string[] }[]): number` in `packages/shared/src/index.ts` summing tag counts, duplicates counted (`["news"]` on two bookmarks is 2), with a unit test in `packages/shared/src/index.test.ts` (0 for none, 0 with no tags, duplicates counted).
+- [ ] Web total-tags heading and tab title (AC: 8; Scope change entry, Re-entry 2)
+  - [ ] Whenever `renderList` renders (including the empty list), set the `<h1>` text and `document.title` to `Bookmarks (N)`; web tests in `packages/web/src/render.test.ts` cover 0 (no bookmarks and no tags), duplicates counted, and update after a re-render following add and remove.
+- [ ] Bundle baseline for AC 8 (AC: 6, 8; Scope change entry, Re-entry 2)
+  - [ ] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
 
 ## Engineering Context
 
@@ -209,3 +217,6 @@ QA re-ran the repository checks at the reviewed head: `pnpm test` exited 0 (shar
 - 2026-10-28: Approved: local-qa-review — Approve.
 - 2026-10-28: Delivery: added changeset `.changeset/bookmark-tags.md`, pushed the branch, opened draft PR #6 (label `enhancement`) and requested a Copilot review.
 - 2026-10-28: Copilot findings pass: 1 finding fixed (`680eb98`, `tags: null` now rejected), thread resolved, Copilot re-review clear. Set checkpoint `ready-for-review`.
+- 2026-10-28: Re-entry 2: user-request — ready-for-review at 906b043; user's decision: "Yes, criterion 8 as proposed: both the h1 and the tab title, total tags with duplicates counted. Make exactly that change, then approve ready-for-review."
+- 2026-10-28: Scope change: "Yes, criterion 8 as proposed: both the h1 and the tab title, total tags with duplicates counted. Make exactly that change, then approve ready-for-review." — ready-for-review at 906b043
+- 2026-10-28: Approved: scope change — "Yes, criterion 8 as proposed: both the h1 and the tab title, total tags with duplicates counted. Make exactly that change, then approve ready-for-review."
