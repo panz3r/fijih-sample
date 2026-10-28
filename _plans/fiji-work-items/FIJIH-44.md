@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -202,3 +202,4 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 - 2026-10-28: Task 5 page check deferred by the user at the blocked Implementation result (branch tip 6bffd1f): "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." Task 5 checked off; API half verified by curl; checkpoint set to implementation-approval.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (one minor finding, residual risks) at 520031f.
+- 2026-10-28: Finalize: evidence checked against commits 896337d..cd0fd28; all acceptance criteria have a Validation Evidence line (AC-6 deferred by the user, see its line); File List matches the branch diff; no bookkeeping slips to fix. Checkpoint set to local-qa-review. Discrepancy: Implementation Record entries for tasks 1-4 and 6 do not cite a commit hash (tasks are checked, not blocking).
