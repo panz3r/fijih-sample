@@ -81,10 +81,10 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
   - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` input to `NewBookmark`.
   - [x] Add a pure `normalizeTags(value: unknown)` that returns `[]` for `undefined`, the trimmed, lower-cased, first-occurrence-deduplicated list for a valid array, and signals invalid input (not an array, non-string element, empty after trim, whitespace inside, longer than 32) without throwing a transport error; export the 32 limit as a constant.
   - [x] Vitest cases in `packages/shared/src/index.test.ts`: default, trim, lower-case, dedupe after normalisation, order kept, 32 accepted, 33 rejected, inner whitespace (space, tab) rejected, empty and whitespace-only rejected, non-array and non-string rejected.
-- [ ] 2. Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 4, 5, 7)
-  - [ ] `BookmarkStore.add` validates tags with `normalizeTags` after the title and url checks, throws `ValidationError("invalid tag")` when invalid, and stores the normalised list on the bookmark.
-  - [ ] `app.ts` passes `body.tags` through to `store.add`.
-  - [ ] Vitest cases in `packages/api/src/app.test.ts`: POST without tags → `tags: []`; POST with mixed-case, padded, duplicated tags → normalised; each invalid case → 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns the tags of each bookmark.
+- [x] 2. Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 4, 5, 7)
+  - [x] `BookmarkStore.add` validates tags with `normalizeTags` after the title and url checks, throws `ValidationError("invalid tag")` when invalid, and stores the normalised list on the bookmark.
+  - [x] `app.ts` passes `body.tags` through to `store.add`.
+  - [x] Vitest cases in `packages/api/src/app.test.ts`: POST without tags → `tags: []`; POST with mixed-case, padded, duplicated tags → normalised; each invalid case → 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns the tags of each bookmark.
 - [ ] 3. Show tags on the page in `packages/web` (AC: 6, 7)
   - [ ] `renderList` appends an element holding `tags.join(", ")` after the title link when the bookmark has tags, and nothing when it has none.
   - [ ] Update existing `render.test.ts` fixtures for the new required `tags` field; add cases for tags shown after the title, comma separated, and for no tags element when empty.
@@ -128,14 +128,20 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 - Task 1: `normalizeTags(value: unknown): string[] | null` (null = invalid) and `MAX_TAG_LENGTH = 32` in shared; `Bookmark.tags` required, `NewBookmark.tags?: unknown`. Hypothesis: a Set keeps first-occurrence order and dedupes after normalisation; confirmed by the shared tests (10 pass).
+- Task 2: `BookmarkStore.add` calls `normalizeTags` after the title and url checks and before the duplicate-url check (D7); invalid gives `ValidationError("invalid tag")`, which `app.ts` already maps to 400. `app.ts` passes `body.tags` as `unknown`. Hypothesis (no stored state on invalid input, since validation precedes `items.set`) confirmed by the "stores nothing" tests.
+- Observation: the existing test "creates, lists newest first, and deletes" is flaky (about 1 in 12 runs, also on the commit before the api change): two POSTs in the same millisecond tie on `createdAt`, and the stable sort keeps insertion order. Not caused by this change and outside the tasks; left as is.
 
 ## Validation Evidence
 
 - Task 1: `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
+- Task 2: `pnpm --filter @sample/api test` 12 passed (one run in several hit the pre-existing flake above); api typecheck and `pnpm lint packages/api` passed.
 
 ## Quality Gate
 
@@ -146,3 +152,4 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - 2026-10-28: Plan drafted from FIJIH-44 at revision 2026-10-28T22:54:03.939+0100; issue assigned to Mattia Panzeri.
 - 2026-10-28: Approved: plan-approval — Approve, with the proposed answers.
 - 2026-10-28: Task 1 implemented (shared tag normalisation).
+- 2026-10-28: Task 2 implemented (api tags).
