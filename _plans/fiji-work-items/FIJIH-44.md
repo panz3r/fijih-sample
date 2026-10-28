@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -90,8 +90,8 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
   - [x] Update existing `render.test.ts` fixtures for the new required `tags` field; add cases for tags shown after the title, comma separated, and for no tags element when empty.
 - [x] 4. Update the bundle-size baseline (AC: 8)
   - [x] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` into `measure/baseline.json` in its own `chore:` commit, and re-run `pnpm measure` to confirm delta 0.
-- [ ] 5. Live-app check (AC: 1, 2, 5, 6)
-  - [ ] Start the API (`pnpm --filter @sample/api start`) and the web dev server (`pnpm --filter @sample/web dev`); create one bookmark with tags `[" News", "news", "Tech "]` and one without via `curl` against the API; confirm `GET /bookmarks` shows `["news","tech"]` and `[]`, and the page shows "news, tech" after the first title and nothing extra after the second. Record the commands and output in Validation Evidence.
+- [x] 5. Live-app check (AC: 1, 2, 5, 6)
+  - [x] Start the API (`pnpm --filter @sample/api start`) and the web dev server (`pnpm --filter @sample/web dev`); create one bookmark with tags `[" News", "news", "Tech "]` and one without via `curl` against the API; confirm `GET /bookmarks` shows `["news","tech"]` and `[]`, and the page shows "news, tech" after the first title and nothing extra after the second. Record the commands and output in Validation Evidence.
 - [x] 6. Run the full checks from the repository root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 7)
 
 ## Engineering Context
@@ -143,17 +143,17 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - Observation: the existing test "creates, lists newest first, and deletes" is flaky (about 1 in 12 runs, also on the commit before the api change): two POSTs in the same millisecond tie on `createdAt`, and the stable sort keeps insertion order. Not caused by this change and outside the tasks; left as is.
 - Task 3: `renderList` wraps the title link and, only when tags exist, a `span.tags` (`textContent` = `tags.join(", ")`) in one `span`, so the flex `li` keeps tags next to the title and Remove on the right; `.tags` margin/colour added in `packages/web/index.html`. Display only, per the approved answer on the add form.
 - Task 4: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890` (baseline was 835, delta 55); wrote 890 into `measure/baseline.json`; re-run printed delta 0.
-- Task 5 (not complete, unchecked): the planned `pnpm --filter @sample/api start` fails before listening (`ERR_MODULE_NOT_FOUND` for `./app.js` imported from `src/server.ts`, because `node --experimental-strip-types` does not map `.js` specifiers to `.ts`; `server.ts` is unchanged by this work item). The API half ran instead through a temporary resolver hook outside the repo (`node --experimental-strip-types --import /tmp/fijih44-loader/register.mjs src/server.ts`), with the web dev server (`pnpm --filter @sample/web dev`) proxying to it. The page half could not run: the browser tool (Chrome DevTools MCP `new_page`) was not permitted in this session, so "news, tech" after the first title and nothing extra after the second was not seen on the live page.
+- Task 5 (API half run, page half deferred by the user; checked off): User decision at the blocked Implementation result (branch tip 6bffd1f): "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." Earlier detail follows: the planned `pnpm --filter @sample/api start` fails before listening (`ERR_MODULE_NOT_FOUND` for `./app.js` imported from `src/server.ts`, because `node --experimental-strip-types` does not map `.js` specifiers to `.ts`; `server.ts` is unchanged by this work item). The API half ran instead through a temporary resolver hook outside the repo (`node --experimental-strip-types --import /tmp/fijih44-loader/register.mjs src/server.ts`), with the web dev server (`pnpm --filter @sample/web dev`) proxying to it. The page half could not run: the browser tool (Chrome DevTools MCP `new_page`) was not permitted in this session, so "news, tech" after the first title and nothing extra after the second was not seen on the live page.
 - Task 6: root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed (api test hit the pre-existing same-millisecond flake in 1 of 3 root runs; the other runs passed).
 
 ## Validation Evidence
 
-- AC-1: passed - api test "defaults to an empty list"; live `curl` POST without tags answered 201 with `"tags":[]`.
+- AC-1: passed - api test "defaults to an empty list"; live `curl` POST without tags answered 201 with `"tags":[]`. Page part of task 5 deferred: "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." (blocked Implementation result question on the task 5 page check, branch tip 6bffd1f).
 - AC-2: passed - shared and api tests; live `curl` POST `tags:[" News","news","Tech "]` answered 201 with `"tags":["news","tech"]`.
 - AC-3: passed - shared (32 accepted, 33 rejected, inner space/tab rejected) and api tests (400 `{"error":"invalid tag"}`, list unchanged); live `curl` with `["two words"]` answered 400 `{"error":"invalid tag"}`.
 - AC-4: passed - shared and api tests for not-an-array, non-string element, empty, and whitespace-only.
 - AC-5: passed - api test and live `GET /bookmarks` (also through the vite proxy) returned `tags` `["news","tech"]` and `[]`.
-- AC-6: partial - web tests pass (tags after the title joined with ", ", no tags element when empty); the live page was not viewed (task 5 open, browser tool not permitted).
+- AC-6: deferred — "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." (blocked Implementation result question on the task 5 page check, branch tip 6bffd1f). Web unit tests pass (tags after the title joined with ", ", no tags element when empty); the live-page part of task 5 was not run.
 - AC-7: passed - root `pnpm test` (shared 10, api 12, web 5), `pnpm lint`, `pnpm typecheck`; api test has a pre-existing flake (see Implementation Record).
 - AC-8: passed - `pnpm build && pnpm measure` printed `web_bundle_gzip_bytes=890`, `web_bundle_gzip_delta=0` with the baseline at 890.
 
@@ -170,3 +170,4 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - 2026-10-28: Task 3 implemented (web tags display).
 - 2026-10-28: Task 4 done (bundle baseline 835 to 890).
 - 2026-10-28: Tasks 5 (partial) and 6 recorded; blocked on the live-page check.
+- 2026-10-28: Task 5 page check deferred by the user at the blocked Implementation result (branch tip 6bffd1f): "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." Task 5 checked off; API half verified by curl; checkpoint set to implementation-approval.
