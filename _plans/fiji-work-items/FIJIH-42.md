@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -74,10 +74,10 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - [x] Web page shows tags after the title (AC: 6, 7)
   - [x] In `packages/web/src/render.ts`, append a `<span class="tags">` with `bookmark.tags.join(", ")` after the link only when `bookmark.tags.length > 0`.
   - [x] Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: tags shown after the title as `work, read`; no `.tags` element and no extra text when `tags` is `[]`.
-- [ ] Delivery conventions (AC: 7, 8)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
-  - [ ] Run `pnpm build` then `pnpm measure`; update `measure/baseline.json` `web_bundle_gzip_bytes` when the value moved.
-  - [ ] Add `.changeset/<name>.md` bumping `@sample/shared`, `@sample/api`, and `@sample/web` (minor) with summary `Add tags to bookmarks`.
+- [x] Delivery conventions (AC: 7, 8)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
+  - [x] Run `pnpm build` then `pnpm measure`; update `measure/baseline.json` `web_bundle_gzip_bytes` when the value moved.
+  - [x] Add `.changeset/<name>.md` bumping `@sample/shared`, `@sample/api`, and `@sample/web` (minor) with summary `Add tags to bookmarks`.
 
 ## Engineering Context
 
@@ -121,10 +121,28 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- .changeset/add-bookmark-tags.md
+- measure/baseline.json
+- _plans/fiji-work-items/FIJIH-42.md
 ## Implementation Record
 
 - Task 1 (shared): added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `normalizeTags` (Set-based dedup after trim/lower-case) and `isValidTag` (non-empty, <=32, no `\s`). `pnpm --filter @sample/shared test` 10 passed; shared lint and typecheck passed.
+- Task 2 (api): `store.add` takes `tags?: unknown`; `parseTags` defaults undefined to `[]`, throws `ValidationError("invalid tag")` for a non-array, a non-string entry (null included), or any normalised tag failing `isValidTag`; it runs after the title and url checks and before the duplicate-url check. `app.ts` passes `body.tags`. API tests 16 passed; api lint and typecheck passed.
+- Task 3 (web): `renderList` appends `<span class="tags">` between the link and Remove only when tags exist; fixtures updated; two new tests. Web tests 4 passed; web lint and typecheck passed.
+- Task 4 (delivery): root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed. `pnpm build` then `pnpm measure` printed web_bundle_gzip_bytes=881 (delta 46 over 835); baseline updated to 881. Changeset `.changeset/add-bookmark-tags.md` bumps shared, api, web (minor) with `Add tags to bookmarks`.
+
 ## Validation Evidence
+
+- AC-1: passed — api test "normalises tags and returns them from POST and GET"; shared `normalizeTags` tests.
+- AC-2: passed — api test "defaults tags to an empty array" (missing and `[]`).
+- AC-3: passed — api test rejects 33 characters with 400 and stores nothing; 32 characters (padded, upper-case) accepted; shared 32/33 boundary tests.
+- AC-4: passed — api tests for internal space and tab; shared `isValidTag` tests.
+- AC-5: passed — api test checks GET returns normalised tags.
+- AC-6: passed — web tests: `work, read` in `.tags` right after the link; no `.tags` element or extra text when empty.
+- AC-7: passed — tests in shared (10), api (16), web (4); root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
+- AC-8: passed — changeset added; baseline moved 835 to 881 and was updated.
+- AC-9: passed — api tests: string, null, object, `[1]`, `["a", null]` each 400 `{"error":"invalid tag"}`, list unchanged.
+- AC-10: passed — api tests: `""` and `"   "` rejected; length/whitespace checks apply after trim and lower-case.
 
 ## Quality Gate
 
@@ -135,3 +153,4 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - 2026-10-28: Drafted from FIJIH-42 at revision 2026-10-28T18:58:41.144+0100 (issue assigned to Mattia Panzeri during Plan).
 - 2026-10-28: Scope change: "approve, with these answers: (1) no tags input on the add form; (2) yes, a non-array tags value or a non-string entry answers 400 {"error":"invalid tag"}; (3) a tag empty after trimming is rejected with 400, and the 32-character and whitespace checks apply after trimming and lower-casing; (4) PR #4 is a test run that will be closed, so do not stack on it." — plan-approval (conditional approval) at 701fea4. Added AC 9 and AC 10 (the issue's own criteria are unchanged), mapped tasks and Testing Strategy, recorded answers 1 and 4 in Product Context and Engineering Context, and removed the four open questions. Default recorded for `tags: null`.
 - 2026-10-28: Approved: plan-approval — conditional: approve, with these answers: (1) no tags input on the add form; (2) yes, a non-array tags value or a non-string entry answers 400 {"error":"invalid tag"}; (3) a tag empty after trimming is rejected with 400, and the 32-character and whitespace checks apply after trimming and lower-casing; (4) PR #4 is a test run that will be closed, so do not stack on it. (verified at 7c487697fa7260083300859e35d70b7227713b30)
+- 2026-10-28: Implementation complete: tasks 1-4 checked off; AC 1-10 evidenced; checkpoint implementation-approval. Jira FIJIH-42 moved To Do to In Progress.
