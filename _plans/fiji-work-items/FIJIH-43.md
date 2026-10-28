@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 2
 quality:
   gate: concerns
@@ -246,3 +246,5 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Approved: local-qa-review — Approve.
 - 2026-10-28: Delivery (re-entry): pushed `9fcb896` (fast-forward from `680eb98`); updated draft PR #6 body to the final branch state (criterion 8, baseline 940, residual risks); requested a fresh Copilot review on the new head. PR stays draft. Set phase `automated-review`, transition `delivery-complete`.
 - 2026-10-28: Copilot findings pass (attempt 2): Copilot review of `9fcb896` raised no findings; CI run 40769688221 passed. Set checkpoint `ready-for-review`, transition `ready-for-review`.
+- 2026-10-28: Approved: ready-for-review — Approve.
+- 2026-10-28: Ready-for-review: marked PR #6 ready for review and requested review from `duckyduff369` (QA Engineer, owning team per TEAMS.md; the author `panz3r` is excluded). Set phase `remote-review`, checkpoint `null`, transition `review-requested`. The work-item commits stay local (`may_push` alone does not push work-item-only commits).
