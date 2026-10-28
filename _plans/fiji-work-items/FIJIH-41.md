@@ -7,9 +7,9 @@ source:
   key: FIJIH-41
   revision: "2026-10-28T18:30:03.635+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -149,3 +149,4 @@ so that I can group my bookmarks.
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-41 at revision `2026-10-28T18:30:03.635+0100`. It records the user's three answers to the earlier Plan block (no tags input on the add form; a non-array value or a non-string entry answers 400 invalid tag; a tag that is empty after trimming answers 400 invalid tag).
+- 2026-10-28: Approved: plan-approval — approve
