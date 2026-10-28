@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -176,3 +176,4 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - 2026-10-28: Implementation complete: tasks 1-4 checked off; AC 1-10 evidenced; checkpoint implementation-approval. Jira FIJIH-42 moved To Do to In Progress.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (one minor finding: pre-existing flaky api ordering test, outside this change). Reviewed head b2e2a6f.
+- 2026-10-28: Local QA review finalized at head bdad8a1: File List matches the branch diff against main; AC 1-10 each have a Validation Evidence line; checkpoint local-qa-review. Discrepancies: Implementation Record entries for tasks 1-4 name their tasks but cite no commit SHA. Follow-up: fix the flaky api ordering test in a separate issue.
