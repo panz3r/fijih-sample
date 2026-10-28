@@ -36,8 +36,9 @@ git rev-parse -q --verify refs/tags/baseline >/dev/null || die "tag baseline is 
 CURRENT=$(git rev-parse --abbrev-ref HEAD)
 case "$CURRENT" in
   FIJIH-*)
-    git diff --quiet && git diff --cached --quiet ||
+    if ! git diff --quiet || ! git diff --cached --quiet; then
       die "the working tree on $CURRENT has uncommitted changes; commit, discard, or stash them, then re-run"
+    fi
     ;;
 esac
 
