@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -173,3 +173,4 @@ Residual risks:
 - 2026-10-28: Implementation complete; all tasks checked; Jira FIJIH-37 moved to In Progress.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (reviewed head ad56ce1).
+- 2026-10-28: Finalize run: File List matches the branch diff; evidence discrepancies recorded in the result (baseline, README, and root-check tasks lack an in-range commit citation in their Implementation Record entries); checkpoint local-qa-review.
