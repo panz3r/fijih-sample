@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -148,6 +148,7 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - Bundle baseline: `pnpm build` then `pnpm measure` printed 881 (baseline was 835, delta 46); set `web_bundle_gzip_bytes` to 881 and re-ran `pnpm measure`: delta 0.
 - Repository checks: `pnpm test`, `pnpm lint`, `pnpm typecheck` run from the root, all passed (the first two ran before the baseline edit, which touches no code input).
 - Approved product defaults (plan-approval): no web tags input; non-array/non-string tags and blank tags answer 400 invalid tag; validation on trimmed tag; `, ` separator; README row unchanged.
+- Review fix `680eb98`: `store.add` uses `input.tags === undefined ? [] : input.tags`, so explicit `null` answers 400 `invalid tag`; added the `null` case to the `it.each` rejection cases in `packages/api/src/app.test.ts`. `pnpm test` (shared 8, api 12, web 4), `pnpm lint`, `pnpm typecheck` pass; web bundle unaffected (api-only change).
 
 ## Validation Evidence
 
@@ -191,6 +192,9 @@ QA re-ran the repository checks at the reviewed head: `pnpm test` exited 0 (shar
 
 ## Review Record
 
+- Copilot review of `df41df9` (1 finding). Thread `PRRT_kwDOVaYq_M6xUY8X` (`packages/api/src/store.ts:20`, `tags: null` defaulted to `[]` with 201): disposition `valid`; fixed in `680eb98` (default only when `tags` is `undefined`, `null` test case added); replied citing the pushed fix, thread resolved, Copilot re-review requested. Copilot's re-review of `680eb98` raised no open issues ("Approval recommended").
+- CI run 40768132659 (workflow `ci`) on `680eb98`: success.
+
 ## Change Log
 
 - 2026-10-28: Drafted from Jira FIJIH-43 revision `2026-10-28T21:48:02.496+0100` (issue assigned to Mattia Panzeri during Plan).
@@ -204,4 +208,4 @@ QA re-ran the repository checks at the reviewed head: `pnpm test` exited 0 (shar
 - 2026-10-28: Finalize: all tasks checked and all acceptance criteria evidenced; no bookkeeping slips found. Eight checked tasks have no Implementation Record entry citing an in-range commit (reported as discrepancies, left checked). Set checkpoint `local-qa-review`.
 - 2026-10-28: Approved: local-qa-review — Approve.
 - 2026-10-28: Delivery: added changeset `.changeset/bookmark-tags.md`, pushed the branch, opened draft PR #6 (label `enhancement`) and requested a Copilot review.
-
+- 2026-10-28: Copilot findings pass: 1 finding fixed (`680eb98`, `tags: null` now rejected), thread resolved, Copilot re-review clear. Set checkpoint `ready-for-review`.
