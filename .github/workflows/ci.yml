@@ -12,6 +12,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      # Holds the required check open for scenarios that need CI still running (S21); 0 unless the
+      # repository variable CI_DELAY_SECONDS is set.
+      - run: sleep "${{ vars.CI_DELAY_SECONDS || 0 }}"
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4

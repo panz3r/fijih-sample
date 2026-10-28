@@ -36,3 +36,4 @@ Install the FIJIₕ build under test from a local checkout so the sample follows
 | [S18](S18.md) | Base moved after Cleanup: Base Sync and a conflicting pull request | baseline |
 | [S19](S19.md) | Model routing shadow report and retrospective | `AI-MODELS.md` present |
 | [S20](S20.md) | Held work-item-only pushes: count pushes and CI runs | baseline |
+| [S21](S21.md) | Post-cleanup reverification watches a required check still running | baseline + `CI_DELAY_SECONDS` |
