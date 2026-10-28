@@ -68,12 +68,12 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 
 ## Tasks and Subtasks
 
-- [ ] Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 3)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
-  - [ ] Add a `MAX_TAG_LENGTH = 32` constant, a pure `isValidTag(tag: string): boolean` (non-empty per question 3, at most 32 characters, no whitespace `/\s/`, checked on the trimmed value), and a pure `normalizeTags(tags: readonly string[]): string[]` (trim, lower-case, deduplicate keeping first occurrence).
-- [ ] Shared unit tests in `packages/shared/src/index.test.ts` (AC: 5)
-  - [ ] `normalizeTags`: trims, lower-cases, deduplicates `["News", " news ", "NEWS"]` to `["news"]`, keeps first-occurrence order, returns `[]` for `[]`, and does not mutate its input.
-  - [ ] `isValidTag`: accepts a 32-character tag and a tag with surrounding whitespace; rejects a 33-character tag, `"my tag"`, a tab or newline inside, and (per question 3) an empty or blank tag.
+- [x] Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 3)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
+  - [x] Add a `MAX_TAG_LENGTH = 32` constant, a pure `isValidTag(tag: string): boolean` (non-empty per question 3, at most 32 characters, no whitespace `/\s/`, checked on the trimmed value), and a pure `normalizeTags(tags: readonly string[]): string[]` (trim, lower-case, deduplicate keeping first occurrence).
+- [x] Shared unit tests in `packages/shared/src/index.test.ts` (AC: 5)
+  - [x] `normalizeTags`: trims, lower-cases, deduplicates `["News", " news ", "NEWS"]` to `["news"]`, keeps first-occurrence order, returns `[]` for `[]`, and does not mutate its input.
+  - [x] `isValidTag`: accepts a 32-character tag and a tag with surrounding whitespace; rejects a 33-character tag, `"my tag"`, a tab or newline inside, and (per question 3) an empty or blank tag.
 - [ ] API store and route in `packages/api/src/store.ts` and `packages/api/src/app.ts` (AC: 1, 2, 3)
   - [ ] In `BookmarkStore.add`, validate `input.tags ?? []` (array of strings, per question 2), throw `ValidationError("invalid tag")` on the first invalid tag before storing, and store `normalizeTags(...)` on the bookmark.
   - [ ] In `createApp`, pass `body.tags` through from the POST body to `store.add` without changing the existing `url`/`title` handling.
@@ -129,7 +129,12 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+- Shared tag model/tests: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, `isValidTag` (trimmed, non-empty, <=32, no whitespace), `normalizeTags` (Set keeps first-occurrence order). Focused: `pnpm --filter @sample/shared test` 8 passed.
 
 ## Validation Evidence
 
@@ -141,3 +146,5 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 
 - 2026-10-28: Drafted from Jira FIJIH-43 revision `2026-10-28T21:48:02.496+0100` (issue assigned to Mattia Panzeri during Plan).
 - 2026-10-28: Approved: plan-approval — Approve, with the defaults for all six questions.
+- 2026-10-28: Implemented shared tag model and tests.
+

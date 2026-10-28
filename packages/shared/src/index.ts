@@ -3,9 +3,23 @@ export interface Bookmark {
   url: string;
   title: string;
   createdAt: string;
+  tags: string[];
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title">;
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] };
+
+export const MAX_TAG_LENGTH = 32;
+
+/** Returns true when the trimmed tag is non-empty, at most 32 characters, and has no whitespace. */
+export function isValidTag(tag: string): boolean {
+  const trimmed = tag.trim();
+  return trimmed.length > 0 && trimmed.length <= MAX_TAG_LENGTH && !/\s/.test(trimmed);
+}
+
+/** Trims and lower-cases each tag and removes duplicates, keeping the first occurrence's position. */
+export function normalizeTags(tags: readonly string[]): string[] {
+  return [...new Set(tags.map((tag) => tag.trim().toLowerCase()))];
+}
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
