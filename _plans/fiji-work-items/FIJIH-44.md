@@ -8,12 +8,12 @@ source:
   revision: "2026-10-28T22:54:03.939+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-44-add-tags-to-bookmarks
   base_branch: null
@@ -159,6 +159,35 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 
 ## Quality Gate
 
+Gate: concerns
+
+Full review of the branch diff `main...520031f` (commits 896337d, 44692cb, 48d6bd7, 57cf34c and the work-item commits). Re-run on the reviewed head: root `pnpm test` (shared 10, api 12, web 5 passed), `pnpm lint` and `pnpm typecheck` passed; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890`, `web_bundle_gzip_delta=0`.
+
+### Acceptance trace
+
+- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (`undefined` → `[]`), `packages/api/src/app.ts` passes `body.tags`, `packages/api/src/store.ts` stores `tags`; verification api test "defaults to an empty list", shared test "defaults to an empty list", live `curl` POST answered 201 with `"tags":[]`.
+- AC-2: implementation `normalizeTags` (trim, lower-case, `Set` keeps first occurrence); verification shared test "trims, lower-cases, and deduplicates…" (including order `["b","a","B"]` → `["b","a"]`), api test "trims, lower-cases, deduplicates, and returns tags on POST and GET", live `curl` → `["news","tech"]`.
+- AC-3: implementation `normalizeTags` length and `/\s/` checks, `store.add` throws `ValidationError("invalid tag")` before `items.set`; verification shared tests (32 accepted, padded 32 accepted, 33 rejected, space and tab rejected), api `it.each` cases "too long" and "inner whitespace" (400 `{"error":"invalid tag"}`, list unchanged), api test "accepts a 32-character tag", live `curl` `["two words"]` → 400. See minor finding F1 on non-ASCII length.
+- AC-4: implementation `normalizeTags` (non-array, non-string, empty after trim → `null`); verification shared test "rejects a non-array value and non-string elements" and "rejects empty and whitespace-only tags", api `it.each` cases "empty", "whitespace only", "not an array", "non-string element" (400, list unchanged).
+- AC-5: implementation `store.ts` stores the normalised list, `list()` returns it; verification api test (GET finds `["news","tech"]`), live `GET /bookmarks` returned `["news","tech"]` and `[]`.
+- AC-6: implementation `packages/web/src/render.ts` (`span.tags` with `textContent = tags.join(", ")` after the link, omitted when empty), `.tags` style in `packages/web/index.html`; verification web tests "shows tags after the title, comma separated", "renders no tags element and no extra text when there are no tags", "renders tag text as text, not markup". Live-page check deferred: "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." (blocked Implementation result question on the task 5 page check, branch tip 6bffd1f).
+- AC-7: tests in all three packages cover AC-1 to AC-6; root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed (Implementation result and re-run at 520031f).
+- AC-8: `measure/baseline.json` `web_bundle_gzip_bytes: 890`; `pnpm build && pnpm measure` at 520031f printed 890, delta 0.
+
+Product decisions D1 to D7 and the display-only answer on the add form agree with the acceptance criteria; no contradiction found.
+
+### Findings
+
+- F1 (minor) `packages/shared/src/index.ts:54`: the 32 limit counts UTF-16 code units of the lower-cased tag, not characters of the trimmed tag. Reproduced: `normalizeTags(["😀".repeat(17)])` (17 characters) and `normalizeTags(["İ".repeat(32)])` (32 characters, 64 code units after `toLowerCase`) both return `null`, so a non-ASCII tag of 32 or fewer characters answers 400 `{"error":"invalid tag"}`, against AC-3's "a tag of exactly 32 characters is accepted". ASCII tags behave as specified. Follow-up: measure `[...trimmed].length` before lower-casing, or record the code-unit rule as a product decision.
+
+### Residual risks
+
+- AC-6 deferred by the user: "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." The live page (tags next to the title in the flex `li`, Remove on the right) was not seen; confirm by loading the page with one tagged and one untagged bookmark.
+- Pre-existing flake in api test "creates, lists newest first, and deletes" (two POSTs in the same millisecond tie on `createdAt`; also on `main`): it can fail the required `test` check intermittently; confirm by re-running CI, and fix outside this work item.
+- Pre-existing `pnpm --filter @sample/api start` fails with `ERR_MODULE_NOT_FOUND` (`src/server.ts` imports `./app.js` under `--experimental-strip-types`); unchanged by this work item, outside its tasks.
+
+Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
+
 ## Review Record
 
 ## Change Log
@@ -171,3 +200,5 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - 2026-10-28: Task 4 done (bundle baseline 835 to 890).
 - 2026-10-28: Tasks 5 (partial) and 6 recorded; blocked on the live-page check.
 - 2026-10-28: Task 5 page check deferred by the user at the blocked Implementation result (branch tip 6bffd1f): "Option 2: defer the page check of task 5; the web unit tests are enough for AC-6 in this run." Task 5 checked off; API half verified by curl; checkpoint set to implementation-approval.
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Quality gate recorded: concerns (one minor finding, residual risks) at 520031f.
