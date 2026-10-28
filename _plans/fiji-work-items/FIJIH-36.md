@@ -67,8 +67,8 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - [x] T3. Web page shows tags after the title (AC: 4, 5)
   - [x] `packages/web/src/render.ts`: after the link, when `bookmark.tags.length > 0`, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`; append nothing otherwise. Use `textContent`, never HTML.
   - [x] Tests in `packages/web/src/render.test.ts`: tags render after the title comma separated; no tag element when `tags` is `[]`; update existing fixtures to include `tags`.
-- [ ] T4. Bundle size baseline (AC: 5)
-  - [ ] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change (AGENTS.md).
+- [x] T4. Bundle size baseline (AC: 5)
+  - [x] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change (AGENTS.md).
 - [ ] T5. Change intent (AC: 5)
   - [ ] Add a changeset in `.changeset/` whose summary is `Add tags to bookmarks`, bumping `@sample/shared`, `@sample/api`, and `@sample/web` (patch/minor per team convention; minor for a new feature).
 - [ ] T6. Full checks (AC: 5)
@@ -110,12 +110,14 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - `packages/api/src/app.test.ts`
 - `packages/web/src/render.ts`
 - `packages/web/src/render.test.ts`
+- `measure/baseline.json`
 
 ## Implementation Record
 
 - T1: Added tags to Bookmark/NewBookmark, MAX_TAG_LENGTH, InvalidTagError, and normalizeTags (signals invalid by throwing InvalidTagError). Shared test (9 tests), lint, typecheck passed.
 - T2: store.add normalises tags after title/url checks, maps InvalidTagError to ValidationError('invalid tag'); app.ts forwards body.tags. API test (9 tests), lint, typecheck passed.
 - T3: renderList appends span.tags (textContent, joined with ', ') between link and Remove only when tags exist; fixtures updated. Web test (4 tests), lint, typecheck passed.
+- T4: pnpm build then pnpm measure: 881 bytes, delta +46 from 835; baseline updated to 881 (re-measure delta 0).
 
 ## Validation Evidence
 
@@ -130,3 +132,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - 2026-10-28: T1 implemented
 - 2026-10-28: T2 implemented
 - 2026-10-28: T3 implemented
+- 2026-10-28: T4 implemented
