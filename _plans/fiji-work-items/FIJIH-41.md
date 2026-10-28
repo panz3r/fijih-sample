@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -138,7 +138,7 @@ so that I can group my bookmarks.
 
 ## File List
 
-- packages/shared/src/index.ts, packages/shared/src/index.test.ts
+- packages/shared/src/index.ts, packages/shared/src/index.test.ts (Copilot fix b9e5e46 touches index.ts only)
 - packages/api/src/app.ts, packages/api/src/store.ts, packages/api/src/app.test.ts
 - packages/web/src/render.ts, packages/web/src/render.test.ts
 - measure/baseline.json
@@ -151,6 +151,8 @@ so that I can group my bookmarks.
 - Task 2 (api): `app.ts` passes `body.tags` through; `store.add` validates tags before the duplicate-URL check and throws `ValidationError("invalid tag")`; 11 new test cases (8 invalid forms); api tests 14 passed.
 - Task 3 (web): `renderList` appends `<span class="tags">` with `tags.join(", ")` after the link only when tags exist; fixtures updated; 2 new tests; web tests 4 passed. Add form and main.ts unchanged.
 - Task 4 (release): `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (delta 46 from 835); baseline set to 881, re-measure delta 0. Changeset `.changeset/add-bookmark-tags.md` (minor for shared, api, web). Root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
+
+- Copilot pass (b9e5e46): `normalizeTags` dedupes with a `Set` instead of `out.includes`; behaviour unchanged, covered by existing shared dedupe tests and the api normalization test. Root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass; `pnpm build && pnpm measure` still 881, delta 0.
 
 ## Validation Evidence
 
@@ -180,6 +182,9 @@ so that I can group my bookmarks.
 
 ## Review Record
 
+- Copilot review 5687130041 (head b56ac48), thread PRRT_kwDOVaYq_M6xPzF7 (packages/shared/src/index.ts:26, quadratic `out.includes` dedupe, no tag-count limit): `valid`. Fixed in b9e5e46 with a `Set`; a tag-count limit was not added because it would change the accepted-input contract (AC 1-2). Replied (comment 4404053942) and resolved.
+- Copilot re-review 5687160053 (head b9e5e46): approval recommended, no open issues.
+
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-41 at revision `2026-10-28T18:30:03.635+0100`. It records the user's three answers to the earlier Plan block (no tags input on the add form; a non-array value or a non-string entry answers 400 invalid tag; a tag that is empty after trimming answers 400 invalid tag).
@@ -190,3 +195,4 @@ so that I can group my bookmarks.
 - 2026-10-28: Finalize (local QA review): all tasks checked and all acceptance criteria evidenced on `FIJIH-41-add-bookmark-tags` since `main`; no bookkeeping slips; checkpoint local-qa-review. Task entries name their work without commit hashes (listed under discrepancies). Quality gate concerns carried forward unchanged.
 - 2026-10-28: Approved: local-qa-review — approve
 - 2026-10-28: Delivery: pushed `FIJIH-41-add-bookmark-tags` (8 commits, first push) and opened draft pull request #4 (`[FIJIH-41] Add tags to bookmarks`, label `enhancement`, assignee `panz3r`, base `main`); Copilot automated review requested (timeline `review_requested` event). Changeset `.changeset/add-bookmark-tags.md` already present; no change intent added. No `(verify: ci)` criteria exist; no CI run measured. Human reviewers not requested (Ready-for-review).
+- 2026-10-28: Copilot findings pass: 1 finding, valid, fixed in b9e5e46 and pushed (carried held commit 0917a19); thread replied and resolved; Copilot re-review clear. Checkpoint ready-for-review.
