@@ -10,7 +10,7 @@ Each note describes one lifecycle path: the Jira issue to create, the repository
 4. Follow the note's checkpoints. For human-review steps, run `scripts/review-as-qa` as the note says.
 5. `scripts/reset` when done; close the pull request instead of merging unless the note needs a merge.
 
-Install the FIJIₕ build under test from a local checkout so the sample follows the branch being reviewed: `apm install /path/to/fijih --target claude` (then `apm audit --ci`). Secrets for the scripts: `QA_GH_TOKEN` (QA Engineer account), `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (classic or scoped Atlassian API token; calls go through the `api.atlassian.com` gateway).
+Install the FIJIₕ build under test from a local checkout so the sample follows the branch being reviewed: `apm install /path/to/fijih --target claude,agent-skills` (then `apm audit --ci`). Secrets for the scripts: `QA_GH_TOKEN` (QA Engineer account), `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (classic or scoped Atlassian API token; calls go through the `api.atlassian.com` gateway).
 
 ## Catalogue
 
