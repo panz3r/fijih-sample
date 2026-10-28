@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -121,6 +121,7 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - T4: pnpm build then pnpm measure: 881 bytes, delta +46 from 835; baseline updated to 881 (re-measure delta 0).
 - T5: Added changeset 'Add tags to bookmarks' with minor bumps for shared, api, web.
 - T6: Root pnpm test, pnpm lint, pnpm typecheck all passed.
+- Review fix (Copilot thread PRRT_kwDOVaYq_M6xIhYX): `normalizeTags` counts code points (`[...tag].length`) and a non-ASCII boundary test was added in `packages/shared/src/index.test.ts`; commit ed83a25 (pushed). Root test, lint, typecheck passed; bundle 881 bytes, delta 0.
 
 ## Validation Evidence
 
@@ -158,6 +159,8 @@ Residual risks:
 
 ## Review Record
 
+- Copilot review PRR_kwDOVaYq_M8AAAABUr2OPg, thread PRRT_kwDOVaYq_M6xIhYX (`packages/shared/src/index.ts`, tag length counts UTF-16 units): valid; fixed in ed83a25; replied and resolved. Copilot re-review (13:15:30Z, head ed83a25): approval recommended, no new findings.
+
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-36 revision `2026-10-28T14:00:12.914+0100`; issue assigned to Mattia Panzeri.
@@ -172,3 +175,4 @@ Residual risks:
 - 2026-10-28: Finalize: all tasks checked and all acceptance criteria have Validation Evidence; no blocking gaps; set checkpoint local-qa-review (gate concerns carried forward)
 - 2026-10-28: Approved: local-qa-review — approve
 - 2026-10-28: Delivery: committed change intent already on branch (.changeset/add-bookmark-tags.md, summary matches PR title without key, no change); pushed FIJIH-36-add-tags; opened draft PR #1 (base main, label enhancement, assignee panz3r); requested Copilot review (confirmed review_requested event on timeline)
+- 2026-10-28: Copilot pass: 1 finding valid and fixed (ed83a25), thread resolved, re-review clear; set checkpoint ready-for-review
