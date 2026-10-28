@@ -85,9 +85,9 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
   - [x] `BookmarkStore.add` validates tags with `normalizeTags` after the title and url checks, throws `ValidationError("invalid tag")` when invalid, and stores the normalised list on the bookmark.
   - [x] `app.ts` passes `body.tags` through to `store.add`.
   - [x] Vitest cases in `packages/api/src/app.test.ts`: POST without tags → `tags: []`; POST with mixed-case, padded, duplicated tags → normalised; each invalid case → 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns the tags of each bookmark.
-- [ ] 3. Show tags on the page in `packages/web` (AC: 6, 7)
-  - [ ] `renderList` appends an element holding `tags.join(", ")` after the title link when the bookmark has tags, and nothing when it has none.
-  - [ ] Update existing `render.test.ts` fixtures for the new required `tags` field; add cases for tags shown after the title, comma separated, and for no tags element when empty.
+- [x] 3. Show tags on the page in `packages/web` (AC: 6, 7)
+  - [x] `renderList` appends an element holding `tags.join(", ")` after the title link when the bookmark has tags, and nothing when it has none.
+  - [x] Update existing `render.test.ts` fixtures for the new required `tags` field; add cases for tags shown after the title, comma separated, and for no tags element when empty.
 - [ ] 4. Update the bundle-size baseline (AC: 8)
   - [ ] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` into `measure/baseline.json` in its own `chore:` commit, and re-run `pnpm measure` to confirm delta 0.
 - [ ] 5. Live-app check (AC: 1, 2, 5, 6)
@@ -131,17 +131,22 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - packages/api/src/store.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+- packages/web/index.html
 
 ## Implementation Record
 
 - Task 1: `normalizeTags(value: unknown): string[] | null` (null = invalid) and `MAX_TAG_LENGTH = 32` in shared; `Bookmark.tags` required, `NewBookmark.tags?: unknown`. Hypothesis: a Set keeps first-occurrence order and dedupes after normalisation; confirmed by the shared tests (10 pass).
 - Task 2: `BookmarkStore.add` calls `normalizeTags` after the title and url checks and before the duplicate-url check (D7); invalid gives `ValidationError("invalid tag")`, which `app.ts` already maps to 400. `app.ts` passes `body.tags` as `unknown`. Hypothesis (no stored state on invalid input, since validation precedes `items.set`) confirmed by the "stores nothing" tests.
 - Observation: the existing test "creates, lists newest first, and deletes" is flaky (about 1 in 12 runs, also on the commit before the api change): two POSTs in the same millisecond tie on `createdAt`, and the stable sort keeps insertion order. Not caused by this change and outside the tasks; left as is.
+- Task 3: `renderList` wraps the title link and, only when tags exist, a `span.tags` (`textContent` = `tags.join(", ")`) in one `span`, so the flex `li` keeps tags next to the title and Remove on the right; `.tags` margin/colour added in `packages/web/index.html`. Display only, per the approved answer on the add form.
 
 ## Validation Evidence
 
 - Task 1: `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
 - Task 2: `pnpm --filter @sample/api test` 12 passed (one run in several hit the pre-existing flake above); api typecheck and `pnpm lint packages/api` passed.
+- Task 3: `pnpm --filter @sample/web test` 5 passed; web typecheck and `pnpm lint packages/web` passed.
 
 ## Quality Gate
 
@@ -153,3 +158,4 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - 2026-10-28: Approved: plan-approval — Approve, with the proposed answers.
 - 2026-10-28: Task 1 implemented (shared tag normalisation).
 - 2026-10-28: Task 2 implemented (api tags).
+- 2026-10-28: Task 3 implemented (web tags display).

@@ -11,10 +11,34 @@ describe("renderList", () => {
   it("renders one item per bookmark and wires Remove", () => {
     const list = document.createElement("ul");
     const onRemove = vi.fn();
-    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z" }], onRemove);
+    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: [] }], onRemove);
     expect(list.querySelectorAll("li")).toHaveLength(1);
     expect(list.querySelector("a")?.getAttribute("href")).toBe("https://example.com");
     list.querySelector("button")?.click();
     expect(onRemove).toHaveBeenCalledWith("1");
+  });
+
+  it("shows tags after the title, comma separated", () => {
+    const list = document.createElement("ul");
+    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: ["news", "tech"] }], () => {});
+    const tags = list.querySelector(".tags");
+    expect(tags?.textContent).toBe("news, tech");
+    const link = list.querySelector("a");
+    expect(link?.compareDocumentPosition(tags as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(list.querySelector("li")?.textContent).toBe("Examplenews, techRemove");
+  });
+
+  it("renders no tags element and no extra text when there are no tags", () => {
+    const list = document.createElement("ul");
+    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: [] }], () => {});
+    expect(list.querySelector(".tags")).toBeNull();
+    expect(list.querySelector("li")?.textContent).toBe("ExampleRemove");
+  });
+
+  it("renders tag text as text, not markup", () => {
+    const list = document.createElement("ul");
+    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: ["<b>x</b>"] }], () => {});
+    expect(list.querySelector(".tags b")).toBeNull();
+    expect(list.querySelector(".tags")?.textContent).toBe("<b>x</b>");
   });
 });
