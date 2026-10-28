@@ -83,10 +83,10 @@ so that I can group my bookmarks.
     - without `tags`, POST gives `tags: []` in both the 201 response and the GET response
     - with tags, POST normalizes them, and GET returns them
     - each 400 case in AC 2 answers `{"error":"invalid tag"}` and adds nothing to `GET /bookmarks`
-- [ ] `packages/web`: render tags after the title (AC: 4, 5)
-  - [ ] In `render.ts`, after the link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`. Append it only when `tags.length > 0`.
-  - [ ] Update the existing fixtures in `render.test.ts` for the new required `tags` field. Add tests for a bookmark with tags (text `news, tech`, placed after the title link) and for a bookmark with no tags (no tag element, and the item text has no tag text).
-  - [ ] Leave the add form (`index.html`) and the POST body in `main.ts` unchanged (user decision 1).
+- [x] `packages/web`: render tags after the title (AC: 4, 5)
+  - [x] In `render.ts`, after the link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`. Append it only when `tags.length > 0`.
+  - [x] Update the existing fixtures in `render.test.ts` for the new required `tags` field. Add tests for a bookmark with tags (text `news, tech`, placed after the title link) and for a bookmark with no tags (no tag element, and the item text has no tag text).
+  - [x] Leave the add form (`index.html`) and the POST body in `main.ts` unchanged (user decision 1).
 - [ ] Release conventions (AC: 6)
   - [ ] Run `pnpm build`, then `pnpm measure`. When `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change.
   - [ ] Add a changeset (`pnpm changeset`) for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary "Add tags to bookmarks".
@@ -142,6 +142,7 @@ so that I can group my bookmarks.
 
 - Task 1 (shared): added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and `normalizeTags`; 7 new tests; shared tests 11 passed.
 - Task 2 (api): `app.ts` passes `body.tags` through; `store.add` validates tags before the duplicate-URL check and throws `ValidationError("invalid tag")`; 12 new test cases (8 invalid forms); api tests 14 passed.
+- Task 3 (web): `renderList` appends `<span class="tags">` with `tags.join(", ")` after the link only when tags exist; fixtures updated; 2 new tests; web tests 4 passed. Add form and main.ts unchanged.
 
 ## Validation Evidence
 
