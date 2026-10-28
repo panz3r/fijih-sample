@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-40-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/3
-  jira_context_comment_id: null
+  jira_context_comment_id: "10002"
 ---
 
 # Work Item FIJIH-40: Add tags to bookmarks
@@ -195,3 +195,5 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 - Approved: ready-for-review — approve
 - Ready for review: PR #3 marked ready, review requested from `duckyduff369` (QA Engineer, owning team Bookmarks; author `panz3r` excluded). Work-item commit held locally, not pushed.
 - Jira handoff draft written from current evidence (PR #3 head c1ef1e5, one approval from duckyduff369, ci run 40721198073 succeeded); nothing posted to Jira. Checkpoint jira-handoff. Commit held locally.
+- Approved: jira-handoff — approve
+- Jira handoff posted as comment 10002 on FIJIH-40 (marker `FIJI-CONTEXT:FIJIH-40:fiji/orchestrate-development/v1`), read back and verified. No other Jira field changed. Commit held locally.
