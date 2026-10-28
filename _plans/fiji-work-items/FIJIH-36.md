@@ -60,10 +60,10 @@ Open product questions (also under the Plan result's risks; none blocks drafting
   - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `readonly string[]`) to `NewBookmark` in `packages/shared/src/index.ts`.
   - [x] Add a pure `normalizeTags(value: unknown): string[]` that returns `[]` for `undefined`, trims, lower-cases, and deduplicates (first occurrence wins), and throws (or signals) invalid for a non-array, a non-string entry, an empty trimmed tag, a trimmed tag over 32 characters, or a trimmed tag containing whitespace. Export `MAX_TAG_LENGTH = 32`.
   - [x] Tests in `packages/shared/src/index.test.ts`: default `[]`, trim + lower-case + dedupe, exactly 32 characters accepted, 33 rejected, inner space and tab rejected, empty-after-trim rejected, non-array and non-string rejected.
-- [ ] T2. API accepts, stores, and returns tags (AC: 1, 2, 3, 5)
-  - [ ] `packages/api/src/store.ts`: `add` normalises tags via `normalizeTags`, maps invalid input to `ValidationError("invalid tag")`, and stores `tags` on the bookmark; validation happens before insertion so a rejected request stores nothing.
-  - [ ] `packages/api/src/app.ts`: pass `body.tags` through to `store.add`.
-  - [ ] Tests in `packages/api/src/app.test.ts`: POST with mixed-case, padded, duplicate tags returns normalised tags; POST without tags returns `tags: []`; each invalid case answers `400 {"error":"invalid tag"}` and the list is unchanged; GET returns tags per bookmark.
+- [x] T2. API accepts, stores, and returns tags (AC: 1, 2, 3, 5)
+  - [x] `packages/api/src/store.ts`: `add` normalises tags via `normalizeTags`, maps invalid input to `ValidationError("invalid tag")`, and stores `tags` on the bookmark; validation happens before insertion so a rejected request stores nothing.
+  - [x] `packages/api/src/app.ts`: pass `body.tags` through to `store.add`.
+  - [x] Tests in `packages/api/src/app.test.ts`: POST with mixed-case, padded, duplicate tags returns normalised tags; POST without tags returns `tags: []`; each invalid case answers `400 {"error":"invalid tag"}` and the list is unchanged; GET returns tags per bookmark.
 - [ ] T3. Web page shows tags after the title (AC: 4, 5)
   - [ ] `packages/web/src/render.ts`: after the link, when `bookmark.tags.length > 0`, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`; append nothing otherwise. Use `textContent`, never HTML.
   - [ ] Tests in `packages/web/src/render.test.ts`: tags render after the title comma separated; no tag element when `tags` is `[]`; update existing fixtures to include `tags`.
@@ -105,10 +105,14 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 
 - `packages/shared/src/index.ts`
 - `packages/shared/src/index.test.ts`
+- `packages/api/src/store.ts`
+- `packages/api/src/app.ts`
+- `packages/api/src/app.test.ts`
 
 ## Implementation Record
 
 - T1: Added tags to Bookmark/NewBookmark, MAX_TAG_LENGTH, InvalidTagError, and normalizeTags (signals invalid by throwing InvalidTagError). Shared test (9 tests), lint, typecheck passed.
+- T2: store.add normalises tags after title/url checks, maps InvalidTagError to ValidationError('invalid tag'); app.ts forwards body.tags. API test (9 tests), lint, typecheck passed.
 
 ## Validation Evidence
 
@@ -121,3 +125,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - 2026-10-28: Plan drafted from FIJIH-36 revision `2026-10-28T14:00:12.914+0100`; issue assigned to Mattia Panzeri.
 - 2026-10-28: Approved: plan-approval — approve, assumptions are correct
 - 2026-10-28: T1 implemented
+- 2026-10-28: T2 implemented

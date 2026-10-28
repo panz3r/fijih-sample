@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc, type Bookmark, type NewBookmark } from "@sample/shared";
+import { InvalidTagError, isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc, type Bookmark, type NewBookmark } from "@sample/shared";
 
 export class ValidationError extends Error {}
 
@@ -17,7 +17,14 @@ export class BookmarkStore {
     for (const existing of this.items.values()) {
       if (existing.url === url) throw new ValidationError("url already bookmarked");
     }
-    const bookmark: Bookmark = { id: randomUUID(), url, title: input.title.trim(), createdAt: now().toISOString() };
+    let tags: string[];
+    try {
+      tags = normalizeTags(input.tags);
+    } catch (error) {
+      if (error instanceof InvalidTagError) throw new ValidationError("invalid tag");
+      throw error;
+    }
+    const bookmark: Bookmark = { id: randomUUID(), url, title: input.title.trim(), createdAt: now().toISOString(), tags };
     this.items.set(bookmark.id, bookmark);
     return bookmark;
   }
