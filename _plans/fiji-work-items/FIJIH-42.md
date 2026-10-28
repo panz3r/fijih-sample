@@ -7,9 +7,9 @@ source:
   key: FIJIH-42
   revision: "2026-10-28T18:58:41.144+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -126,3 +126,4 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 
 - 2026-10-28: Drafted from FIJIH-42 at revision 2026-10-28T18:58:41.144+0100 (issue assigned to Mattia Panzeri during Plan).
 - 2026-10-28: Scope change: "approve, with these answers: (1) no tags input on the add form; (2) yes, a non-array tags value or a non-string entry answers 400 {"error":"invalid tag"}; (3) a tag empty after trimming is rejected with 400, and the 32-character and whitespace checks apply after trimming and lower-casing; (4) PR #4 is a test run that will be closed, so do not stack on it." — plan-approval (conditional approval) at 701fea4. Added AC 9 and AC 10 (the issue's own criteria are unchanged), mapped tasks and Testing Strategy, recorded answers 1 and 4 in Product Context and Engineering Context, and removed the four open questions. Default recorded for `tags: null`.
+- 2026-10-28: Approved: plan-approval — conditional: approve, with these answers: (1) no tags input on the add form; (2) yes, a non-array tags value or a non-string entry answers 400 {"error":"invalid tag"}; (3) a tag empty after trimming is rejected with 400, and the 32-character and whitespace checks apply after trimming and lower-casing; (4) PR #4 is a test run that will be closed, so do not stack on it. (verified at 7c487697fa7260083300859e35d70b7227713b30)
