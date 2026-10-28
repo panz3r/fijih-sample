@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -87,10 +87,10 @@ so that I can group my bookmarks.
   - [x] In `render.ts`, after the link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`. Append it only when `tags.length > 0`.
   - [x] Update the existing fixtures in `render.test.ts` for the new required `tags` field. Add tests for a bookmark with tags (text `news, tech`, placed after the title link) and for a bookmark with no tags (no tag element, and the item text has no tag text).
   - [x] Leave the add form (`index.html`) and the POST body in `main.ts` unchanged (user decision 1).
-- [ ] Release conventions (AC: 6)
-  - [ ] Run `pnpm build`, then `pnpm measure`. When `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change.
-  - [ ] Add a changeset (`pnpm changeset`) for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary "Add tags to bookmarks".
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root, and record the results.
+- [x] Release conventions (AC: 6)
+  - [x] Run `pnpm build`, then `pnpm measure`. When `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change.
+  - [x] Add a changeset (`pnpm changeset`) for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary "Add tags to bookmarks".
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root, and record the results.
 
 ## Engineering Context
 
@@ -138,13 +138,28 @@ so that I can group my bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts, packages/shared/src/index.test.ts
+- packages/api/src/app.ts, packages/api/src/store.ts, packages/api/src/app.test.ts
+- packages/web/src/render.ts, packages/web/src/render.test.ts
+- measure/baseline.json
+- .changeset/add-bookmark-tags.md
+- _plans/fiji-work-items/FIJIH-41.md
+
 ## Implementation Record
 
 - Task 1 (shared): added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and `normalizeTags`; 7 new tests; shared tests 11 passed.
-- Task 2 (api): `app.ts` passes `body.tags` through; `store.add` validates tags before the duplicate-URL check and throws `ValidationError("invalid tag")`; 12 new test cases (8 invalid forms); api tests 14 passed.
+- Task 2 (api): `app.ts` passes `body.tags` through; `store.add` validates tags before the duplicate-URL check and throws `ValidationError("invalid tag")`; 11 new test cases (8 invalid forms); api tests 14 passed.
 - Task 3 (web): `renderList` appends `<span class="tags">` with `tags.join(", ")` after the link only when tags exist; fixtures updated; 2 new tests; web tests 4 passed. Add form and main.ts unchanged.
+- Task 4 (release): `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (delta 46 from 835); baseline set to 881, re-measure delta 0. Changeset `.changeset/add-bookmark-tags.md` (minor for shared, api, web). Root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
 
 ## Validation Evidence
+
+- AC-1: passed — shared `normalizeTags` tests and api POST tests (absent gives `[]`, `["  News ", "news", "Tech"]` gives `["news", "tech"]`).
+- AC-2: passed — api tests cover null, string, number, object, non-string entry, empty, 33-character, and whitespace tags (400 `{"error":"invalid tag"}`, nothing stored); 32 characters accepted.
+- AC-3: passed — api GET tests return `tags` for both default and normalized cases.
+- AC-4: passed — web render tests: `news, tech` after the title link; no tag element without tags.
+- AC-5: passed — Vitest tests in shared (11), api (14), web (4).
+- AC-6: passed — changeset added; baseline 881 matches `pnpm build && pnpm measure` (delta 0); root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
 
 ## Quality Gate
 
@@ -154,3 +169,4 @@ so that I can group my bookmarks.
 
 - 2026-10-28: Plan drafted from FIJIH-41 at revision `2026-10-28T18:30:03.635+0100`. It records the user's three answers to the earlier Plan block (no tags input on the add form; a non-array value or a non-string entry answers 400 invalid tag; a tag that is empty after trimming answers 400 invalid tag).
 - 2026-10-28: Approved: plan-approval — approve
+- 2026-10-28: Implementation complete; Jira FIJIH-41 moved from To Do to In Progress. Bundle baseline moved 835 to 881 bytes.
