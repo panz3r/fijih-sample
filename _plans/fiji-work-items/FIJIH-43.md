@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -88,10 +88,10 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - [x] Web tests in `packages/web/src/render.test.ts` (AC: 5)
   - [x] Update existing fixtures to include `tags: []`.
   - [x] A bookmark with `tags: ["news", "tech"]` renders `news, tech` after the link and before the Remove button; a bookmark with `tags: []` renders no `.tags` element and the item's text is only the title and `Remove`.
-- [ ] Bundle baseline (AC: 6)
-  - [ ] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value (current baseline 835) and re-run `pnpm measure` to confirm delta 0.
-- [ ] Repository checks (AC: 7)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
+- [x] Bundle baseline (AC: 6)
+  - [x] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value (current baseline 835) and re-run `pnpm measure` to confirm delta 0.
+- [x] Repository checks (AC: 7)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
 
 ## Engineering Context
 
@@ -137,14 +137,27 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/web/index.html
+- measure/baseline.json
+- _plans/fiji-work-items/FIJIH-43.md
 
 ## Implementation Record
 
 - Shared tag model/tests: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, `isValidTag` (trimmed, non-empty, <=32, no whitespace), `normalizeTags` (Set keeps first-occurrence order). Focused: `pnpm --filter @sample/shared test` 8 passed.
 - API store/route: `BookmarkStore.add` validates `input.tags ?? []` after title/url/duplicate checks (non-array, non-string, blank, >32, inner whitespace all throw `ValidationError("invalid tag")`), stores normalised tags; POST passes `body.tags` through. Focused: `pnpm --filter @sample/api test` 11 passed.
 - Web: `renderList` appends `span.tags` (textContent, joined by `, `) between link and Remove only when tags exist; index.html styles keep tags next to the title and Remove at the row end. No tags input on the add form (question 1 default). Focused: `pnpm --filter @sample/web test` 4 passed.
+- Bundle baseline: `pnpm build` then `pnpm measure` printed 881 (baseline was 835, delta 46); set `web_bundle_gzip_bytes` to 881 and re-ran `pnpm measure`: delta 0.
+- Repository checks: `pnpm test`, `pnpm lint`, `pnpm typecheck` run from the root, all passed (the first two ran before the baseline edit, which touches no code input).
+- Approved product defaults (plan-approval): no web tags input; non-array/non-string tags and blank tags answer 400 invalid tag; validation on trimmed tag; `, ` separator; README row unchanged.
 
 ## Validation Evidence
+
+- AC-1: passed — shared normalizeTags tests and API tests (201 with `["news","tech"]`, default `[]`).
+- AC-2: passed — API tests: 33-char, inner whitespace, blank, non-array, non-string each 400 `{"error":"invalid tag"}` with nothing stored; 32-char accepted.
+- AC-3: passed — API test: GET returns normalised tags, `[]` when none.
+- AC-4: passed — web render tests: `news, tech` between link and Remove; no `.tags` element when empty.
+- AC-5: passed — Vitest tests added in packages/shared, packages/api, packages/web.
+- AC-6: passed — baseline 881; `pnpm measure` prints delta 0.
+- AC-7: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` pass from the root.
 
 ## Quality Gate
 
@@ -157,4 +170,5 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - 2026-10-28: Implemented shared tag model and tests.
 - 2026-10-28: Implemented API tags handling and tests.
 - 2026-10-28: Implemented web tag rendering and tests.
+- 2026-10-28: Updated bundle baseline to 881 and ran repository checks.
 
