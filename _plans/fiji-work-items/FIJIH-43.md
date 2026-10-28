@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 3
 quality:
   gate: concerns
@@ -292,3 +292,4 @@ Notes:
 - 2026-10-28: Implemented criterion 9 (tag count suffix in the tags span), updated bundle baseline to 950, repository checks pass. Set checkpoint `implementation-approval`, transition `implementation-complete`.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Local QA review (full re-review, attempt 3) recorded gate `concerns` at `8707c90`: all nine criteria evidenced, one minor finding (lower-casing after the length check), one residual risk (layout not checked in a browser; browser tool not permitted).
+- 2026-10-28: Finalize (attempt 3): all nine criteria evidenced and all tasks checked; no bookkeeping slips found; File List matches the branch diff against `main`. Fourteen checked tasks (the eight from attempt 1, the three from Re-entry 2, and the three from Re-entry 3) have no Implementation Record entry citing an in-range commit; reported as discrepancies, left checked. Set checkpoint `local-qa-review`, transition `qa-reviewed`.
