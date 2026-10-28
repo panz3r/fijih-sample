@@ -8,16 +8,16 @@ source:
   revision: "2026-10-28T18:30:03.635+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-41-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/4
   jira_context_comment_id: null
 ---
 
@@ -188,3 +188,5 @@ so that I can group my bookmarks.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (no findings; residual risk: pre-existing flaky api ordering test). Reviewed head e734293.
 - 2026-10-28: Finalize (local QA review): all tasks checked and all acceptance criteria evidenced on `FIJIH-41-add-bookmark-tags` since `main`; no bookkeeping slips; checkpoint local-qa-review. Task entries name their work without commit hashes (listed under discrepancies). Quality gate concerns carried forward unchanged.
+- 2026-10-28: Approved: local-qa-review — approve
+- 2026-10-28: Delivery: pushed `FIJIH-41-add-bookmark-tags` (8 commits, first push) and opened draft pull request #4 (`[FIJIH-41] Add tags to bookmarks`, label `enhancement`, assignee `panz3r`, base `main`); Copilot automated review requested (timeline `review_requested` event). Changeset `.changeset/add-bookmark-tags.md` already present; no change intent added. No `(verify: ci)` criteria exist; no CI run measured. Human reviewers not requested (Ready-for-review).
