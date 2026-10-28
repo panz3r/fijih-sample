@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-36-add-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/1
-  jira_context_comment_id: null
+  jira_context_comment_id: "10000"
 ---
 
 # Work Item FIJIH-36: Add tags to bookmarks
@@ -180,3 +180,5 @@ Residual risks:
 - 2026-10-28: Approved: ready-for-review — approve
 - 2026-10-28: Ready-for-review: marked PR #1 ready; requested review from duckyduff369 (QA Engineer, owning team Bookmarks; the only other member besides the author panz3r); confirmed review_requested on the timeline
 - 2026-10-28: Jira handoff draft written from PR #1 (head dca2e86, approved by duckyduff369) and the branch diff against main; set checkpoint jira-handoff
+- 2026-10-28: Approved: jira-handoff — approve
+- 2026-10-28: Jira handoff recorded: created comment 10000 on FIJIH-36 with marker FIJI-CONTEXT:FIJIH-36:fiji/orchestrate-development/v1 from the approved draft, read back to verify
