@@ -8,16 +8,16 @@ source:
   revision: "2026-10-28T16:43:21.245+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-40-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/3
   jira_context_comment_id: null
 ---
 
@@ -169,3 +169,6 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality gate: concerns at 902f931 (two minor findings: tag length checked after lower-casing; `"tags": null` accepted as `[]`).
 - Finalize: File List matches the branch diff since main; Validation Evidence has one passing line per criterion (AC-1 to AC-7); no record changes needed. Discrepancy kept: Implementation Record entries for Tasks 1-5 name the task but cite no commit SHA (checked tasks, so not blocking). Checkpoint local-qa-review.
+- Approved: local-qa-review — approve
+- Delivery: changeset `.changeset/fijih-40-add-tags.md` (summary "Add tags to bookmarks") committed in f98e78a and pushed with the branch. Draft PR #3 (https://github.com/panz3r/fijih-sample/pull/3) opened against `main`, title `[FIJIH-40] Add tags to bookmarks`, label `enhancement`, assignee panz3r. Copilot review requested (review_requested event confirmed in the timeline). Reviewers are not requested while the PR is draft; the QA Engineer `duckyduff369` is requested at ready-for-review.
+- Quality findings still open at delivery: tag length checked after lower-casing; `"tags": null` accepted as `[]`. Plan defaults unchanged (add form unchanged, README unchanged).
