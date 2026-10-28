@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 quality:
   gate: concerns
@@ -146,6 +146,7 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - packages/web/src/render.test.ts
 - packages/web/index.html
 - measure/baseline.json
+- .changeset/bookmark-tags.md
 - _plans/fiji-work-items/FIJIH-43.md
 
 ## Implementation Record
@@ -239,3 +240,4 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Implemented criterion 8 (total tags in h1 and tab title), updated bundle baseline to 940, repository checks pass. Set checkpoint `implementation-approval`, transition `implementation-complete`.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Local QA review (full re-review, attempt 2) recorded gate `concerns` at `d325e92` (one minor finding, one residual risk; the `tags: null` finding is fixed).
+- 2026-10-28: Finalize (attempt 2): all eight criteria evidenced and all tasks checked; bookkeeping slip fixed: File List lacked `.changeset/bookmark-tags.md` (committed at `df41df9`), now added. Eleven checked tasks (the eight from attempt 1 plus the three Re-entry 2 tasks) have no Implementation Record entry citing an in-range commit; reported as discrepancies, left checked. Set checkpoint `local-qa-review`, transition `qa-reviewed`.
