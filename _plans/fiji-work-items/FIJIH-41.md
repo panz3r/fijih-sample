@@ -65,10 +65,10 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] `packages/shared`: add tags to the model, plus a pure normalize-and-validate helper (AC: 1, 2, 5)
-  - [ ] Add `tags: string[]` to `Bookmark`. Let `NewBookmark` take optional `tags?: unknown` input, or add an equivalent input type.
-  - [ ] Add a helper, such as `normalizeTags(value: unknown): string[] | null`. It returns `[]` for `undefined` and the trimmed, lower-cased, de-duplicated list (first occurrence kept) for a valid array. For every invalid case in AC 2 it signals failure.
-  - [ ] Add tests in `packages/shared/src/index.test.ts`:
+- [x] `packages/shared`: add tags to the model, plus a pure normalize-and-validate helper (AC: 1, 2, 5)
+  - [x] Add `tags: string[]` to `Bookmark`. Let `NewBookmark` take optional `tags?: unknown` input, or add an equivalent input type.
+  - [x] Add a helper, such as `normalizeTags(value: unknown): string[] | null`. It returns `[]` for `undefined` and the trimmed, lower-cased, de-duplicated list (first occurrence kept) for a valid array. For every invalid case in AC 2 it signals failure.
+  - [x] Add tests in `packages/shared/src/index.test.ts`:
     - absent input gives `[]`
     - trim, lower-case, and dedupe, with order kept
     - a tag of exactly 32 characters is accepted and one of 33 is rejected
@@ -139,6 +139,8 @@ so that I can group my bookmarks.
 ## File List
 
 ## Implementation Record
+
+- Task 1 (shared): added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and `normalizeTags`; 7 new tests; shared tests 11 passed.
 
 ## Validation Evidence
 

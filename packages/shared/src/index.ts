@@ -3,9 +3,30 @@ export interface Bookmark {
   url: string;
   title: string;
   createdAt: string;
+  tags: string[];
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title">;
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: unknown };
+
+const MAX_TAG_LENGTH = 32;
+
+/**
+ * Normalizes tag input: trims, lower-cases, and removes duplicates (first kept).
+ * Returns `[]` for `undefined`, and `null` when the value or any entry is invalid.
+ */
+export function normalizeTags(value: unknown): string[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) return null;
+  const out: string[] = [];
+  for (const entry of value) {
+    if (typeof entry !== "string") return null;
+    const tag = entry.trim();
+    if (!tag || tag.length > MAX_TAG_LENGTH || /\s/.test(tag)) return null;
+    const lower = tag.toLowerCase();
+    if (!out.includes(lower)) out.push(lower);
+  }
+  return out;
+}
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
