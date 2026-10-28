@@ -10,7 +10,7 @@ lifecycle:
   status: active
   phase: automated-review
   checkpoint: null
-  transition: qa-reviewed
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
