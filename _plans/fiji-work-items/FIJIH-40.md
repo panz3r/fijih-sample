@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -164,6 +164,19 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 
 - PRRT_kwDOVaYq_M6xNFKR (packages/api/src/store.ts, Copilot, `?? []` accepts `"tags": null`): valid; fixed in c1ef1e5; replied; resolved.
 - PRRT_kwDOVaYq_M6xNFLS (packages/shared/src/index.ts, Copilot, length checked after lower-casing): valid; fixed in c1ef1e5; replied; resolved.
+- Jira handoff draft: comment to post on FIJIH-40 (marker `FIJI-CONTEXT:FIJIH-40:fiji/orchestrate-development/v1`):
+
+  > FIJI-CONTEXT:FIJIH-40:fiji/orchestrate-development/v1
+  >
+  > Outcome: bookmarks now take an optional `tags` list. `POST /bookmarks` trims, lower-cases and deduplicates tags (first occurrence kept, client order) and answers 400 `{"error":"invalid tag"}` for a tag longer than 32 characters or containing whitespace after trimming; `GET /bookmarks` returns `tags` on every bookmark; the web page shows tags after the title joined with `, ` and renders no tags element when there are none. Pull request: https://github.com/panz3r/fijih-sample/pull/3 (changeset `.changeset/fijih-40-add-tags.md`). The `test` check of the `ci` workflow succeeded on c1ef1e5 (run 40721198073); duckyduff369 (QA Engineer) approved c1ef1e5, and Copilot's re-review of c1ef1e5 left no open issues.
+  >
+  > Validation: acceptance criteria 1-7 are covered by Vitest tests in `packages/shared`, `packages/api` and `packages/web`; `pnpm test`, `pnpm lint` and `pnpm typecheck` pass from the root. The gzipped web bundle grew from 835 to 892 bytes (+57) and `measure/baseline.json` was updated to 892.
+  >
+  > Decisions taken by default, because plan approval was answered only "approve" and the Plan questions were not answered: (1) the add form is unchanged, so tags can be set only through the API; (2) a `tags` value that is not an array, holds a non-string, or holds a tag that is empty after trimming answers 400 `invalid tag`, and so does `"tags": null`; (3) tags keep first-occurrence order; (4) `README.md` is unchanged, so its `packages/shared` row does not mention tag normalisation.
+  >
+  > Review fixes: a local quality review and Copilot found the same two minor issues, both fixed in c1ef1e5: the 32-character limit is now checked on the trimmed tag before lower-casing (a tag of 32 `U+0130` characters was rejected because its lower-case form is longer), and `"tags": null` now answers 400 instead of creating a bookmark with `[]`.
+  >
+  > Follow-ups and limits: filtering or searching by tag and editing the tags of an existing bookmark are out of scope per the issue and not implemented; an add-form tags input and a README update remain open product decisions for a later issue. No other residual risk is recorded in the Quality Gate.
 
 ## Change Log
 
@@ -181,3 +194,4 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 - Copilot re-review at c1ef1e5: approval recommended, no open issues; both threads resolved; ci run 22 on c1ef1e5 passed. Checkpoint ready-for-review.
 - Approved: ready-for-review — approve
 - Ready for review: PR #3 marked ready, review requested from `duckyduff369` (QA Engineer, owning team Bookmarks; author `panz3r` excluded). Work-item commit held locally, not pushed.
+- Jira handoff draft written from current evidence (PR #3 head c1ef1e5, one approval from duckyduff369, ci run 40721198073 succeeded); nothing posted to Jira. Checkpoint jira-handoff. Commit held locally.
