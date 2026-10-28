@@ -44,6 +44,12 @@ describe("normalizeTags", () => {
     expect(normalizeTags([` ${"a".repeat(32)} `])).toEqual(["a".repeat(32)]);
     expect(normalizeTags(["a".repeat(33)])).toBeNull();
   });
+
+  it("measures non-ASCII tags in characters of the trimmed tag, before lower-casing", () => {
+    expect(normalizeTags(["İ".repeat(32)])).toEqual(["İ".repeat(32)].map((t) => t.toLowerCase()));
+    expect(normalizeTags(["😀".repeat(32)])).toEqual(["😀".repeat(32)]);
+    expect(normalizeTags(["😀".repeat(33)])).toBeNull();
+  });
   it("rejects whitespace inside a tag", () => {
     expect(normalizeTags(["two words"])).toBeNull();
     expect(normalizeTags(["tab\tbed"])).toBeNull();

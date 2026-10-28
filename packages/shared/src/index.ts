@@ -50,9 +50,10 @@ export function normalizeTags(value: unknown): string[] | null {
   const tags = new Set<string>();
   for (const element of value) {
     if (typeof element !== "string") return null;
-    const tag = element.trim().toLowerCase();
-    if (tag === "" || tag.length > MAX_TAG_LENGTH || /\s/.test(tag)) return null;
-    tags.add(tag);
+    const trimmed = element.trim();
+    // Measure characters (code points) of the trimmed tag, before lower-casing can change its length.
+    if (trimmed === "" || [...trimmed].length > MAX_TAG_LENGTH || /\s/.test(trimmed)) return null;
+    tags.add(trimmed.toLowerCase());
   }
   return [...tags];
 }
