@@ -7,9 +7,9 @@ source:
   key: FIJIH-43
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -140,3 +140,4 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 ## Change Log
 
 - 2026-10-28: Drafted from Jira FIJIH-43 revision `2026-10-28T21:48:02.496+0100` (issue assigned to Mattia Panzeri during Plan).
+- 2026-10-28: Approved: plan-approval — Approve, with the defaults for all six questions.
