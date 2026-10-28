@@ -8,12 +8,12 @@ source:
   revision: 2026-10-28T15:25:14.259+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-37-add-bookmark-tags
   base_branch: null
@@ -139,6 +139,31 @@ so that I can group related bookmarks.
 
 ## Quality Gate
 
+- Gate: concerns
+- Reviewed head: ad56ce1fbe41beaae9d98c50d9868063fb45d76d (full branch diff against `main`, commits e289c71..ad56ce1).
+- Re-run at the reviewed head: `pnpm test`, `pnpm lint`, `pnpm typecheck` passed (exit 0); `pnpm build && pnpm measure` reported `web_bundle_gzip_bytes=881`, delta 0 against `measure/baseline.json`.
+
+Acceptance trace:
+
+- AC-1: `normalizeTags` in `packages/shared/src/index.ts` (trim, lower-case, `Set` keeps first-occurrence order); `store.add` in `packages/api/src/store.ts` stores it; `app.ts` forwards `body.tags`. Verified by `normalizeTags` "trims, lower-cases, and dedups" and api "normalises tags and returns them on create and list" (`["  News ", "tech", "NEWS"]` gives `["news","tech"]`, 201).
+- AC-2: `normalizeTags(undefined)` returns `[]`. Verified by shared "defaults to an empty list" and api "defaults to an empty list without tags or with []".
+- AC-3: `normalizeTags` throws `InvalidTagError` for non-array, non-string element, empty, `/\s/u`, or more than 32 code points (`[...tag].length`, after trim and lower-case); `store.add` maps it to `ValidationError("invalid tag")` before the duplicate check and insertion. Verified by shared boundary tests (32/33 ASCII and emoji, whitespace, `""`, `"   "`, string, `1`, `null`) and api "accepts a 32 code point tag" plus the five "rejects ... with 400 and stores nothing" cases (exact body, list unchanged).
+- AC-4: `Bookmark.tags: string[]` is required and set on every created bookmark; `GET` returns `store.list()`. Verified by the api create-and-list test.
+- AC-5: `renderList` in `packages/web/src/render.ts` appends `<span class="tags">` via `textContent` with `tags.join(", ")` only when `tags.length > 0`. Verified by web "shows tags comma separated after the title" (`news, tech`, next sibling of the link) and "renders no tag element when there are no tags" (`li` text `ExampleRemove`).
+- AC-6: new Vitest tests in all three packages (shared 8, api 11, web 4); root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass at the reviewed head.
+- AC-7: `measure/baseline.json` holds 881, equal to `pnpm build && pnpm measure` at the reviewed head.
+
+Findings:
+
+- minor — `packages/web/index.html` (line 10) with `packages/web/src/render.ts`: `li` is `display:flex; justify-content: space-between`, so with three children the tags span sits centred between the title and Remove, not adjacent to the title as the Engineering Context expected. AC-5 (tags after the title in order) is met; a follow-up could group link and tags or add a margin rule.
+- minor — `packages/api/src/app.ts` (line 24): `body.tags as string[] | undefined` casts untrusted JSON to `string[]`, and `NewBookmark.tags` is typed `readonly string[]`, so the type claims a validated array that the store receives unvalidated. Behaviour is correct only because `normalizeTags` takes `unknown`; typing the input as `unknown` would keep that contract visible.
+- minor — `packages/api/src/store.ts` (line 31): `createdAt: now().toISOString(), tags };` breaks the object literal's one-property-per-line layout.
+
+Residual risks:
+
+- Pre-existing, not introduced by this branch: the api test "creates, lists newest first, and deletes" fails when both POSTs share one millisecond `createdAt` (`expected [ 'A', 'B' ] to deeply equal [ 'B', 'A' ]`); reproduced 3 times in 30 local `pnpm --filter @sample/api test` runs. It can fail the required CI `test` check on this pull request; a follow-up that injects distinct `now` values or a tie-breaker would remove it.
+- No Operational Requirements entry is `evidence: unverified`; no Validation Evidence line is `deferred` or `pending-ci`.
+
 ## Review Record
 
 ## Change Log
@@ -146,3 +171,5 @@ so that I can group related bookmarks.
 - 2026-10-28: Plan drafted from Jira FIJIH-37 (revision 2026-10-28T15:25:14.259+0100); issue assigned to Mattia Panzeri.
 - 2026-10-28: Approved: plan-approval — approve
 - 2026-10-28: Implementation complete; all tasks checked; Jira FIJIH-37 moved to In Progress.
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Quality gate recorded: concerns (reviewed head ad56ce1).
