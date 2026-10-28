@@ -43,4 +43,43 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  describe("tags", () => {
+    const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+
+    it("trims, lower-cases, and deduplicates tags on create and returns them on list", async () => {
+      const res = await post({ url: "https://tags.example/one", title: "T", tags: [" News ", "news", "Tech"] });
+      expect(res.status).toBe(201);
+      const created = (await res.json()) as { tags: string[] };
+      expect(created.tags).toEqual(["news", "tech"]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+      expect(list.find((b) => b.url === "https://tags.example/one")?.tags).toEqual(["news", "tech"]);
+    });
+
+    it("defaults tags to []", async () => {
+      const missing = (await (await post({ url: "https://tags.example/two", title: "T" })).json()) as { tags: string[] };
+      expect(missing.tags).toEqual([]);
+      const empty = (await (await post({ url: "https://tags.example/three", title: "T", tags: [] })).json()) as {
+        tags: string[];
+      };
+      expect(empty.tags).toEqual([]);
+    });
+
+    it("answers 400 invalid tag and stores nothing", async () => {
+      const bad: unknown[] = ["a".repeat(33), "two words", 5, " "];
+      for (const [i, tag] of bad.entries()) {
+        const res = await post({ url: `https://tags.example/bad${i}`, title: "T", tags: [tag] });
+        expect(res.status).toBe(400);
+        expect(await res.json()).toEqual({ error: "invalid tag" });
+      }
+      expect((await post({ url: "https://tags.example/notarray", title: "T", tags: "news" })).status).toBe(400);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[];
+      expect(list.some((b) => b.url.includes("tags.example/bad") || b.url.includes("notarray"))).toBe(false);
+    });
+
+    it("accepts a 32-character tag", async () => {
+      const res = await post({ url: "https://tags.example/edge", title: "T", tags: ["a".repeat(32)] });
+      expect(res.status).toBe(201);
+    });
+  });
 });

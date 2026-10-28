@@ -67,10 +67,10 @@ Open product decisions. These are not in the issue, and they are asked at plan a
   - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`
   - [x] Add `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(tags)` function. It trims, lower-cases, and deduplicates the tags, and returns `null` when any tag is invalid (more than 32 code points after trimming, or whitespace inside after trimming)
   - [x] Add tests to `packages/shared/src/index.test.ts`: trim, lower-case, dedupe, empty input, a 32-character tag accepted, a 33-character tag rejected, inner whitespace rejected, input not mutated
-- [ ] Accept, validate, store, and return tags in the API (AC: 1, 2, 3, 4, 6)
-  - [ ] `packages/api/src/store.ts`: `add` sets `tags` from `normalizeTags(input.tags ?? [])`, and throws `ValidationError("invalid tag")` when the result is `null`, before the bookmark is stored
-  - [ ] `packages/api/src/app.ts`: pass the request body's `tags` to `store.add`
-  - [ ] Add tests to `packages/api/src/app.test.ts`: create with tags (201 body), default `[]` when `tags` is missing, 400 `invalid tag` for 33 characters and for inner whitespace with no bookmark stored, `GET /bookmarks` returns the tags
+- [x] Accept, validate, store, and return tags in the API (AC: 1, 2, 3, 4, 6)
+  - [x] `packages/api/src/store.ts`: `add` sets `tags` from `normalizeTags(input.tags ?? [])`, and throws `ValidationError("invalid tag")` when the result is `null`, before the bookmark is stored
+  - [x] `packages/api/src/app.ts`: pass the request body's `tags` to `store.add`
+  - [x] Add tests to `packages/api/src/app.test.ts`: create with tags (201 body), default `[]` when `tags` is missing, 400 `invalid tag` for 33 characters and for inner whitespace with no bookmark stored, `GET /bookmarks` returns the tags
 - [ ] Show tags after the title in the web list (AC: 5, 6)
   - [ ] `packages/web/src/render.ts`: when `bookmark.tags` is not empty, add a `span.tags` with `tags.join(", ")` directly after the link. Group the link and the span so the existing `li` flex layout keeps them together, away from Remove. When there are no tags, render no span
   - [ ] Add tests to `packages/web/src/render.test.ts`: tags joined with `, ` after the title, no tags element when `tags` is `[]`, and add `tags` to the existing fixtures
@@ -105,12 +105,16 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 
 ## File List
 
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
 
 ## Implementation Record
 
 - Task 1 (shared): hypothesis: a pure `normalizeTags` returning `null` on invalid input satisfies AC 1-3 at the unit level. Checked with `pnpm --filter @sample/shared test` (10 passed), `typecheck` and `lint packages/shared` clean. Empty-after-trim tags return `null` (default for open decision 2).
+- Task 2 (api): hypothesis: validating in `BookmarkStore.add` before the duplicate-URL check gives 400 `invalid tag` with nothing stored. The store also rejects non-array or non-string `tags` at runtime (default for open decision 2). Checked with `pnpm --filter @sample/api test` (7 passed), `typecheck` and `lint packages/api` clean.
 
 ## Validation Evidence
 
