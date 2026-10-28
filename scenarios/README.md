@@ -8,9 +8,9 @@ Each note describes one lifecycle path: the Jira issue to create, the repository
 2. `scripts/seed-jira scenario <id>` (the note's own id, for example `S21`) and use the key it prints, never an issue from an earlier run: FIJIₕ resumes a key from the issue, pull request, and branch that run left behind, so a reused key goes straight to its last step. Each new issue is labelled `scenario-<id>`. `scripts/seed-jira check` first shows the project's issue types; the project needs Story, Bug, and Task.
 3. In an agent session at the repository root with FIJIₕ installed: `/fiji-orchestrate-development <KEY>`.
 4. Follow the note's checkpoints. For human-review steps, run `scripts/review-as-qa` as the note says.
-5. `scripts/reset` when done; close the pull request instead of merging unless the note needs a merge.
+5. `scripts/reset` when done; close the pull request instead of merging unless the note needs a merge. With the Jira variables set, the reset also moves every issue labelled `scenario-*` to Done and archives it, so finished runs leave the board and backlog; `--keep-issues` (or `--keep-prs`) leaves them for a run that continues later.
 
-Install the FIJIₕ build under test from a local checkout so the sample follows the branch being reviewed: `apm install /path/to/fijih --target claude,agent-skills` (then `apm audit --ci`). Secrets for the scripts: `QA_GH_TOKEN` (QA Engineer account), `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (classic or scoped Atlassian API token; calls go through the `api.atlassian.com` gateway).
+Install the FIJIₕ build under test from a local checkout so the sample follows the branch being reviewed: `apm install /path/to/fijih --target claude,agent-skills` (then `apm audit --ci`). Secrets for the scripts: `QA_GH_TOKEN` (QA Engineer account), `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (classic or scoped Atlassian API token; calls go through the `api.atlassian.com` gateway). Archiving in `scripts/reset` needs a Jira Premium site; elsewhere the issues stay Done.
 
 ## Catalogue
 

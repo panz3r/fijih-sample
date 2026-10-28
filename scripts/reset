@@ -1,19 +1,26 @@
 #!/usr/bin/env bash
-# Returns the repository to the `baseline` tag after a scenario.
+# Returns the repository to the `baseline` tag after a scenario and files the scenario's Jira issues away.
 #
-#   scripts/reset            close open pull requests, delete remote FIJIH-* branches, force main back to baseline
-#   scripts/reset --keep-prs same, but leave pull requests open (for scenarios that continue later)
+#   scripts/reset               close open pull requests, delete remote FIJIH-* branches, force main back to
+#                               baseline, then move every issue labelled scenario-* to Done and archive it
+#   scripts/reset --keep-prs    same, but leave pull requests and Jira issues alone (for scenarios that continue later)
+#   scripts/reset --keep-issues same, but leave the Jira issues alone
 #
-# Requires push access with ruleset bypass on main (repository admin). Local work-item branches are
-# left alone; delete them yourself once the work item is gone.
+# Requires push access with ruleset bypass on main (repository admin). The Jira step runs when JIRA_SITE,
+# JIRA_EMAIL, and JIRA_API_TOKEN are set (JIRA_PROJECT defaults to FIJIH) and is skipped with a notice
+# otherwise. It touches only issues that carry a scenario-* label, so the sibling backlog stays. Archiving
+# needs a Jira Premium site; when the site refuses it the issues stay Done, which already drops them from the
+# backlog. Local work-item branches are left alone; delete them yourself once the work item is gone.
 set -euo pipefail
 
 die() { printf 'reset: %s\n' "$*" >&2; exit 1; }
 
 KEEP_PRS=false
+KEEP_ISSUES=false
 for arg in "$@"; do
   case "$arg" in
-    --keep-prs) KEEP_PRS=true ;;
+    --keep-prs) KEEP_PRS=true; KEEP_ISSUES=true ;;
+    --keep-issues) KEEP_ISSUES=true ;;
     *) die "unknown option: $arg" ;;
   esac
 done
@@ -40,3 +47,68 @@ if [ "$(git rev-parse --abbrev-ref HEAD)" = main ]; then
   git reset --hard origin/main
 fi
 echo "reset: main is at $(git rev-parse --short refs/tags/baseline) (baseline)"
+
+[ "$KEEP_ISSUES" = false ] || exit 0
+
+for var in JIRA_SITE JIRA_EMAIL JIRA_API_TOKEN; do
+  if [ -z "${!var:-}" ]; then
+    echo "reset: $var is not set; leaving the Jira issues alone"
+    exit 0
+  fi
+done
+command -v jq >/dev/null || die "jq is required for the Jira step"
+PROJECT=${JIRA_PROJECT:-FIJIH}
+
+CLOUD_ID=$(curl -sS -f "https://$JIRA_SITE/_edge/tenant_info" | jq -r '.cloudId // empty')
+[ -n "$CLOUD_ID" ] || die "could not resolve the cloud ID of $JIRA_SITE"
+API="https://api.atlassian.com/ex/jira/$CLOUD_ID/rest/api/3"
+jira() { curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' "$@"; }
+
+# Scenario issues that are still visible, as "<KEY>\t<status category>\t<summary>". Archived issues no longer
+# appear in search results, so a second run finds nothing to do.
+ISSUES=$(mktemp "${TMPDIR:-/tmp}/reset-jira.XXXXXX")
+trap 'rm -f "$ISSUES"' EXIT HUP INT TERM
+token=""
+while :; do
+  page=$(jira -G "$API/search/jql" --data-urlencode "jql=project = $PROJECT AND labels IS NOT EMPTY ORDER BY created ASC" \
+    --data-urlencode "fields=summary,status,labels" --data-urlencode "maxResults=100" \
+    ${token:+--data-urlencode "nextPageToken=$token"})
+  printf '%s' "$page" | jq -e 'has("issues")' >/dev/null ||
+    die "listing Jira issues failed: $(printf '%s' "$page" | jq -c '.errorMessages // .message // .')"
+  printf '%s' "$page" | jq -r '.issues[] | select(any(.fields.labels[]; startswith("scenario-")))
+    | "\(.key)\t\(.fields.status.statusCategory.key)\t\(.fields.summary)"' >> "$ISSUES"
+  token=$(printf '%s' "$page" | jq -r '.nextPageToken // empty')
+  [ -n "$token" ] || break
+done
+if [ ! -s "$ISSUES" ]; then
+  echo "reset: no scenario issues to file away"
+  exit 0
+fi
+
+# Move each open issue to the first transition that lands in the Done category (team-managed projects set
+# the resolution themselves).
+while IFS=$'\t' read -r key category summary; do
+  [ "$category" != "done" ] || continue
+  transition=$(jira "$API/issue/$key/transitions" | jq -r '[.transitions[] | select(.to.statusCategory.key == "done")][0].id // empty')
+  [ -n "$transition" ] || die "$key has no transition to a Done status"
+  code=$(jira -X POST "$API/issue/$key/transitions" --data "{\"transition\":{\"id\":\"$transition\"}}" -o /dev/null -w '%{http_code}')
+  [ "$code" = 204 ] || die "closing $key failed with HTTP $code"
+  printf 'done %s %s\n' "$key" "$summary"
+done < "$ISSUES"
+
+# Archive them all in one call (the endpoint takes up to 1000 keys).
+keys=$(cut -f1 "$ISSUES" | jq -R . | jq -sc .)
+response=$(jira -X PUT "$API/issue/archive" --data "{\"issueIdsOrKeys\":$keys}" -w $'\n%{http_code}')
+code=${response##*$'\n'}
+body=${response%$'\n'*}
+case "$code" in
+  200)
+    printf 'reset: archived %s scenario issue(s)\n' "$(printf '%s' "$body" | jq -r '.numberOfIssuesUpdated // 0')"
+    errors=$(printf '%s' "$body" | jq -c '.errors | select(. != null and length > 0) // empty')
+    [ -z "$errors" ] || echo "reset: some issues were not archived: $errors" >&2
+    ;;
+  403)
+    echo "reset: the site does not allow archiving (HTTP 403, a Jira Premium feature); the issues stay Done"
+    ;;
+  *) die "archiving failed with HTTP $code: $(printf '%s' "$body" | jq -c '.errorMessages // .message // .' 2>/dev/null || printf '%s' "$body")" ;;
+esac
