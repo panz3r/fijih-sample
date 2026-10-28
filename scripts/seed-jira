@@ -3,15 +3,17 @@
 #
 #   scripts/seed-jira check               resolve the site, check access, list the project's issue types and issue count
 #   scripts/seed-jira siblings            10 Stories, 10 Bugs, 10 Tasks in the house format, for convention learning
-#   scripts/seed-jira scenario <id>       the issue of scenarios/<id>.md (its "## Jira issue" section)
-#   scripts/seed-jira prune-duplicates    delete every issue whose summary repeats an earlier issue's summary
+#   scripts/seed-jira scenario <id>       a new issue for scenarios/<id>.md, labelled scenario-<id>: its "## Jira issue"
+#                                         section, or that of the note its "Issue: <other id>" line names
+#   scripts/seed-jira prune-duplicates    delete every sibling issue whose summary repeats an earlier sibling's
 #
 # Environment: JIRA_SITE (for example your-site.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
 # and optionally JIRA_PROJECT (default FIJIH). Prints one line per issue: "<KEY> <summary>", "skip (exists) <summary>",
 # or "deleted <KEY> <summary>".
 # Calls go through the api.atlassian.com gateway with the site's cloud ID, which accepts both classic
-# and scoped API tokens (read:jira-work and write:jira-work). A summary that already exists in the project
-# is never created twice, so re-running after a failure is safe.
+# and scoped API tokens (read:jira-work and write:jira-work). A sibling whose summary already exists in the
+# project is never created twice, so re-running siblings after a failure is safe. A scenario always gets a new
+# issue, because a run leaves its issue, pull request, and branch behind and FIJIh resumes from them.
 set -euo pipefail
 
 die() { printf 'seed-jira: %s\n' "$*" >&2; exit 1; }
@@ -69,16 +71,19 @@ fetch_existing
 
 existing_key() { awk -F'\t' -v s="$1" '{ k=$1; sub(/^[^\t]*\t/, ""); if ($0 == s) { print k; exit } }' "$EXISTING"; }
 
-create_issue() { # type summary description; skips a summary that already exists, dies on a Jira error
-  local key
-  key=$(existing_key "$2")
-  if [ -n "$key" ]; then
-    printf 'skip (exists) %s %s\n' "$key" "$2"
-    return 0
+create_issue() { # type summary description [label]; without a label, skips a summary that already exists; dies on a Jira error
+  local key label=${4:-}
+  if [ -z "$label" ]; then
+    key=$(existing_key "$2")
+    if [ -n "$key" ]; then
+      printf 'skip (exists) %s %s\n' "$key" "$2"
+      return 0
+    fi
   fi
   local response
-  response=$(jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
-      '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
+  response=$(jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" --arg label "$label" \
+      '{fields: ({project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}
+        + (if $label == "" then {} else {labels: [$label]} end))}' |
     jira -X POST "$API/issue" --data @-)
   key=$(printf '%s' "$response" | jq -r '.key // empty')
   [ -n "$key" ] || die "creating \"$2\" ($1) failed: $(printf '%s' "$response" | jq -c '{errorMessages, errors}')"
@@ -116,19 +121,26 @@ seed_siblings() {
 seed_scenario() {
   local file="$ROOT/scenarios/$1.md"
   [ -f "$file" ] || die "no such scenario: $file"
+  local source
+  source=$(sed -n 's/^Issue: \(S[0-9][0-9]*\)\..*/\1/p' "$file" | head -1)
+  if [ -n "$source" ]; then
+    file="$ROOT/scenarios/$source.md"
+    [ -f "$file" ] || die "scenarios/$1.md names issue $source, but $file is missing"
+  fi
   local type summary description
   type=$(sed -n 's/^- Type: //p' "$file" | head -1)
   summary=$(sed -n 's/^- Summary: //p' "$file" | head -1)
   description=$(awk '/^```jira$/{f=1;next} /^```$/{if(f){exit}} f' "$file")
   [ -n "$type" ] && [ -n "$summary" ] && [ -n "$description" ] || die "$file lacks Type, Summary, or a \`\`\`jira block"
   require_types "$type"
-  create_issue "$type" "$summary" "$description"
+  create_issue "$type" "$summary" "$description" "scenario-$1"
 }
 
 prune_duplicates() {
   local key summary response
-  # Keep the first (oldest) issue of each summary; delete the later ones.
-  awk -F'\t' '{ s=$0; sub(/^[^\t]*\t/, "", s); if (seen[s]++) print }' "$EXISTING" | while IFS=$'\t' read -r key summary; do
+  # Keep the first (oldest) sibling of each summary; delete the later ones. Siblings carry a [web], [api], or
+  # [shared] prefix; scenario issues repeat their summaries on purpose and are never pruned.
+  awk -F'\t' '{ s=$0; sub(/^[^\t]*\t/, "", s); if (s ~ /^\[(web|api|shared)\] / && seen[s]++) print }' "$EXISTING" | while IFS=$'\t' read -r key summary; do
     response=$(jira -X DELETE -o /dev/null -w '%{http_code}' "$API/issue/$key")
     [ "$response" = "204" ] || die "deleting $key failed with HTTP $response"
     printf 'deleted %s %s\n' "$key" "$summary"
