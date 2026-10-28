@@ -71,9 +71,9 @@ Open product decisions. These are not in the issue, and they are asked at plan a
   - [x] `packages/api/src/store.ts`: `add` sets `tags` from `normalizeTags(input.tags ?? [])`, and throws `ValidationError("invalid tag")` when the result is `null`, before the bookmark is stored
   - [x] `packages/api/src/app.ts`: pass the request body's `tags` to `store.add`
   - [x] Add tests to `packages/api/src/app.test.ts`: create with tags (201 body), default `[]` when `tags` is missing, 400 `invalid tag` for 33 characters and for inner whitespace with no bookmark stored, `GET /bookmarks` returns the tags
-- [ ] Show tags after the title in the web list (AC: 5, 6)
-  - [ ] `packages/web/src/render.ts`: when `bookmark.tags` is not empty, add a `span.tags` with `tags.join(", ")` directly after the link. Group the link and the span so the existing `li` flex layout keeps them together, away from Remove. When there are no tags, render no span
-  - [ ] Add tests to `packages/web/src/render.test.ts`: tags joined with `, ` after the title, no tags element when `tags` is `[]`, and add `tags` to the existing fixtures
+- [x] Show tags after the title in the web list (AC: 5, 6)
+  - [x] `packages/web/src/render.ts`: when `bookmark.tags` is not empty, add a `span.tags` with `tags.join(", ")` directly after the link. Group the link and the span so the existing `li` flex layout keeps them together, away from Remove. When there are no tags, render no span
+  - [x] Add tests to `packages/web/src/render.test.ts`: tags joined with `, ` after the title, no tags element when `tags` is `[]`, and add `tags` to the existing fixtures
 - [ ] Run `pnpm build` then `pnpm measure`, and set `web_bundle_gzip_bytes` in `measure/baseline.json` to the printed size (AC: 7)
 - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root, and record the results in Validation Evidence (AC: 6)
 
@@ -109,12 +109,15 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
 - packages/shared/src/index.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 - packages/shared/src/index.test.ts
 
 ## Implementation Record
 
 - Task 1 (shared): hypothesis: a pure `normalizeTags` returning `null` on invalid input satisfies AC 1-3 at the unit level. Checked with `pnpm --filter @sample/shared test` (10 passed), `typecheck` and `lint packages/shared` clean. Empty-after-trim tags return `null` (default for open decision 2).
 - Task 2 (api): hypothesis: validating in `BookmarkStore.add` before the duplicate-URL check gives 400 `invalid tag` with nothing stored. The store also rejects non-array or non-string `tags` at runtime (default for open decision 2). Checked with `pnpm --filter @sample/api test` (7 passed), `typecheck` and `lint packages/api` clean.
+- Task 3 (web): hypothesis: wrapping the link and a `span.tags` in one `span` keeps them together in the flex `li` and renders no tags element when empty. Tags use `textContent`. `pnpm --filter @sample/web test` (4 passed), `typecheck` and `lint packages/web` clean.
 
 ## Validation Evidence
 
