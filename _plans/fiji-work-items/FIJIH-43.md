@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 2
 quality:
   gate: concerns
@@ -219,6 +219,8 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 
 - Copilot review of `df41df9` (1 finding). Thread `PRRT_kwDOVaYq_M6xUY8X` (`packages/api/src/store.ts:20`, `tags: null` defaulted to `[]` with 201): disposition `valid`; fixed in `680eb98` (default only when `tags` is `undefined`, `null` test case added); replied citing the pushed fix, thread resolved, Copilot re-review requested. Copilot's re-review of `680eb98` raised no open issues ("Approval recommended").
 - CI run 40768132659 (workflow `ci`) on `680eb98`: success.
+- Copilot review of `9fcb896` (attempt 2, requested 2026-10-28T21:10:19Z; submitted 21:12:16Z): "Approval recommended", no open issues, no new threads. The earlier thread `PRRT_kwDOVaYq_M6xUY8X` stays resolved. No fixes, replies, or re-review requests were needed.
+- CI run 40769688221 (workflow `ci`) on `9fcb896`: success.
 
 ## Change Log
 
@@ -243,3 +245,4 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Finalize (attempt 2): all eight criteria evidenced and all tasks checked; bookkeeping slip fixed: File List lacked `.changeset/bookmark-tags.md` (committed at `df41df9`), now added. Eleven checked tasks (the eight from attempt 1 plus the three Re-entry 2 tasks) have no Implementation Record entry citing an in-range commit; reported as discrepancies, left checked. Set checkpoint `local-qa-review`, transition `qa-reviewed`.
 - 2026-10-28: Approved: local-qa-review — Approve.
 - 2026-10-28: Delivery (re-entry): pushed `9fcb896` (fast-forward from `680eb98`); updated draft PR #6 body to the final branch state (criterion 8, baseline 940, residual risks); requested a fresh Copilot review on the new head. PR stays draft. Set phase `automated-review`, transition `delivery-complete`.
+- 2026-10-28: Copilot findings pass (attempt 2): Copilot review of `9fcb896` raised no findings; CI run 40769688221 passed. Set checkpoint `ready-for-review`, transition `ready-for-review`.
