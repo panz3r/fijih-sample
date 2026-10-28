@@ -7,9 +7,9 @@ source:
   key: FIJIH-36
   revision: 2026-10-28T14:00:12.914+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -114,3 +114,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-36 revision `2026-10-28T14:00:12.914+0100`; issue assigned to Mattia Panzeri.
+- 2026-10-28: Approved: plan-approval — approve, assumptions are correct
