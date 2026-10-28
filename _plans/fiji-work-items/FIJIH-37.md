@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -167,6 +167,27 @@ Residual risks:
 ## Review Record
 
 - 2026-10-28: Copilot review 5685135181 (COMMENTED, head c9c88f1): "Approval recommended", no open issues; 0 review threads, 0 conversation comments. No findings to disposition; no fix commits; no re-review requested.
+- 2026-10-28: Jira handoff draft (comment, marker `FIJI-CONTEXT:FIJIH-37:fiji/orchestrate-development/v1`):
+
+  > FIJI-CONTEXT:FIJIH-37:fiji/orchestrate-development/v1
+  >
+  > **Outcome.** Bookmarks now take an optional `tags` array. Pull request #2 (https://github.com/panz3r/fijih-sample/pull/2, label `enhancement`, head c9c88f1) is ready for review. `POST /bookmarks` trims, lower-cases and deduplicates tags (first occurrence kept) and defaults to `[]`; a tag that is longer than 32 Unicode code points, contains whitespace, or is empty after trimming, or a `tags` value that is not an array of strings, answers 400 `{"error":"invalid tag"}` and stores nothing. `GET /bookmarks` returns each bookmark's tags. The page shows tags after the title, comma separated, and shows nothing when there are none. Vitest tests were added in `packages/shared`, `packages/api` and `packages/web`; the changeset reads "Add tags to bookmarks".
+  >
+  > **Validation.** At the reviewed head ad56ce1 the Quality Gate re-ran `pnpm test`, `pnpm lint` and `pnpm typecheck` (all passed) and `pnpm build && pnpm measure`, which reported 881 gzipped bytes; `measure/baseline.json` was updated from 835 to 881 in the same change. On PR head c9c88f1 all checks succeeded, including the required `test` check (run 40714864203). Review: Copilot review 5685135181 (COMMENTED, approval recommended, no open issues) and an APPROVED review from the QA Engineer duckyduff369 (review 5685230584, "Looks good.") on c9c88f1, the only approval counted; there are no review threads or comments. Quality Gate result: concerns (three minor findings, listed below; no blocking issue).
+  >
+  > **Decisions and constraints.**
+  > - Tag normalisation and validation live in one pure function in `packages/shared` (`normalizeTags`, `MAX_TAG_LENGTH = 32`, `InvalidTagError`), so the API and any later caller share the rules. The store maps the error to `ValidationError("invalid tag")`, so the existing 400 mapping is unchanged.
+  > - Length is counted in code points (`[...tag].length`), after trimming and lower-casing, so one emoji counts as 1; the whitespace test applies to the trimmed tag. An empty tag after trimming is rejected rather than dropped (proposed answer to plan question Q1, approved with the plan).
+  > - Tag errors surface only when title and url are valid, so existing error messages are unchanged, and tags are validated before the duplicate-URL check so a 400 stores nothing.
+  > - The web Add form was left unchanged: the API accepts tags, the page only displays them (plan question Q6, out of scope). The `packages/shared` row in `README.md` was updated to mention tag normalisation.
+  >
+  > **Follow-ups and deferred.**
+  > - Out of scope per the issue and not done: filtering or searching by tag, and editing tags of an existing bookmark. The web Add form has no tags input, so tags can only be set through the API today.
+  > - Minor, not fixed (Quality Gate): (1) in `packages/web/index.html` the `li` is `display:flex; justify-content: space-between`, so with three children the tags span sits centred between the title and Remove rather than adjacent to the title; the order (tags after the title) is correct. (2) `packages/api/src/app.ts` casts `body.tags as string[] | undefined`; typing it `unknown` would keep the contract with `normalizeTags` visible. (3) `packages/api/src/store.ts` has `createdAt: now().toISOString(), tags };` on one line, against the one-property-per-line layout.
+  >
+  > **Residual risk.** The existing API test "creates, lists newest first, and deletes" is occasionally flaky: it fails when both POSTs share one millisecond `createdAt` (reproduced 3 times in 30 local runs of `pnpm --filter @sample/api test`). It predates this branch and is not related to tags. It can fail the required `test` check on a future run; a follow-up that injects distinct `now` values or adds a tie-breaker would remove it.
+  >
+  > **Operational.** Merging needs the required `test` check and one approving review (repository ruleset `main`, squash only); the review is in place. The `test` job first sleeps for `CI_DELAY_SECONDS` (240), so the check stays pending at least 4 minutes after each push. No migration, deployment or documentation work remains: storage is in-memory.
 
 ## Change Log
 
@@ -181,3 +202,4 @@ Residual risks:
 - 2026-10-28: Copilot findings pass: review 5685135181 raised no findings; checkpoint ready-for-review.
 - 2026-10-28: Approved: ready-for-review — approve
 - 2026-10-28: Pull request #2 marked ready for review; review requested from duckyduff369 (QA Engineer, per TEAMS.md); author panz3r excluded.
+- 2026-10-28: Jira handoff drafted from current evidence (PR #2 head c9c88f1: QA approval by duckyduff369, Copilot review clear, checks green); nothing posted to Jira; checkpoint jira-handoff.
