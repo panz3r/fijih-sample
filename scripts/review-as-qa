@@ -6,7 +6,7 @@
 #   scripts/review-as-qa <pr-number> approve-with-request <body>   # APPROVED review whose body holds a request
 #   scripts/review-as-qa <pr-number> thread <path> <line> <body>  # one unresolved review thread on a changed line
 #
-# Needs QA_GH_TOKEN: a token of the QA Engineer account (fijih-qa-bot) with repo access.
+# Needs QA_GH_TOKEN: a token of the QA Engineer account (duckyduff369) with repo access.
 # It is passed to gh as GH_TOKEN for this process only, so the session's own gh login is untouched.
 set -euo pipefail
 
