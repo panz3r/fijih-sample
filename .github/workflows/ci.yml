@@ -72,3 +72,8 @@ jobs:
       - run: pnpm build
       - id: measure
         run: bash scripts/measure
+  scenarios:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-scenarios

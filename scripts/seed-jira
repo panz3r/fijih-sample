@@ -3,8 +3,8 @@
 #
 #   scripts/seed-jira check               resolve the site, check access, list the project's issue types and issue count
 #   scripts/seed-jira siblings            10 Stories, 10 Bugs, 10 Tasks in the house format, for convention learning
-#   scripts/seed-jira scenario <id>       a new issue for scenarios/<id>.md, labelled scenario-<id>: its "## Jira issue"
-#                                         section, or that of the note its "Issue: <other id>" line names
+#   scripts/seed-jira scenario <id>       a new issue for scenarios/<id>.md, labelled scenario-<id>, from the issue in
+#                                         its frontmatter or in the note its issue.reuse names (needs yq v4)
 #   scripts/seed-jira prune-duplicates    delete every sibling issue whose summary repeats an earlier sibling's
 #
 # Environment: JIRA_SITE (for example your-site.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
@@ -118,22 +118,25 @@ seed_siblings() {
   done
 }
 
+fm() { yq --front-matter=extract "$2" "$1"; }
+
 seed_scenario() {
-  local file="$ROOT/scenarios/$1.md"
+  local id=$1 file="$ROOT/scenarios/$1.md"
   [ -f "$file" ] || die "no such scenario: $file"
-  local source
-  source=$(sed -n 's/^Issue: \(S[0-9][0-9]*\)\..*/\1/p' "$file" | head -1)
-  if [ -n "$source" ]; then
-    file="$ROOT/scenarios/$source.md"
-    [ -f "$file" ] || die "scenarios/$1.md names issue $source, but $file is missing"
+  command -v yq >/dev/null || die "yq v4 (https://github.com/mikefarah/yq) is required to read scenario frontmatter"
+  local reuse
+  reuse=$(fm "$file" '.issue.reuse // ""')
+  if [ -n "$reuse" ]; then
+    file="$ROOT/scenarios/$reuse.md"
+    [ -f "$file" ] || die "scenarios/$id.md reuses the issue of $reuse, but $file is missing"
   fi
   local type summary description
-  type=$(sed -n 's/^- Type: //p' "$file" | head -1)
-  summary=$(sed -n 's/^- Summary: //p' "$file" | head -1)
-  description=$(awk '/^```jira$/{f=1;next} /^```$/{if(f){exit}} f' "$file")
-  [ -n "$type" ] && [ -n "$summary" ] && [ -n "$description" ] || die "$file lacks Type, Summary, or a \`\`\`jira block"
+  type=$(fm "$file" '.issue.type // ""')
+  summary=$(fm "$file" '.issue.summary // ""')
+  description=$(fm "$file" '.issue.description // ""')
+  [ -n "$type" ] && [ -n "$summary" ] || die "$file has no issue of its own (frontmatter issue.type and issue.summary)"
   require_types "$type"
-  create_issue "$type" "$summary" "$description" "scenario-$1"
+  create_issue "$type" "$summary" "$description" "scenario-$id"
 }
 
 prune_duplicates() {

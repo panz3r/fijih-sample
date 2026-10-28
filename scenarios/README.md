@@ -1,6 +1,6 @@
 # FIJIₕ scenarios
 
-Each note describes one lifecycle path: the Jira issue to create, the repository precondition, the checkpoints to expect, and how to reset. Scenarios refer to issues by note name, never by Jira key, because `scripts/seed-jira` creates a new issue each time. A note with an `Issue: S1.` line reuses S1's issue text.
+Each note describes one lifecycle path and follows [_TEMPLATE.md](_TEMPLATE.md): YAML frontmatter with what the scripts read (`title`, `precondition`, and the Jira `issue`, either the note's own `type`, `summary`, and `description` or `reuse: Sn` for another note's), then a body with Precondition, Run, and Reset sections. Scenarios refer to issues by note name, never by Jira key, because `scripts/seed-jira` creates a new issue each time.
 
 ## Running one
 
@@ -10,30 +10,34 @@ Each note describes one lifecycle path: the Jira issue to create, the repository
 4. Follow the note's checkpoints. For human-review steps, run `scripts/review-as-qa` as the note says.
 5. `scripts/reset` when done; close the pull request instead of merging unless the note needs a merge. With the Jira variables set, the reset also moves every issue labelled `scenario-*` to Done and archives it, so finished runs leave the board and backlog; `--keep-issues` (or `--keep-prs`) leaves them for a run that continues later.
 
+`scripts/check-scenarios` validates every note against the template and, with `--write`, regenerates the catalogue below from the frontmatter; CI runs the check. Reading frontmatter needs [yq](https://github.com/mikefarah/yq) v4 (`brew install yq`).
+
 Install the FIJIₕ build under test from a local checkout so the sample follows the branch being reviewed: `apm install /path/to/fijih --target claude,agent-skills` (then `apm audit --ci`). Secrets for the scripts: `QA_GH_TOKEN` (QA Engineer account), `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (classic or scoped Atlassian API token; calls go through the `api.atlassian.com` gateway). Archiving in `scripts/reset` needs a Jira Premium site; elsewhere the issues stay Done.
 
 ## Catalogue
 
+<!-- catalogue:start -->
 | Id | Path exercised | Precondition |
 |---|---|---|
-| [S1](S1.md) | Happy path: automatic `implementation-approval`, Copilot pass, QA approval, handoff comment, cleanup | baseline |
-| [S2](S2.md) | `(verify: ci)` criterion met by `ci / measure` | baseline |
-| [S3](S3.md) | `(verify: ci)` criterion unmet, `ci-fail` re-entry | baseline |
-| [S4](S4.md) | Measurement problem: stale `measure/baseline.json` on `main` | baseline + stale baseline |
-| [S5](S5.md) | Measuring job not triggered on pull requests (`nightly / full-measure`) | baseline |
+| [S1](S1.md) | Happy path | baseline |
+| [S2](S2.md) | CI-verified criterion met | baseline |
+| [S3](S3.md) | CI-verified criterion unmet, `ci-fail` re-entry | baseline |
+| [S4](S4.md) | Measurement problem | baseline + stale `measure/baseline.json` on `main` |
+| [S5](S5.md) | Measuring job not triggered on pull requests | baseline |
 | [S6](S6.md) | Copilot findings round | baseline |
-| [S7](S7.md) | Human review: thread, changes requested, review-body finding, approval | baseline |
-| [S8](S8.md) | Scope change at `local-qa-review`: Narrowing, Inline, Full | baseline |
+| [S7](S7.md) | Human review remediation | baseline |
+| [S8](S8.md) | Scope changes at `local-qa-review` | baseline, before each of three runs |
 | [S9](S9.md) | Two stacked work items for one issue | baseline |
 | [S10](S10.md) | Image-only issue | baseline |
-| [S11](S11.md) | Figma-linked issue | baseline |
-| [S12](S12.md) | `fiji-setup-project` install and convention inference | `bare` branch |
-| [S13](S13.md) | `fiji-prepare-jira-issue` refine, split, readiness check | baseline |
+| [S11](S11.md) | Figma-linked issue | baseline + a Figma frame of your own |
+| [S12](S12.md) | `fiji-setup-project` from a bare repository | `bare` tag |
+| [S13](S13.md) | `fiji-prepare-jira-issue` refine, split, readiness | baseline + siblings seeded |
 | [S14](S14.md) | Source drift after Plan approval | baseline |
-| [S15](S15.md) | Preflight blocks: no remote, no `jq` | local only |
+| [S15](S15.md) | Preflight blocks | local only |
 | [S16](S16.md) | Resume from another session or a linked worktree | any |
 | [S17](S17.md) | User-requested rework at `ready-for-review` | baseline |
-| [S18](S18.md) | Base moved after Cleanup: Base Sync and a conflicting pull request | baseline |
+| [S18](S18.md) | Base moved after Cleanup | baseline |
 | [S19](S19.md) | Model routing shadow report and retrospective | `AI-MODELS.md` present |
-| [S20](S20.md) | Held work-item-only pushes: count pushes and CI runs | baseline |
-| [S21](S21.md) | Post-cleanup reverification watches a required check still running | baseline + `CI_DELAY_SECONDS` |
+| [S20](S20.md) | Held work-item-only pushes | baseline |
+| [S21](S21.md) | Post-cleanup reverification watches a running check | baseline + repository variable `CI_DELAY_SECONDS` |
+<!-- catalogue:end -->

@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Checks every scenario note against scenarios/_TEMPLATE.md and keeps the catalogue in scenarios/README.md in sync.
+#
+#   scripts/check-scenarios            validate the notes and fail when the catalogue differs from them
+#   scripts/check-scenarios --write    validate the notes and rewrite the catalogue from their frontmatter
+#
+# Frontmatter (read with yq v4, https://github.com/mikefarah/yq): title, precondition, and optionally issue, which is
+# either {reuse: Sn} naming a note that has its own issue or {type, summary, description} with type Story, Bug, or Task.
+# Body: a "# Sn. <title>" heading, then "## Precondition", "## Run", and "## Reset" in that order.
+set -euo pipefail
+
+die() { printf 'check-scenarios: %s\n' "$*" >&2; exit 1; }
+
+WRITE=false
+for arg in "$@"; do
+  case "$arg" in
+    --write) WRITE=true ;;
+    *) die "unknown option: $arg" ;;
+  esac
+done
+
+command -v yq >/dev/null || die "yq v4 is required (brew install yq)"
+yq --version 2>/dev/null | grep -q 'mikefarah' || die "yq must be the Go yq v4 from https://github.com/mikefarah/yq"
+
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+DIR="$ROOT/scenarios"
+README="$DIR/README.md"
+fm() { yq --front-matter=extract "$2" "$1"; }
+
+errors=0
+fail() { printf 'check-scenarios: %s: %s\n' "$1" "$2" >&2; errors=$((errors + 1)); }
+
+own_issue() { # file; true when the note declares type and summary
+  [ -n "$(fm "$1" '.issue.type // ""')" ] && [ -n "$(fm "$1" '.issue.summary // ""')" ]
+}
+
+ROWS=$(mktemp "${TMPDIR:-/tmp}/check-scenarios.XXXXXX")
+trap 'rm -f "$ROWS"' EXIT HUP INT TERM
+
+# Notes in numeric order: S1, S2, ... S21.
+ids=$(for file in "$DIR"/S*.md; do basename "$file" .md; done | sort -t S -k 2 -n)
+for id in $ids; do
+  file="$DIR/$id.md"
+  if ! fm "$file" '.' >/dev/null 2>&1 || [ "$(fm "$file" 'type')" != '!!map' ]; then
+    fail "$id" "frontmatter is missing or not valid YAML (quote values that start with a backtick)"
+    continue
+  fi
+  title=$(fm "$file" '.title // ""')
+  precondition=$(fm "$file" '.precondition // ""')
+  [ -n "$title" ] || fail "$id" "frontmatter lacks title"
+  [ -n "$precondition" ] || fail "$id" "frontmatter lacks precondition"
+
+  issue_kind=$(fm "$file" '.issue | type')
+  case "$issue_kind" in
+    '!!null') ;;
+    '!!map')
+      reuse=$(fm "$file" '.issue.reuse // ""')
+      if [ -n "$reuse" ]; then
+        if [ ! -f "$DIR/$reuse.md" ]; then fail "$id" "issue.reuse names $reuse, which does not exist"
+        elif ! own_issue "$DIR/$reuse.md"; then fail "$id" "issue.reuse names $reuse, which has no issue of its own"; fi
+        [ "$(fm "$file" '.issue | keys | length')" = 1 ] || fail "$id" "issue.reuse cannot be combined with type, summary, or description"
+      else
+        type=$(fm "$file" '.issue.type // ""')
+        case "$type" in Story|Bug|Task) ;; *) fail "$id" "issue.type must be Story, Bug, or Task (got \"$type\")" ;; esac
+        [ -n "$(fm "$file" '.issue.summary // ""')" ] || fail "$id" "issue.summary is missing"
+        [ "$(fm "$file" '.issue | has("description")')" = true ] || fail "$id" "issue.description is missing (use \"\" for an empty one)"
+      fi ;;
+    *) fail "$id" "issue must be a map or absent" ;;
+  esac
+
+  body=$(awk 'BEGIN{n=0} /^---$/ && n<2 {n++; next} n>=2' "$file")
+  heading=$(printf '%s\n' "$body" | grep -m1 '^# ' || true)
+  [ "$heading" = "# $id. $title" ] || fail "$id" "first heading must be \"# $id. $title\" (got \"$heading\")"
+  sections=$(printf '%s\n' "$body" | grep '^## ' | tr '\n' '|')
+  [ "$sections" = "## Precondition|## Run|## Reset|" ] || fail "$id" "sections must be Precondition, Run, Reset in that order (got ${sections%|})"
+
+  printf '| [%s](%s.md) | %s | %s |\n' "$id" "$id" "$title" "$precondition" >> "$ROWS"
+done
+
+[ -f "$DIR/_TEMPLATE.md" ] || fail "_TEMPLATE.md" "missing"
+
+# The catalogue table between the markers in README.md.
+start='<!-- catalogue:start -->'
+end='<!-- catalogue:end -->'
+if ! grep -Fq "$start" "$README" || ! grep -Fq "$end" "$README"; then die "README.md lacks the $start / $end markers"; fi
+expected=$(printf '%s\n| Id | Path exercised | Precondition |\n|---|---|---|\n%s\n%s\n' "$start" "$(cat "$ROWS")" "$end")
+current=$(awk -v s="$start" -v e="$end" '$0==s{p=1} p{print} $0==e{p=0}' "$README")
+if [ "$current" != "$expected" ]; then
+  if [ "$WRITE" = true ]; then
+    before=$(awk -v s="$start" '$0==s{exit} {print}' "$README")
+    after=$(awk -v e="$end" 'p{print} $0==e{p=1}' "$README")
+    { printf '%s\n\n%s\n' "$before" "$expected"; [ -z "$after" ] || printf '\n%s\n' "$after"; } > "$README"
+    echo "check-scenarios: catalogue rewritten"
+  else
+    fail "README.md" "catalogue is out of date; run scripts/check-scenarios --write"
+  fi
+fi
+
+[ "$errors" -eq 0 ] || die "$errors problem(s)"
+echo "check-scenarios: $(wc -l < "$ROWS" | tr -d ' ') notes ok"
