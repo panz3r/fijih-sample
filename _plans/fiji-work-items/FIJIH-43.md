@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 2
 quality:
   gate: concerns
@@ -241,3 +241,5 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Local QA review (full re-review, attempt 2) recorded gate `concerns` at `d325e92` (one minor finding, one residual risk; the `tags: null` finding is fixed).
 - 2026-10-28: Finalize (attempt 2): all eight criteria evidenced and all tasks checked; bookkeeping slip fixed: File List lacked `.changeset/bookmark-tags.md` (committed at `df41df9`), now added. Eleven checked tasks (the eight from attempt 1 plus the three Re-entry 2 tasks) have no Implementation Record entry citing an in-range commit; reported as discrepancies, left checked. Set checkpoint `local-qa-review`, transition `qa-reviewed`.
+- 2026-10-28: Approved: local-qa-review — Approve.
+- 2026-10-28: Delivery (re-entry): pushed `9fcb896` (fast-forward from `680eb98`); updated draft PR #6 body to the final branch state (criterion 8, baseline 940, residual risks); requested a fresh Copilot review on the new head. PR stays draft. Set phase `automated-review`, transition `delivery-complete`.
