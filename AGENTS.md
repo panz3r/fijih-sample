@@ -41,4 +41,4 @@ Every behaviour change comes with a Vitest test in the package it changes. `pnpm
 
 ## AI tooling
 
-FIJIₕ is installed through APM (`apm.yml`); model tiers are in [AI-MODELS.md](AI-MODELS.md).
+FIJIₕ is installed per test session with APM from a local checkout (`apm install /path/to/fijih --target claude`, see [scenarios/README.md](scenarios/README.md)); `apm.yml`, the lock, and the deployed skills are not tracked. Model tiers are in [AI-MODELS.md](AI-MODELS.md).

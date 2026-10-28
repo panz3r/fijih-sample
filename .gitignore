@@ -4,3 +4,9 @@ coverage/
 apm_modules/
 .agents/
 .DS_Store
+
+# FIJIh is installed per test session from a local checkout (scenarios/README.md); APM output stays untracked
+apm.yml
+apm.lock.yaml
+.mcp.json
+.claude/skills/fiji-*
