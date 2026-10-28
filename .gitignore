@@ -10,3 +10,6 @@ apm.yml
 apm.lock.yaml
 .mcp.json
 .claude/skills/fiji-*
+
+# Environment variables file containing sensitive information like GitHub tokens and Jira credentials
+.env
