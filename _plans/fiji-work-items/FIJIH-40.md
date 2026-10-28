@@ -8,12 +8,12 @@ source:
   revision: "2026-10-28T16:43:21.245+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-40-add-bookmark-tags
   base_branch: null
@@ -135,6 +135,29 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 
 ## Quality Gate
 
+Gate: concerns
+
+Acceptance trace:
+
+- AC-1: implementation `normalizeTags` in `packages/shared/src/index.ts` (trim, lower-case, `Set` dedupe in first-occurrence order), called from `BookmarkStore.add` in `packages/api/src/store.ts`; verification: shared test "trims, lower-cases, and deduplicates, keeping first-occurrence order" and api test "trims, lower-cases, and deduplicates tags on create and returns them on list" (`[" News ", "news", "Tech"]` gives 201 and `["news", "tech"]`).
+- AC-2: implementation `input.tags ?? []` in `BookmarkStore.add`; verification: api test "defaults tags to []" (`tags` missing and `[]`), shared test "returns an empty list for empty input".
+- AC-3: implementation the tag check in `BookmarkStore.add` runs before the duplicate-URL check and before `items.set`, throwing `ValidationError("invalid tag")`, which `packages/api/src/app.ts` maps to 400; verification: api tests "answers 400 invalid tag and stores nothing" (33 characters, `"two words"`, non-string, blank, non-array; follow-up GET lists none) and "accepts a 32-character tag"; shared boundary, code-point, and whitespace tests.
+- AC-4: implementation `tags` is stored on the `Bookmark` and `store.list()` returns it; verification: api test reads `GET /bookmarks` and finds the created tags. The GET of an untagged bookmark is not asserted directly; it returns the same stored object whose `tags` the POST test shows as `[]`.
+- AC-5: implementation `renderList` in `packages/web/src/render.ts` wraps the link and, only when `tags` is not empty, a `span.tags` with `tags.join(", ")` set through `textContent`; verification: web tests "shows tags after the title joined with a comma and space" (`news, tech`, previous sibling is the link) and "renders no tags element when a bookmark has no tags" (no `.tags`, `li` text `ExampleRemove`).
+- AC-6: verification re-run at the reviewed head: shared 10, api 7, web 4 tests passed; `pnpm test`, `pnpm lint`, `pnpm typecheck` passed from the root.
+- AC-7: verification re-run at the reviewed head: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=892` and `web_bundle_gzip_delta=0`; `measure/baseline.json` holds 892.
+
+Plan defaults judged against the criteria: add form unchanged (AC-5 asks only to show tags; no criterion asks for form input), malformed tags answer 400 `invalid tag` (consistent with AC-3), first-occurrence order (consistent with AC-1's example), README unchanged (no criterion covers it). None contradicts a criterion.
+
+Findings:
+
+- minor, `packages/shared/src/index.ts` (`normalizeTags`): the 32-code-point limit is checked after lower-casing, not on the trimmed tag, so a tag whose lower-case form is longer is rejected. Reproduced: 32 x `U+0130` (32 code points after trimming) returns `null`, because `"\u0130".toLowerCase()` is 2 code points. AC-3 says a tag of exactly 32 characters after trimming is accepted. ASCII and the planned examples are unaffected. Fix: measure `[...raw.trim()].length` before lower-casing.
+- minor, `packages/api/src/store.ts` (`BookmarkStore.add`): `"tags": null` is treated as missing and creates a bookmark with `tags: []` (201), through `input.tags ?? []`. Reproduced with `BookmarkStore.add({ ..., tags: null })` returning `[]`. The default taken for open decision 2 says a `tags` value that is present but not an array answers 400 `invalid tag`. No criterion covers `null`.
+
+Residual risks: none beyond the findings. No Operational Requirements entry is `evidence: unverified`, and no Validation Evidence line is `deferred`.
+
+Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
+
 ## Review Record
 
 ## Change Log
@@ -143,3 +166,5 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 - Approved: plan-approval — approve
 - Open Plan questions were not answered beyond "approve"; defaults taken at approval: add form unchanged, malformed tags answer 400 `invalid tag`, first-occurrence order kept, README not changed.
 - Implementation complete: all tasks checked off; checkpoint `implementation-approval`. Bundle baseline moved 835 to 892 bytes (+57).
+- Approved: implementation-approval — automatic (no risk triggers)
+- Quality gate: concerns at 902f931 (two minor findings: tag length checked after lower-casing; `"tags": null` accepted as `[]`).
