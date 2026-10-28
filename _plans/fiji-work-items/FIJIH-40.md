@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -178,3 +178,4 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 - Delivery: changeset `.changeset/fijih-40-add-tags.md` (summary "Add tags to bookmarks") committed in f98e78a and pushed with the branch. Draft PR #3 (https://github.com/panz3r/fijih-sample/pull/3) opened against `main`, title `[FIJIH-40] Add tags to bookmarks`, label `enhancement`, assignee panz3r. Copilot review requested (review_requested event confirmed in the timeline). Reviewers are not requested while the PR is draft; the QA Engineer `duckyduff369` is requested at ready-for-review.
 - Quality findings still open at delivery: tag length checked after lower-casing; `"tags": null` accepted as `[]`. Plan defaults unchanged (add form unchanged, README unchanged).
 - Copilot pass: 2 findings (both matched the open QA minor findings and were in scope of AC-3 and open decision 2), fixed in c1ef1e5 and pushed; threads resolved; Copilot re-review requested.
+- Copilot re-review at c1ef1e5: approval recommended, no open issues; both threads resolved; ci run 22 on c1ef1e5 passed. Checkpoint ready-for-review.
