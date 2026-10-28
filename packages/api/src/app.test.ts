@@ -43,4 +43,51 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  it("defaults tags to [] when absent", async () => {
+    const res = await fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify({ url: "https://tags.example/none", title: "N" }) });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://tags.example/none")?.tags).toEqual([]);
+  });
+
+  it("normalizes tags on POST and returns them on GET", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://tags.example/some", title: "S", tags: ["  News ", "news", "Tech"] }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://tags.example/some")?.tags).toEqual(["news", "tech"]);
+  });
+
+  it.each([
+    ["null", null],
+    ["a string", "news"],
+    ["a number", 1],
+    ["an object", {}],
+    ["a non-string entry", ["ok", 1]],
+    ["an empty tag", ["  "]],
+    ["a 33-character tag", ["a".repeat(33)]],
+    ["a tag with whitespace", ["two words"]],
+  ])("rejects tags that are %s", async (_name, tags) => {
+    const before = ((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length;
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://tags.example/bad", title: "Bad", tags }),
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid tag" });
+    const after = ((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length;
+    expect(after).toBe(before);
+  });
+
+  it("accepts a 32-character tag", async () => {
+    const tag = "a".repeat(32);
+    const res = await fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify({ url: "https://tags.example/32", title: "T", tags: [tag] }) });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([tag]);
+  });
 });

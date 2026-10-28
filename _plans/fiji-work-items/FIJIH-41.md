@@ -76,10 +76,10 @@ so that I can group my bookmarks.
     - a tag that is empty after trimming is rejected
     - a non-array value (including `null`) is rejected
     - a non-string entry is rejected
-- [ ] `packages/api`: accept, validate, store, and return tags (AC: 1, 2, 3, 5)
-  - [ ] In `app.ts`, pass `body.tags` through to `store.add` unchanged. Do not coerce it.
-  - [ ] In `store.ts`, call the shared helper and throw `ValidationError("invalid tag")` on failure, before checking for a duplicate URL and before storing. Store the normalized `tags` on the bookmark.
-  - [ ] Add tests in `packages/api/src/app.test.ts`:
+- [x] `packages/api`: accept, validate, store, and return tags (AC: 1, 2, 3, 5)
+  - [x] In `app.ts`, pass `body.tags` through to `store.add` unchanged. Do not coerce it.
+  - [x] In `store.ts`, call the shared helper and throw `ValidationError("invalid tag")` on failure, before checking for a duplicate URL and before storing. Store the normalized `tags` on the bookmark.
+  - [x] Add tests in `packages/api/src/app.test.ts`:
     - without `tags`, POST gives `tags: []` in both the 201 response and the GET response
     - with tags, POST normalizes them, and GET returns them
     - each 400 case in AC 2 answers `{"error":"invalid tag"}` and adds nothing to `GET /bookmarks`
@@ -141,6 +141,7 @@ so that I can group my bookmarks.
 ## Implementation Record
 
 - Task 1 (shared): added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and `normalizeTags`; 7 new tests; shared tests 11 passed.
+- Task 2 (api): `app.ts` passes `body.tags` through; `store.add` validates tags before the duplicate-URL check and throws `ValidationError("invalid tag")`; 12 new test cases (8 invalid forms); api tests 14 passed.
 
 ## Validation Evidence
 
