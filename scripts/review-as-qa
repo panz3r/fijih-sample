@@ -6,8 +6,10 @@
 #   scripts/review-as-qa <pr-number> approve-with-request <body>   # APPROVED review whose body holds a request
 #   scripts/review-as-qa <pr-number> thread <path> <line> <body>  # one unresolved review thread on a changed line
 #
-# Needs QA_GH_TOKEN: a token of the QA Engineer account (duckyduff369) with repo access.
-# It is passed to gh as GH_TOKEN for this process only, so the session's own gh login is untouched.
+# Needs QA_GH_TOKEN: a CLASSIC personal access token of the QA Engineer account (duckyduff369) with the
+# public_repo scope (repo for a private repository). A fine-grained token does not work: it can only reach
+# repositories owned by its own resource owner, and this repository is owned by someone else.
+# The token is passed to gh as GH_TOKEN for this process only, so the session's own gh login is untouched.
 set -euo pipefail
 
 die() { printf 'review-as-qa: %s\n' "$*" >&2; exit 1; }
@@ -19,18 +21,23 @@ PR=$1; ACTION=$2; shift 2
 REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 export GH_TOKEN="$QA_GH_TOKEN"
 
+review() { # event body : posts a review through REST, which every token type supports
+  gh api --method POST "repos/$REPO/pulls/$PR/reviews" -f event="$1" -f body="$2" \
+    --jq '"review \(.id) \(.state) by \(.user.login)"'
+}
+
 case "$ACTION" in
   approve)
-    gh pr review "$PR" --repo "$REPO" --approve --body "${1:-Looks good.}" ;;
+    review APPROVE "${1:-Looks good.}" ;;
   request-changes)
     [ $# -ge 1 ] || die "request-changes needs a body"
-    gh pr review "$PR" --repo "$REPO" --request-changes --body "$1" ;;
+    review REQUEST_CHANGES "$1" ;;
   approve-with-request)
     [ $# -ge 1 ] || die "approve-with-request needs a body"
-    gh pr review "$PR" --repo "$REPO" --approve --body "$1" ;;
+    review APPROVE "$1" ;;
   thread)
     [ $# -ge 3 ] || die "thread needs <path> <line> <body>"
-    head=$(gh pr view "$PR" --repo "$REPO" --json headRefOid --jq .headRefOid)
+    head=$(gh api "repos/$REPO/pulls/$PR" --jq .head.sha)
     gh api --method POST "repos/$REPO/pulls/$PR/reviews" \
       -f commit_id="$head" -f event=COMMENT -f body="" \
       -f "comments[][path]=$1" -F "comments[][line]=$2" -f "comments[][side]=RIGHT" -f "comments[][body]=$3" \
