@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-41-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/4
-  jira_context_comment_id: null
+  jira_context_comment_id: "10003"
 ---
 
 # Work Item FIJIH-41: Add tags to bookmarks
@@ -215,3 +215,5 @@ so that I can group my bookmarks.
 - 2026-10-28: Approved: ready-for-review — approve
 - 2026-10-28: Ready for review: pull request #4 marked ready and review requested from `duckyduff369` (QA Engineer, Bookmarks team; timeline `review_requested` event). Work-item commit held locally; no Jira writes.
 - 2026-10-28: Jira handoff draft written (comment proposed). Human review clear: duckyduff369 (QA Engineer) approved PR #4 on head b9e5e46, no unresolved threads, Copilot re-review clear. Nothing posted to Jira; checkpoint jira-handoff. Work-item commit held locally.
+- 2026-10-28: Approved: jira-handoff — approve
+- 2026-10-28: Jira handoff comment posted on FIJIH-41 (comment 10003, marker `FIJI-CONTEXT:FIJIH-41:fiji/orchestrate-development/v1`), exactly the approved draft; read back, one marked comment. No status change. Work-item commit held locally.
