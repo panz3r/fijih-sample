@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 # Creates Jira issues in the scenario project through the Jira Cloud REST API (v2, plain-text descriptions).
 #
+#   scripts/seed-jira check               resolve the site, check access, list the project's issue types and issue count
 #   scripts/seed-jira siblings            10 Stories, 10 Bugs, 10 Tasks in the house format, for convention learning
 #   scripts/seed-jira scenario <id>       the issue of scenarios/<id>.md (its "## Jira issue" section)
+#   scripts/seed-jira prune-duplicates    delete every issue whose summary repeats an earlier issue's summary
 #
 # Environment: JIRA_SITE (for example your-site.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
-# and optionally JIRA_PROJECT (default FIJIH). Prints one line per created issue: "<KEY> <summary>".
+# and optionally JIRA_PROJECT (default FIJIH). Prints one line per issue: "<KEY> <summary>", "skip (exists) <summary>",
+# or "deleted <KEY> <summary>".
 # Calls go through the api.atlassian.com gateway with the site's cloud ID, which accepts both classic
-# and scoped API tokens (a scoped token is rejected on the site hostname itself).
+# and scoped API tokens (read:jira-work and write:jira-work). A summary that already exists in the project
+# is never created twice, so re-running after a failure is safe.
 set -euo pipefail
 
 die() { printf 'seed-jira: %s\n' "$*" >&2; exit 1; }
@@ -24,19 +28,46 @@ CLOUD_ID=$(curl -sS -f "https://$JIRA_SITE/_edge/tenant_info" | jq -r '.cloudId 
 API="https://api.atlassian.com/ex/jira/$CLOUD_ID/rest/api/2"
 API3="https://api.atlassian.com/ex/jira/$CLOUD_ID/rest/api/3"
 
+jira() { curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' "$@"; }
+
 # Reading the project needs only read:jira-work, so this check also works with a scoped token.
-project_check=$(curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$API/project/$PROJECT")
+project_check=$(jira "$API/project/$PROJECT")
 [ "$(printf '%s' "$project_check" | jq -r '.key // empty')" = "$PROJECT" ] ||
   die "cannot read project $PROJECT on $JIRA_SITE as $JIRA_EMAIL: $(printf '%s' "$project_check" | jq -r '.message // .errorMessages[0] // .')"
 
-issue_exists() { # summary; true when an issue with exactly this summary already exists in the project
-  local jql count
-  jql=$(jq -rn --arg p "$PROJECT" --arg s "$1" '"project = \($p) AND summary ~ \($s | tojson)"')
-  count=$(curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -G "$API3/search/jql" \
-    --data-urlencode "jql=$jql" --data-urlencode "fields=summary" --data-urlencode "maxResults=20" |
-    jq -r --arg s "$1" '[.issues[]? | select(.fields.summary == $s)] | length')
-  [ "${count:-0}" -gt 0 ]
+# Issue types the project offers for creation (a team-managed project has its own set).
+ISSUE_TYPES=$(jira "$API/issue/createmeta/$PROJECT/issuetypes" | jq -r '.issueTypes[]?.name // .values[]?.name')
+[ -n "$ISSUE_TYPES" ] || die "could not list the issue types of $PROJECT"
+
+require_types() { # names...; dies naming the missing ones
+  local missing=() type
+  for type in "$@"; do
+    printf '%s\n' "$ISSUE_TYPES" | grep -Fxq "$type" || missing+=("$type")
+  done
+  [ ${#missing[@]} -eq 0 ] ||
+    die "project $PROJECT has no issue type(s): ${missing[*]}. It offers: $(printf '%s' "$ISSUE_TYPES" | tr '\n' ',' | sed 's/,$//; s/,/, /g'). The API cannot add types to a team-managed project: add them in Jira under Project settings > Issue types, then re-run."
 }
+
+# Every issue of the project as "<KEY>\t<summary>", oldest first, fetched once.
+EXISTING=$(mktemp "${TMPDIR:-/tmp}/seed-jira.XXXXXX")
+trap 'rm -f "$EXISTING"' EXIT HUP INT TERM
+fetch_existing() {
+  local token="" page
+  : > "$EXISTING"
+  while :; do
+    page=$(jira -G "$API3/search/jql" --data-urlencode "jql=project = $PROJECT ORDER BY created ASC" \
+      --data-urlencode "fields=summary" --data-urlencode "maxResults=100" \
+      ${token:+--data-urlencode "nextPageToken=$token"})
+    printf '%s' "$page" | jq -e 'has("issues")' >/dev/null ||
+      die "listing issues failed: $(printf '%s' "$page" | jq -c '.errorMessages // .message // .')"
+    printf '%s' "$page" | jq -r '.issues[] | "\(.key)\t\(.fields.summary)"' >> "$EXISTING"
+    token=$(printf '%s' "$page" | jq -r '.nextPageToken // empty')
+    [ -n "$token" ] || break
+  done
+}
+fetch_existing
+
+issue_exists() { cut -f2- "$EXISTING" | grep -Fxq "$1"; }
 
 create_issue() { # type summary description; skips a summary that already exists, dies on a Jira error
   if issue_exists "$2"; then
@@ -46,10 +77,10 @@ create_issue() { # type summary description; skips a summary that already exists
   local response key
   response=$(jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
       '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
-    curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' \
-      -X POST "$API/issue" --data @-)
+    jira -X POST "$API/issue" --data @-)
   key=$(printf '%s' "$response" | jq -r '.key // empty')
   [ -n "$key" ] || die "creating \"$2\" ($1) failed: $(printf '%s' "$response" | jq -c '{errorMessages, errors}')"
+  printf '%s\t%s\n' "$key" "$2" >> "$EXISTING"
   printf '%s %s\n' "$key" "$2"
 }
 
@@ -61,6 +92,7 @@ house_format() { # context criteria... ; prints the shared description layout
 }
 
 seed_siblings() {
+  require_types Story Bug Task
   local i
   for i in 1 2 3 4 5 6 7 8 9 10; do
     create_issue Story "[web] Show bookmark count $i in the page title" \
@@ -87,11 +119,26 @@ seed_scenario() {
   summary=$(sed -n 's/^- Summary: //p' "$file" | head -1)
   description=$(awk '/^```jira$/{f=1;next} /^```$/{if(f){exit}} f' "$file")
   [ -n "$type" ] && [ -n "$summary" ] && [ -n "$description" ] || die "$file lacks Type, Summary, or a \`\`\`jira block"
+  require_types "$type"
   create_issue "$type" "$summary" "$description"
 }
 
+prune_duplicates() {
+  local key summary response
+  # Keep the first (oldest) issue of each summary; delete the later ones.
+  awk -F'\t' '{ s=$0; sub(/^[^\t]*\t/, "", s); if (seen[s]++) print }' "$EXISTING" | while IFS=$'\t' read -r key summary; do
+    response=$(jira -X DELETE -o /dev/null -w '%{http_code}' "$API/issue/$key")
+    [ "$response" = "204" ] || die "deleting $key failed with HTTP $response"
+    printf 'deleted %s %s\n' "$key" "$summary"
+  done
+}
+
 case "${1:-}" in
+  check)
+    printf 'site: %s (cloud %s)\nproject: %s\nissue types: %s\nissues: %s\n' "$JIRA_SITE" "$CLOUD_ID" "$PROJECT" \
+      "$(printf '%s' "$ISSUE_TYPES" | tr '\n' ',' | sed 's/,$//; s/,/, /g')" "$(wc -l < "$EXISTING" | tr -d ' ')" ;;
   siblings) seed_siblings ;;
   scenario) [ -n "${2:-}" ] || die "scenario needs an id, for example S1"; seed_scenario "$2" ;;
-  *) die "usage: seed-jira siblings | scenario <id>" ;;
+  prune-duplicates) prune_duplicates ;;
+  *) die "usage: seed-jira check | siblings | scenario <id> | prune-duplicates" ;;
 esac

@@ -5,7 +5,7 @@ Each note describes one lifecycle path: the Jira issue to create, the repository
 ## Running one
 
 1. `scripts/reset` (or the precondition the note names).
-2. `scripts/seed-jira scenario <id>` and note the key it prints.
+2. `scripts/seed-jira scenario <id>` and note the key it prints (`scripts/seed-jira check` first shows the project's issue types; the project needs Story, Bug, and Task).
 3. In an agent session at the repository root with FIJIₕ installed: `/fiji-orchestrate-development <KEY>`.
 4. Follow the note's checkpoints. For human-review steps, run `scripts/review-as-qa` as the note says.
 5. `scripts/reset` when done; close the pull request instead of merging unless the note needs a merge.
