@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -184,6 +184,22 @@ so that I can group my bookmarks.
 
 - Copilot review 5687130041 (head b56ac48), thread PRRT_kwDOVaYq_M6xPzF7 (packages/shared/src/index.ts:26, quadratic `out.includes` dedupe, no tag-count limit): `valid`. Fixed in b9e5e46 with a `Set`; a tag-count limit was not added because it would change the accepted-input contract (AC 1-2). Replied (comment 4404053942) and resolved.
 - Copilot re-review 5687160053 (head b9e5e46): approval recommended, no open issues.
+- Jira handoff draft (comment proposed; not posted; marker `FIJI-CONTEXT:FIJIH-41:fiji/orchestrate-development/v1`):
+
+  > FIJI-CONTEXT:FIJIH-41:fiji/orchestrate-development/v1
+  >
+  > Outcome: bookmarks now carry optional `tags`. `POST /bookmarks` trims, lower-cases and de-duplicates them (first occurrence kept) and answers `400 {"error":"invalid tag"}` for a non-array value (including `null`), a non-string entry, an empty, over-32-character or whitespace-containing tag; `GET /bookmarks` returns `tags` on every bookmark; the web page shows them after the title as `news, tech`. Per the issue's decisions, the add form has no tags input, and filtering and editing tags are out of scope.
+  >
+  > Validation: Vitest tests in shared (11), api (14) and web (4); root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass locally. Pull request checks test, lint, typecheck, measure and scenarios succeeded on head b9e5e46.
+  >
+  > Review: pull request https://github.com/panz3r/fijih-sample/pull/4 (head b9e5e46). Copilot's one finding (quadratic `out.includes` dedupe in `normalizeTags`) was fixed in b9e5e46 with a `Set`; a tag-count limit was deliberately not added because it would change the accepted-input contract. Copilot's re-review reported no open issues. The QA Engineer duckyduff369 approved.
+  >
+  > Residual risks and follow-ups:
+  > - Pre-existing flaky api test "creates, lists newest first, and deletes" (packages/api/src/app.test.ts), not caused by this change: two POSTs in the same millisecond get equal `createdAt`, and `sortByCreatedDesc` (packages/shared/src/index.ts) keeps insertion order for ties. It failed once in a root `pnpm test` run and in 1 of 30 repeated api test runs during local review, and can fail the required `test` job. A separate issue is recommended (for example inject `now` in the test or add a tie-breaker); none has been filed.
+  > - Same-millisecond `createdAt` ties are the cause above and also affect list order for any bookmarks created in the same millisecond.
+  > - Web bundle grew from 835 to 881 gzipped bytes (`measure/baseline.json` updated to 881).
+  >
+  > Operational: merging requires the `test` check and one approving review, squash merge only (repository ruleset "main"); the required approval comes from the Bookmarks team QA Engineer duckyduff369.
 
 ## Change Log
 
@@ -198,3 +214,4 @@ so that I can group my bookmarks.
 - 2026-10-28: Copilot findings pass: 1 finding, valid, fixed in b9e5e46 and pushed (carried held commit 0917a19); thread replied and resolved; Copilot re-review clear. Checkpoint ready-for-review.
 - 2026-10-28: Approved: ready-for-review — approve
 - 2026-10-28: Ready for review: pull request #4 marked ready and review requested from `duckyduff369` (QA Engineer, Bookmarks team; timeline `review_requested` event). Work-item commit held locally; no Jira writes.
+- 2026-10-28: Jira handoff draft written (comment proposed). Human review clear: duckyduff369 (QA Engineer) approved PR #4 on head b9e5e46, no unresolved threads, Copilot re-review clear. Nothing posted to Jira; checkpoint jira-handoff. Work-item commit held locally.
