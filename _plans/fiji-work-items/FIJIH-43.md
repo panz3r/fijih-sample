@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 3
 quality:
   gate: concerns
@@ -298,3 +298,5 @@ Notes:
 - 2026-10-28: Approved: local-qa-review — conditional: Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve. (verified at 360f2ba)
 - 2026-10-28: Delivery (re-entry 3, criterion 9): pushed `360f2ba` (fast-forward from `9fcb896`, carrying `8707c90` and the work-item commits); updated PR #6 body to the final branch state (criterion 9, baseline 950, `680eb98` null rejection, residual risks; approval and earlier Copilot review are on `9fcb896` only); requested a fresh Copilot review on the new head (`review_requested` for Copilot at 21:22:21Z). PR stays ready for review. Set phase `automated-review`, checkpoint null, transition `delivery-complete`. The commit stays local.
 - 2026-10-28: Copilot findings pass (attempt 3): Copilot review of `360f2ba` raised no findings; CI run 40771376304 passed. Set checkpoint `ready-for-review`, transition `ready-for-review`. The commit stays local.
+- 2026-10-28: Approved: ready-for-review — conditional: Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve. (verified at e4b5bbc)
+- 2026-10-28: Ready-for-review (re-request after user-request rework): PR #6 is already ready (head `360f2ba`); `duckyduff369`'s APPROVED review on `9fcb896` (21:14:39Z) predates the new head, so review was re-requested from `duckyduff369` (`review_requested` at 21:33:30Z). No other reviewer requested: the author `panz3r` is excluded. Set phase `remote-review`, checkpoint `null`, transition `review-requested`. The commit stays local.
