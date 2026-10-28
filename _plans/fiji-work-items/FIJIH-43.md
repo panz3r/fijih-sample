@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: handoff-drafted
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 3
 quality:
   gate: concerns
@@ -102,12 +102,12 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - [x] Bundle baseline for AC 8 (AC: 6, 8; Scope change entry, Re-entry 2)
   - [x] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
 
-- [ ] Web tag count suffix in `packages/web/src/render.ts` (AC: 9; Scope change entry, Re-entry 3)
-  - [ ] Set the `span.tags` text to `<tags joined by ", "> (<count>)`; a bookmark with no tags still renders no tags span and its item text is unchanged.
-- [ ] Web tests in `packages/web/src/render.test.ts` (AC: 9, 5; Scope change entry, Re-entry 3)
-  - [ ] Update the existing exact-text assertion `news, tech` to `news, tech (2)`; add a single-tag case (`news (1)`) and keep the no-tags case (no span, text unchanged).
-- [ ] Bundle baseline for AC 9 (AC: 6, 9; Scope change entry, Re-entry 3)
-  - [ ] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
+- [x] Web tag count suffix in `packages/web/src/render.ts` (AC: 9; Scope change entry, Re-entry 3)
+  - [x] Set the `span.tags` text to `<tags joined by ", "> (<count>)`; a bookmark with no tags still renders no tags span and its item text is unchanged.
+- [x] Web tests in `packages/web/src/render.test.ts` (AC: 9, 5; Scope change entry, Re-entry 3)
+  - [x] Update the existing exact-text assertion `news, tech` to `news, tech (2)`; add a single-tag case (`news (1)`) and keep the no-tags case (no span, text unchanged).
+- [x] Bundle baseline for AC 9 (AC: 6, 9; Scope change entry, Re-entry 3)
+  - [x] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
 
 ## Engineering Context
 
@@ -168,16 +168,19 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - Review fix `680eb98`: `store.add` uses `input.tags === undefined ? [] : input.tags`, so explicit `null` answers 400 `invalid tag`; added the `null` case to the `it.each` rejection cases in `packages/api/src/app.test.ts`. `pnpm test` (shared 8, api 12, web 4), `pnpm lint`, `pnpm typecheck` pass; web bundle unaffected (api-only change).
 - Re-entry 2 (AC 8): added pure `countTags` in shared (sum of `tags.length`, duplicates counted) with unit tests; `renderList` now sets `document.title` and the `<h1>` text to `Bookmarks (N)` on every render, including the empty list. Web tests cover 0 (none, and no tags), duplicates across bookmarks, and re-render after add and remove. `pnpm build` then `pnpm measure` printed 940 (baseline 881, delta 59); set baseline to 940, re-run: delta 0. `pnpm test` (shared 10, api 12, web 7), `pnpm lint`, `pnpm typecheck` pass. No other product change.
 
+- Re-entry 3 (AC 9): `renderList` sets the `span.tags` text to `<tags joined by ", "> (<count>)`; a bookmark without tags still renders no span and its item text is unchanged. Necessary consequence: the existing web test asserting the exact span text `news, tech` now asserts `news, tech (2)`; added a single-tag case (`news (1)`); the no-tags case is unchanged. No shared helper (the count is `bookmark.tags.length`). `pnpm build` then `pnpm measure` printed 950 (baseline 940, delta 10); set baseline to 950, re-run: delta 0. `pnpm test` (shared 10, api 12, web 8), `pnpm lint`, `pnpm typecheck` pass. No other product change.
+
 ## Validation Evidence
 
 - AC-1: passed — shared normalizeTags tests and API tests (201 with `["news","tech"]`, default `[]`).
 - AC-2: passed — API tests: 33-char, inner whitespace, blank, non-array, non-string each 400 `{"error":"invalid tag"}` with nothing stored; 32-char accepted.
 - AC-3: passed — API test: GET returns normalised tags, `[]` when none.
-- AC-4: passed — web render tests: `news, tech` between link and Remove; no `.tags` element when empty.
+- AC-4: passed — web render tests (since re-entry 3 the span text is `news, tech (2)`, see AC-9): tags between link and Remove; no `.tags` element when empty.
 - AC-5: passed — Vitest tests added in packages/shared, packages/api, packages/web.
-- AC-6: passed — baseline 940; `pnpm build` then `pnpm measure` prints delta 0.
+- AC-6: passed — baseline 950; `pnpm build` then `pnpm measure` prints delta 0.
 - AC-7: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` pass from the root.
 - AC-8: passed — shared `countTags` tests and web `render.test.ts` cases: `Bookmarks (0)` for no bookmarks and for no tags, `Bookmarks (2)` for `["news"]` on two bookmarks, and h1 and `document.title` update across add and remove re-renders.
+- AC-9: passed — web `render.test.ts`: `news, tech (2)` for two tags, `news (1)` for one tag, and no `.tags` element with item text `ExampleRemove` for no tags.
 
 ## Quality Gate
 
@@ -280,3 +283,4 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Re-entry 3: user-request — jira-handoff at fd2b1da; user's decision: "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve."
 - 2026-10-28: Scope change: "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve." — jira-handoff at fd2b1da
 - 2026-10-28: Approved: scope change — "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve."
+- 2026-10-28: Implemented criterion 9 (tag count suffix in the tags span), updated bundle baseline to 950, repository checks pass. Set checkpoint `implementation-approval`, transition `implementation-complete`.

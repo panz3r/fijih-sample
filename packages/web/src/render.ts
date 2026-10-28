@@ -26,7 +26,7 @@ export function renderList(list: HTMLElement, bookmarks: readonly Bookmark[], on
     if (bookmark.tags.length > 0) {
       const tags = document.createElement("span");
       tags.className = "tags";
-      tags.textContent = bookmark.tags.join(", ");
+      tags.textContent = `${bookmark.tags.join(", ")} (${bookmark.tags.length})`;
       item.append(tags);
     }
     item.append(remove);

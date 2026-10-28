@@ -22,8 +22,14 @@ describe("renderList", () => {
     const list = document.createElement("ul");
     renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: ["news", "tech"] }], () => {});
     const item = list.querySelector("li");
-    expect(item?.querySelector(".tags")?.textContent).toBe("news, tech");
+    expect(item?.querySelector(".tags")?.textContent).toBe("news, tech (2)");
     expect([...(item?.children ?? [])].map((c) => c.tagName)).toEqual(["A", "SPAN", "BUTTON"]);
+  });
+
+  it("ends the tags span with the tag count, also for a single tag", () => {
+    const list = document.createElement("ul");
+    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: ["news"] }], () => {});
+    expect(list.querySelector(".tags")?.textContent).toBe("news (1)");
   });
 
   it("renders no tags element when a bookmark has no tags", () => {
