@@ -73,8 +73,9 @@ describe("bookmarks api", () => {
         expect(await res.json()).toEqual({ error: "invalid tag" });
       }
       expect((await post({ url: "https://tags.example/notarray", title: "T", tags: "news" })).status).toBe(400);
+      expect((await post({ url: "https://tags.example/nulltags", title: "T", tags: null })).status).toBe(400);
       const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[];
-      expect(list.some((b) => b.url.includes("tags.example/bad") || b.url.includes("notarray"))).toBe(false);
+      expect(list.some((b) => b.url.includes("tags.example/bad") || b.url.includes("notarray") || b.url.includes("nulltags"))).toBe(false);
     });
 
     it("accepts a 32-character tag", async () => {

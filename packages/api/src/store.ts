@@ -13,7 +13,7 @@ export class BookmarkStore {
   add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
-    const rawTags: unknown = input.tags ?? [];
+    const rawTags: unknown = input.tags === undefined ? [] : input.tags;
     const tags =
       Array.isArray(rawTags) && rawTags.every((tag) => typeof tag === "string") ? normalizeTags(rawTags) : null;
     if (!tags) throw new ValidationError("invalid tag");

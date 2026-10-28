@@ -46,9 +46,9 @@ export function sortByCreatedDesc<T extends { createdAt: string }>(items: readon
 export function normalizeTags(tags: readonly string[]): string[] | null {
   const out = new Set<string>();
   for (const raw of tags) {
-    const tag = raw.trim().toLowerCase();
-    if (!tag || /\s/.test(tag) || [...tag].length > MAX_TAG_LENGTH) return null;
-    out.add(tag);
+    const trimmed = raw.trim();
+    if (!trimmed || /\s/.test(trimmed) || [...trimmed].length > MAX_TAG_LENGTH) return null;
+    out.add(trimmed.toLowerCase());
   }
   return [...out];
 }

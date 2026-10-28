@@ -46,6 +46,10 @@ describe("normalizeTags", () => {
     expect(normalizeTags(["😀".repeat(32)])).not.toBeNull();
     expect(normalizeTags(["😀".repeat(33)])).toBeNull();
   });
+  it("measures length before lower-casing", () => {
+    expect(normalizeTags(["\u0130".repeat(32)])).toEqual(["\u0130".toLowerCase().repeat(32)]);
+    expect(normalizeTags(["\u0130".repeat(33)])).toBeNull();
+  });
   it("rejects inner whitespace and empty tags", () => {
     expect(normalizeTags(["two words"])).toBeNull();
     expect(normalizeTags(["a\tb"])).toBeNull();
