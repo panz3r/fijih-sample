@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -160,6 +160,7 @@ Residual risks:
 ## Review Record
 
 - Copilot review PRR_kwDOVaYq_M8AAAABUr2OPg, thread PRRT_kwDOVaYq_M6xIhYX (`packages/shared/src/index.ts`, tag length counts UTF-16 units): valid; fixed in ed83a25; replied and resolved. Copilot re-review (13:15:30Z, head ed83a25): approval recommended, no new findings.
+- Jira handoff draft: Comment FIJI-CONTEXT:FIJIH-36:fiji/orchestrate-development/v1 — "Bookmark tags are delivered in pull request #1 (https://github.com/panz3r/fijih-sample/pull/1, base main, approved by duckyduff369, CI lint, measure, test, and typecheck passing on head dca2e86). POST /bookmarks accepts an optional tags array; each tag is trimmed and lower-cased, duplicates are dropped in first-occurrence order, and a bookmark created without tags has tags []. GET /bookmarks returns tags for every bookmark, and the web page shows them after the title joined with ', '. Decisions on points the issue left open: (1) the add form has no tags input, so tags can only be set through the API; (2) a non-array tags value, a non-string entry, or a tag that is empty after trimming answers 400 {\"error\":\"invalid tag\"}; (3) the 32-character limit is checked after trimming and counts code points, not UTF-16 units, so a tag of 20 emoji is accepted (Copilot review finding, fixed in 0ec6576); (4) a tag containing whitespace after trimming is rejected. Follow-ups, deliberately left out per the issue: filtering or searching by tag, editing the tags of an existing bookmark, and a tags input on the add form. The web bundle baseline in measure/baseline.json was updated from 835 to 881 gzipped bytes in the same pull request."
 
 ## Change Log
 
@@ -178,3 +179,4 @@ Residual risks:
 - 2026-10-28: Copilot pass: 1 finding valid and fixed (ed83a25), thread resolved, re-review clear; set checkpoint ready-for-review
 - 2026-10-28: Approved: ready-for-review — approve
 - 2026-10-28: Ready-for-review: marked PR #1 ready; requested review from duckyduff369 (QA Engineer, owning team Bookmarks; the only other member besides the author panz3r); confirmed review_requested on the timeline
+- 2026-10-28: Jira handoff draft written from PR #1 (head dca2e86, approved by duckyduff369) and the branch diff against main; set checkpoint jira-handoff
