@@ -17,7 +17,7 @@ export class BookmarkStore {
     for (const existing of this.items.values()) {
       if (existing.url === url) throw new ValidationError("url already bookmarked");
     }
-    const rawTags: unknown = input.tags ?? [];
+    const rawTags: unknown = input.tags === undefined ? [] : input.tags;
     if (!Array.isArray(rawTags) || !rawTags.every((tag) => typeof tag === "string" && isValidTag(tag))) {
       throw new ValidationError("invalid tag");
     }

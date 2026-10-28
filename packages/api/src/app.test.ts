@@ -74,6 +74,7 @@ describe("bookmarks api", () => {
       ["a blank tag", ["  "]],
       ["a non-array tags value", "news"],
       ["a non-string element", [1]],
+      ["a null tags value", null],
     ])("rejects %s and stores nothing", async (_name, tags) => {
       const url = `https://tags.example/bad-${_name.replace(/\W/g, "")}`;
       const res = await post({ url, title: "T", tags });
