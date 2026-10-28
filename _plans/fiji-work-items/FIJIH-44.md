@@ -77,10 +77,10 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 
 ## Tasks and Subtasks
 
-- [ ] 1. Shared tag model and normalisation in `packages/shared` (AC: 2, 3, 4, 7)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` input to `NewBookmark`.
-  - [ ] Add a pure `normalizeTags(value: unknown)` that returns `[]` for `undefined`, the trimmed, lower-cased, first-occurrence-deduplicated list for a valid array, and signals invalid input (not an array, non-string element, empty after trim, whitespace inside, longer than 32) without throwing a transport error; export the 32 limit as a constant.
-  - [ ] Vitest cases in `packages/shared/src/index.test.ts`: default, trim, lower-case, dedupe after normalisation, order kept, 32 accepted, 33 rejected, inner whitespace (space, tab) rejected, empty and whitespace-only rejected, non-array and non-string rejected.
+- [x] 1. Shared tag model and normalisation in `packages/shared` (AC: 2, 3, 4, 7)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` input to `NewBookmark`.
+  - [x] Add a pure `normalizeTags(value: unknown)` that returns `[]` for `undefined`, the trimmed, lower-cased, first-occurrence-deduplicated list for a valid array, and signals invalid input (not an array, non-string element, empty after trim, whitespace inside, longer than 32) without throwing a transport error; export the 32 limit as a constant.
+  - [x] Vitest cases in `packages/shared/src/index.test.ts`: default, trim, lower-case, dedupe after normalisation, order kept, 32 accepted, 33 rejected, inner whitespace (space, tab) rejected, empty and whitespace-only rejected, non-array and non-string rejected.
 - [ ] 2. Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 4, 5, 7)
   - [ ] `BookmarkStore.add` validates tags with `normalizeTags` after the title and url checks, throws `ValidationError("invalid tag")` when invalid, and stores the normalised list on the bookmark.
   - [ ] `app.ts` passes `body.tags` through to `store.add`.
@@ -126,9 +126,16 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
 
+- Task 1: `normalizeTags(value: unknown): string[] | null` (null = invalid) and `MAX_TAG_LENGTH = 32` in shared; `Bookmark.tags` required, `NewBookmark.tags?: unknown`. Hypothesis: a Set keeps first-occurrence order and dedupes after normalisation; confirmed by the shared tests (10 pass).
+
 ## Validation Evidence
+
+- Task 1: `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
 
 ## Quality Gate
 
@@ -138,3 +145,4 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 
 - 2026-10-28: Plan drafted from FIJIH-44 at revision 2026-10-28T22:54:03.939+0100; issue assigned to Mattia Panzeri.
 - 2026-10-28: Approved: plan-approval — Approve, with the proposed answers.
+- 2026-10-28: Task 1 implemented (shared tag normalisation).
