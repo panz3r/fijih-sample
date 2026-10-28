@@ -7,9 +7,9 @@ source:
   key: FIJIH-40
   revision: "2026-10-28T16:43:21.245+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -116,3 +116,5 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 ## Change Log
 
 - Drafted from FIJIH-40 at revision 2026-10-28T16:43:21.245+0100. The issue was assigned to the current user.
+- Approved: plan-approval — approve
+- Open Plan questions were not answered beyond "approve"; defaults taken at approval: add form unchanged, malformed tags answer 400 `invalid tag`, first-occurrence order kept, README not changed.
