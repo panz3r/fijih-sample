@@ -8,10 +8,10 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: remote-review
-  checkpoint: jira-handoff
+  phase: implementation
+  checkpoint: null
   transition: handoff-drafted
-  attempt: 2
+  attempt: 3
 quality:
   gate: concerns
 artifacts:
@@ -66,6 +66,7 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 6. `measure/baseline.json` `web_bundle_gzip_bytes` equals the value `pnpm build && pnpm measure` prints on this branch (delta 0), per `AGENTS.md`.
 7. `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
 8. The web page shows the total number of tags across all listed bookmarks in its title, in the form `Bookmarks (N)`, where N is the sum of the tag counts of all bookmarks. With no bookmarks or no tags it shows `Bookmarks (0)`. The count updates when the list is rendered, including after a bookmark is added or removed.
+9. Each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged.
 
 ## Tasks and Subtasks
 
@@ -100,6 +101,13 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
   - [x] Whenever `renderList` renders (including the empty list), set the `<h1>` text and `document.title` to `Bookmarks (N)`; web tests in `packages/web/src/render.test.ts` cover 0 (no bookmarks and no tags), duplicates counted, and update after a re-render following add and remove.
 - [x] Bundle baseline for AC 8 (AC: 6, 8; Scope change entry, Re-entry 2)
   - [x] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
+
+- [ ] Web tag count suffix in `packages/web/src/render.ts` (AC: 9; Scope change entry, Re-entry 3)
+  - [ ] Set the `span.tags` text to `<tags joined by ", "> (<count>)`; a bookmark with no tags still renders no tags span and its item text is unchanged.
+- [ ] Web tests in `packages/web/src/render.test.ts` (AC: 9, 5; Scope change entry, Re-entry 3)
+  - [ ] Update the existing exact-text assertion `news, tech` to `news, tech (2)`; add a single-tag case (`news (1)`) and keep the no-tags case (no span, text unchanged).
+- [ ] Bundle baseline for AC 9 (AC: 6, 9; Scope change entry, Re-entry 3)
+  - [ ] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
 
 ## Engineering Context
 
@@ -221,7 +229,7 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - CI run 40768132659 (workflow `ci`) on `680eb98`: success.
 - Copilot review of `9fcb896` (attempt 2, requested 2026-10-28T21:10:19Z; submitted 21:12:16Z): "Approval recommended", no open issues, no new threads. The earlier thread `PRRT_kwDOVaYq_M6xUY8X` stays resolved. No fixes, replies, or re-review requests were needed.
 - CI run 40769688221 (workflow `ci`) on `9fcb896`: success.
-- Jira handoff draft (comment, marker `FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1`), drafted at remote-review from the Quality Gate (concerns at `d325e92`), Validation Evidence, Review Record, Change Log, and PR #6 (head `9fcb896`, CI run 40769688221 success; `duckyduff369` APPROVED on `9fcb896`; the one Copilot thread resolved):
+- Stale — superseded by re-entry 3. Jira handoff draft (comment, marker `FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1`), drafted at remote-review from the Quality Gate (concerns at `d325e92`), Validation Evidence, Review Record, Change Log, and PR #6 (head `9fcb896`, CI run 40769688221 success; `duckyduff369` APPROVED on `9fcb896`; the one Copilot thread resolved):
 
   > FIJI-CONTEXT:FIJIH-43:fiji/orchestrate-development/v1
   >
@@ -269,3 +277,6 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Approved: ready-for-review — Approve.
 - 2026-10-28: Ready-for-review: marked PR #6 ready for review and requested review from `duckyduff369` (QA Engineer, owning team per TEAMS.md; the author `panz3r` is excluded). Set phase `remote-review`, checkpoint `null`, transition `review-requested`. The work-item commits stay local (`may_push` alone does not push work-item-only commits).
 - 2026-10-28: Jira handoff Draft: human review clear (`duckyduff369` APPROVED on `9fcb896`, no unresolved threads, Copilot clear); drafted the handoff comment in the Review Record (nothing posted to Jira). Set checkpoint `jira-handoff`, transition `handoff-drafted`. The commit stays local.
+- 2026-10-28: Re-entry 3: user-request — jira-handoff at fd2b1da; user's decision: "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve."
+- 2026-10-28: Scope change: "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve." — jira-handoff at fd2b1da
+- 2026-10-28: Approved: scope change — "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve."
