@@ -8,12 +8,12 @@ source:
   revision: "2026-10-28T18:58:41.144+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-42-add-bookmark-tags
   base_branch: null
@@ -146,6 +146,26 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 
 ## Quality Gate
 
+- Gate: concerns
+- Reviewed head: b2e2a6f44f9b61ab42fd020ba37e9de15b2e0571
+- Scope: whole branch diff against `main` (first review).
+- Acceptance trace:
+  - AC-1: implementation `normalizeTags` (packages/shared/src/index.ts: trim, lower-case, Set-based dedup in first-occurrence order), `parseTags` in `store.add` (packages/api/src/store.ts), `app.ts` passes `body.tags`; verification api test "normalises tags and returns them from POST and GET" (`[" Work ", "work", "READ"]` gives `["work", "read"]`, 201) and shared `normalizeTags` tests.
+  - AC-2: implementation `parseTags` returns `[]` for `undefined`, `normalizeTags([])` is `[]`; verification api test "defaults tags to an empty array" (missing and `[]`, both 201).
+  - AC-3: implementation `isValidTag` (length > 0 and <= 32) applied to every normalised tag, throwing `ValidationError("invalid tag")` before the bookmark is stored; verification api `it.each` "33 characters" (400 `{"error":"invalid tag"}`, list length unchanged), api "accepts a 32-character tag, also after trimming and lower-casing", shared 32/33 boundary tests.
+  - AC-4: implementation `isValidTag` rejects `/\s/` after trimming; verification api `it.each` "internal space" and "internal tab" (400, list unchanged), shared space/tab/newline tests.
+  - AC-5: implementation `tags` stored on every `Bookmark` (required field) and returned by `store.list()`; verification api test checks the GET entry's `tags` equal the normalised list.
+  - AC-6: implementation `renderList` (packages/web/src/render.ts) appends `<span class="tags">` with `tags.join(", ")` between the link and Remove only when tags exist; verification web tests (`.tags` text `work, read` and is the link's next sibling; no `.tags` and item text `ExampleRemove` when `tags` is `[]`). Add form and `main.ts` unchanged (decision 1).
+  - AC-7: shared 10, api 16, web 4 Vitest tests cover AC 1–6, 9, 10; re-run in this review: root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 (see the minor finding on the pre-existing flaky api test).
+  - AC-8: `.changeset/add-bookmark-tags.md` bumps `@sample/shared`, `@sample/api`, `@sample/web` (minor) with "Add tags to bookmarks"; `pnpm build` then `pnpm measure` re-run in this review prints `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against `measure/baseline.json` (881).
+  - AC-9: implementation `parseTags` throws `ValidationError("invalid tag")` when `tags` is present and not an array or holds a non-string entry, before `normalizeTags` (no 500); verification api `it.each` for `"work"`, `null`, `{}`, `[1]`, `["a", null]` (400 `{"error":"invalid tag"}`, list unchanged).
+  - AC-10: implementation `isValidTag` rejects an empty normalised tag, and every check runs on the normalised (trimmed, lower-cased) value; verification api `it.each` "empty" and "whitespace only" (400, list unchanged), the padded upper-case 32-character acceptance test, shared empty/whitespace-only tests.
+- Product decisions checked against the criteria: decisions 1–4 and the `tags: null` default agree with AC 1–10; none contradicts a criterion.
+- Findings:
+  - minor — packages/api/src/app.test.ts ("creates, lists newest first, and deletes"): pre-existing flaky ordering test, outside this change. It failed 2 of 30 repeated `pnpm --filter @sample/api test` runs in this review with `expected [ 'A', 'B' ] to deeply equal [ 'B', 'A' ]`: two POSTs in the same millisecond get equal `createdAt`, and `sortByCreatedDesc` (packages/shared/src/index.ts) keeps insertion order. The test and `sortByCreatedDesc` last changed in 78b1748 on `main`; this branch does not touch them. It can fail the required CI `test` job; fix in a separate issue (for example, inject `now` in the test or add a tie-breaker to the sort).
+- Residual risks:
+  - No Operational Requirements entry is `evidence: unverified`; no Validation Evidence line is `deferred` or `pending-ci`.
+
 ## Review Record
 
 ## Change Log
@@ -154,3 +174,5 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - 2026-10-28: Scope change: "approve, with these answers: (1) no tags input on the add form; (2) yes, a non-array tags value or a non-string entry answers 400 {"error":"invalid tag"}; (3) a tag empty after trimming is rejected with 400, and the 32-character and whitespace checks apply after trimming and lower-casing; (4) PR #4 is a test run that will be closed, so do not stack on it." — plan-approval (conditional approval) at 701fea4. Added AC 9 and AC 10 (the issue's own criteria are unchanged), mapped tasks and Testing Strategy, recorded answers 1 and 4 in Product Context and Engineering Context, and removed the four open questions. Default recorded for `tags: null`.
 - 2026-10-28: Approved: plan-approval — conditional: approve, with these answers: (1) no tags input on the add form; (2) yes, a non-array tags value or a non-string entry answers 400 {"error":"invalid tag"}; (3) a tag empty after trimming is rejected with 400, and the 32-character and whitespace checks apply after trimming and lower-casing; (4) PR #4 is a test run that will be closed, so do not stack on it. (verified at 7c487697fa7260083300859e35d70b7227713b30)
 - 2026-10-28: Implementation complete: tasks 1-4 checked off; AC 1-10 evidenced; checkpoint implementation-approval. Jira FIJIH-42 moved To Do to In Progress.
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Quality gate recorded: concerns (one minor finding: pre-existing flaky api ordering test, outside this change). Reviewed head b2e2a6f.
