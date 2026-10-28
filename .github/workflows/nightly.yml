@@ -1,0 +1,23 @@
+name: nightly
+
+# Runs only when started by hand. A criterion that names this job exercises the
+# "measuring job skipped or not triggered for the pushed head" path.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: bash scripts/measure

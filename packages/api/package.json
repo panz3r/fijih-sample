@@ -1,0 +1,14 @@
+{
+  "name": "@sample/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'api: nothing to build'",
+    "start": "node --experimental-strip-types src/server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": { "@sample/shared": "workspace:*" },
+  "devDependencies": { "@types/node": "^24.0.0" }
+}

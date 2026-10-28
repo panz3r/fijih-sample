@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Measures the gzipped size of the web bundle and compares it to measure/baseline.json.
+# Prints "web_bundle_gzip_bytes=<n>" and "web_bundle_gzip_delta=<n>"; writes a GitHub
+# step summary and outputs when run in Actions. Exit code is always 0: thresholds are
+# the acceptance criterion's business, not this script's.
+set -euo pipefail
+
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+DIST="$ROOT/packages/web/dist/assets"
+BASELINE="$ROOT/measure/baseline.json"
+
+command -v jq >/dev/null || { echo "measure: jq is required" >&2; exit 1; }
+[ -d "$DIST" ] || { echo "measure: build the web package first (pnpm build)" >&2; exit 1; }
+
+total=0
+for file in "$DIST"/*.js; do
+  size=$(gzip -9 -c "$file" | wc -c | tr -d ' ')
+  total=$((total + size))
+done
+
+baseline=$(jq -r '.web_bundle_gzip_bytes' "$BASELINE")
+delta=$((total - baseline))
+
+echo "web_bundle_gzip_bytes=$total"
+echo "web_bundle_gzip_delta=$delta"
+
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+  { echo "web_bundle_gzip_bytes=$total"; echo "web_bundle_gzip_delta=$delta"; } >> "$GITHUB_OUTPUT"
+fi
+if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+  {
+    echo "## Web bundle size"
+    echo
+    echo "| Metric | Bytes |"
+    echo "|---|---|"
+    echo "| gzipped JS (this branch) | $total |"
+    echo "| baseline (measure/baseline.json) | $baseline |"
+    echo "| delta | $delta |"
+  } >> "$GITHUB_STEP_SUMMARY"
+fi

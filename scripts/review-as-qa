@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Posts a review on a pull request as the QA Engineer account, for the human-review scenarios.
+#
+#   scripts/review-as-qa <pr-number> approve [body]
+#   scripts/review-as-qa <pr-number> request-changes <body>
+#   scripts/review-as-qa <pr-number> approve-with-request <body>   # APPROVED review whose body holds a request
+#   scripts/review-as-qa <pr-number> thread <path> <line> <body>  # one unresolved review thread on a changed line
+#
+# Needs QA_GH_TOKEN: a token of the QA Engineer account (fijih-qa-bot) with repo access.
+# It is passed to gh as GH_TOKEN for this process only, so the session's own gh login is untouched.
+set -euo pipefail
+
+die() { printf 'review-as-qa: %s\n' "$*" >&2; exit 1; }
+
+[ $# -ge 2 ] || die "usage: review-as-qa <pr-number> approve|request-changes|approve-with-request|thread ..."
+[ -n "${QA_GH_TOKEN:-}" ] || die "QA_GH_TOKEN is not set"
+
+PR=$1; ACTION=$2; shift 2
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+export GH_TOKEN="$QA_GH_TOKEN"
+
+case "$ACTION" in
+  approve)
+    gh pr review "$PR" --repo "$REPO" --approve --body "${1:-Looks good.}" ;;
+  request-changes)
+    [ $# -ge 1 ] || die "request-changes needs a body"
+    gh pr review "$PR" --repo "$REPO" --request-changes --body "$1" ;;
+  approve-with-request)
+    [ $# -ge 1 ] || die "approve-with-request needs a body"
+    gh pr review "$PR" --repo "$REPO" --approve --body "$1" ;;
+  thread)
+    [ $# -ge 3 ] || die "thread needs <path> <line> <body>"
+    head=$(gh pr view "$PR" --repo "$REPO" --json headRefOid --jq .headRefOid)
+    gh api --method POST "repos/$REPO/pulls/$PR/reviews" \
+      -f commit_id="$head" -f event=COMMENT -f body="" \
+      -f "comments[][path]=$1" -F "comments[][line]=$2" -f "comments[][side]=RIGHT" -f "comments[][body]=$3" \
+      --jq '"review \(.id) posted"' ;;
+  *) die "unknown action: $ACTION" ;;
+esac

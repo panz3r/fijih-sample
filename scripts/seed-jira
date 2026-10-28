@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Creates Jira issues in the scenario project through the Jira Cloud REST API (v2, plain-text descriptions).
+#
+#   scripts/seed-jira siblings            10 Stories, 10 Bugs, 10 Tasks in the house format, for convention learning
+#   scripts/seed-jira scenario <id>       the issue of scenarios/<id>.md (its "## Jira issue" section)
+#
+# Environment: JIRA_SITE (for example external-team-xxxx.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
+# and optionally JIRA_PROJECT (default SCRUM). Prints one line per created issue: "<KEY> <summary>".
+set -euo pipefail
+
+die() { printf 'seed-jira: %s\n' "$*" >&2; exit 1; }
+
+for var in JIRA_SITE JIRA_EMAIL JIRA_API_TOKEN; do
+  [ -n "${!var:-}" ] || die "$var is not set"
+done
+command -v jq >/dev/null || die "jq is required"
+PROJECT=${JIRA_PROJECT:-SCRUM}
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+
+create_issue() { # type summary description
+  jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
+    '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
+  curl -sS -f -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' \
+    -X POST "https://$JIRA_SITE/rest/api/2/issue" --data @- |
+  jq -r --arg summary "$2" '"\(.key) \($summary)"'
+}
+
+house_format() { # context criteria... ; prints the shared description layout
+  local context=$1; shift
+  printf 'h2. Context\n%s\n\nh2. Acceptance criteria\n' "$context"
+  for criterion in "$@"; do printf -- '* %s\n' "$criterion"; done
+  printf '\nh2. Out of scope\n* Anything not listed above.\n'
+}
+
+seed_siblings() {
+  local i
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    create_issue Story "[web] Show bookmark count $i in the page title" \
+      "$(house_format "The Bookmarks page title never changes, so a user with several tabs cannot tell them apart. Variant $i of the sibling set." \
+        "The document title reads \"Bookmarks (N)\" where N is the number of bookmarks listed." \
+        "The title updates after an add or a remove without a reload." \
+        "A unit test in packages/web covers the empty and the non-empty case.")"
+    create_issue Bug "[api] DELETE /bookmarks/:id returns 500 for id with spaces $i" \
+      "$(house_format "Sending DELETE /bookmarks/a%20b answers 500 instead of 404. Variant $i of the sibling set." \
+        "DELETE with an unknown id, spaces included, answers 404 with {\"error\":\"not found\"}." \
+        "A test in packages/api covers the encoded-space id.")"
+    create_issue Task "[shared] Document normalizeUrl edge cases $i" \
+      "$(house_format "normalizeUrl has behaviour (ports, fragments, trailing slash) that only its tests explain. Variant $i of the sibling set." \
+        "The JSDoc on normalizeUrl lists each normalisation step." \
+        "pnpm lint and pnpm typecheck pass.")"
+  done
+}
+
+seed_scenario() {
+  local file="$ROOT/scenarios/$1.md"
+  [ -f "$file" ] || die "no such scenario: $file"
+  local type summary description
+  type=$(sed -n 's/^- Type: //p' "$file" | head -1)
+  summary=$(sed -n 's/^- Summary: //p' "$file" | head -1)
+  description=$(awk '/^```jira$/{f=1;next} /^```$/{if(f){exit}} f' "$file")
+  [ -n "$type" ] && [ -n "$summary" ] && [ -n "$description" ] || die "$file lacks Type, Summary, or a \`\`\`jira block"
+  create_issue "$type" "$summary" "$description"
+}
+
+case "${1:-}" in
+  siblings) seed_siblings ;;
+  scenario) [ -n "${2:-}" ] || die "scenario needs an id, for example S1"; seed_scenario "$2" ;;
+  *) die "usage: seed-jira siblings | scenario <id>" ;;
+esac

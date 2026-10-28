@@ -1,0 +1,4 @@
+{
+  "web_bundle_gzip_bytes": 835,
+  "note": "gzipped bytes of packages/web/dist/assets/*.js on main; update it in the same pull request that knowingly moves it"
+}

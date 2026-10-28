@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Returns the repository to the `baseline` tag after a scenario.
+#
+#   scripts/reset            close open pull requests, delete remote SCRUM-* branches, force main back to baseline
+#   scripts/reset --keep-prs same, but leave pull requests open (for scenarios that continue later)
+#
+# Requires push access with ruleset bypass on main (repository admin). Local work-item branches are
+# left alone; delete them yourself once the work item is gone.
+set -euo pipefail
+
+die() { printf 'reset: %s\n' "$*" >&2; exit 1; }
+
+KEEP_PRS=false
+for arg in "$@"; do
+  case "$arg" in
+    --keep-prs) KEEP_PRS=true ;;
+    *) die "unknown option: $arg" ;;
+  esac
+done
+
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$ROOT"
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+
+git fetch --prune --tags origin
+git rev-parse -q --verify refs/tags/baseline >/dev/null || die "tag baseline is missing"
+
+if [ "$KEEP_PRS" = false ]; then
+  gh pr list --repo "$REPO" --state open --json number --jq '.[].number' | while read -r number; do
+    gh pr close "$number" --repo "$REPO" --comment "Closed by scripts/reset." --delete-branch || true
+  done
+fi
+
+git for-each-ref --format='%(refname:strip=3)' 'refs/remotes/origin/SCRUM-*' | while read -r branch; do
+  git push origin --delete "$branch" || true
+done
+
+git push --force origin refs/tags/baseline:refs/heads/main
+if [ "$(git rev-parse --abbrev-ref HEAD)" = main ]; then
+  git reset --hard origin/main
+fi
+echo "reset: main is at $(git rev-parse --short refs/tags/baseline) (baseline)"
