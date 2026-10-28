@@ -10,7 +10,7 @@ Each note describes one lifecycle path and follows [_TEMPLATE.md](_TEMPLATE.md):
 4. Follow the note's checkpoints. For human-review steps, run `scripts/review-as-qa` as the note says.
 5. `scripts/reset` when done; close the pull request instead of merging unless the note needs a merge. With the Jira variables set, the reset also moves every issue labelled `scenario-*` to Done and archives it, so finished runs leave the board and backlog; `--keep-issues` (or `--keep-prs`) leaves them for a run that continues later.
 
-`scripts/check-scenarios` validates every note against the template and, with `--write`, regenerates the catalogue below from the frontmatter; CI runs the check. Reading frontmatter needs [yq](https://github.com/mikefarah/yq) v4 (`brew install yq`).
+`scripts/check-scenarios` validates every note against the template and, with `--write`, regenerates the catalogue below from the frontmatter; CI runs the check. To add a note for a FIJIₕ behaviour, or update the notes a FIJIₕ change affects, use the `/add-scenario` skill in `.claude/skills/add-scenario/`: it takes the expectations from the installed FIJIₕ skills and finishes with the check and the baseline move. Reading frontmatter needs [yq](https://github.com/mikefarah/yq) v4 (`brew install yq`).
 
 Install the FIJIₕ build under test from a local checkout so the sample follows the branch being reviewed: `apm install /path/to/fijih --target claude,agent-skills` (then `apm audit --ci`). Secrets for the scripts: `QA_GH_TOKEN` (QA Engineer account), `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (classic or scoped Atlassian API token; calls go through the `api.atlassian.com` gateway). Archiving in `scripts/reset` needs a Jira Premium site; elsewhere the issues stay Done.
 
