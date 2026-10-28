@@ -71,9 +71,9 @@ so that I can group my bookmarks and see each bookmark's group next to its title
   - [x] In `packages/api/src/app.ts`, read `tags` from the POST body and pass it to `store.add`.
   - [x] In `packages/api/src/store.ts`, default a missing (`undefined`) `tags` to `[]`, throw `ValidationError("invalid tag")` when `tags` is present but not an array or holds a non-string entry (before calling `normalizeTags`, so no 500), normalise with `normalizeTags`, throw `ValidationError("invalid tag")` when any normalised tag fails `isValidTag` (including empty after trimming) (after the existing title and url checks, before the duplicate-url check), and store `tags` on the bookmark.
   - [x] Tests in `packages/api/src/app.test.ts`: POST with tags (normalised in the 201 body), POST without tags (`[]`), 33-character tag, whitespace tag, empty and whitespace-only tags, non-array `tags` (`"work"`, `null`), and non-string entry (`[1]`) each answer 400 `{"error":"invalid tag"}` and the list does not grow; a 32-character tag that has upper-case padding is checked after trimming and lower-casing; GET returns tags.
-- [ ] Web page shows tags after the title (AC: 6, 7)
-  - [ ] In `packages/web/src/render.ts`, append a `<span class="tags">` with `bookmark.tags.join(", ")` after the link only when `bookmark.tags.length > 0`.
-  - [ ] Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: tags shown after the title as `work, read`; no `.tags` element and no extra text when `tags` is `[]`.
+- [x] Web page shows tags after the title (AC: 6, 7)
+  - [x] In `packages/web/src/render.ts`, append a `<span class="tags">` with `bookmark.tags.join(", ")` after the link only when `bookmark.tags.length > 0`.
+  - [x] Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: tags shown after the title as `work, read`; no `.tags` element and no extra text when `tags` is `[]`.
 - [ ] Delivery conventions (AC: 7, 8)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
   - [ ] Run `pnpm build` then `pnpm measure`; update `measure/baseline.json` `web_bundle_gzip_bytes` when the value moved.
@@ -119,6 +119,8 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - packages/api/src/app.ts
 - packages/api/src/store.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 ## Implementation Record
 
 - Task 1 (shared): added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `normalizeTags` (Set-based dedup after trim/lower-case) and `isValidTag` (non-empty, <=32, no `\s`). `pnpm --filter @sample/shared test` 10 passed; shared lint and typecheck passed.
