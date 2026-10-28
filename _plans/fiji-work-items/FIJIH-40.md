@@ -123,6 +123,8 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 - Task 4 (baseline): `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=892` (baseline was 835); set `measure/baseline.json` to 892, and `pnpm measure` then printed `web_bundle_gzip_delta=0`.
 - Task 5 (root checks): `pnpm test`, `pnpm lint`, `pnpm typecheck` passed from the repository root.
 
+- Review fix c1ef1e5 (Copilot findings): `normalizeTags` checks whitespace and length on the trimmed tag before lower-casing; `BookmarkStore.add` defaults to `[]` only for `undefined`, so `null` answers 400 `invalid tag`. Files: packages/shared/src/index.ts, packages/shared/src/index.test.ts, packages/api/src/store.ts, packages/api/src/app.test.ts. Checked with `pnpm test` (shared 11, api 7, web 4), `pnpm lint`, `pnpm typecheck`; `pnpm measure` delta 0.
+
 ## Validation Evidence
 
 - AC-1: passed — shared `normalizeTags` tests (trim, lower-case, dedupe) and api test "trims, lower-cases, and deduplicates tags" (`[" News ", "news", "Tech"]` gives `news`, `tech`, status 201).
@@ -160,6 +162,9 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 
 ## Review Record
 
+- PRRT_kwDOVaYq_M6xNFKR (packages/api/src/store.ts, Copilot, `?? []` accepts `"tags": null`): valid; fixed in c1ef1e5; replied; resolved.
+- PRRT_kwDOVaYq_M6xNFLS (packages/shared/src/index.ts, Copilot, length checked after lower-casing): valid; fixed in c1ef1e5; replied; resolved.
+
 ## Change Log
 
 - Drafted from FIJIH-40 at revision 2026-10-28T16:43:21.245+0100. The issue was assigned to the current user.
@@ -172,3 +177,4 @@ Reviewed head: 902f9310942705d241a1eead187c8f4f68cc9f7e
 - Approved: local-qa-review — approve
 - Delivery: changeset `.changeset/fijih-40-add-tags.md` (summary "Add tags to bookmarks") committed in f98e78a and pushed with the branch. Draft PR #3 (https://github.com/panz3r/fijih-sample/pull/3) opened against `main`, title `[FIJIH-40] Add tags to bookmarks`, label `enhancement`, assignee panz3r. Copilot review requested (review_requested event confirmed in the timeline). Reviewers are not requested while the PR is draft; the QA Engineer `duckyduff369` is requested at ready-for-review.
 - Quality findings still open at delivery: tag length checked after lower-casing; `"tags": null` accepted as `[]`. Plan defaults unchanged (add form unchanged, README unchanged).
+- Copilot pass: 2 findings (both matched the open QA minor findings and were in scope of AC-3 and open decision 2), fixed in c1ef1e5 and pushed; threads resolved; Copilot re-review requested.
