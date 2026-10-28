@@ -88,8 +88,8 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - [x] 3. Show tags on the page in `packages/web` (AC: 6, 7)
   - [x] `renderList` appends an element holding `tags.join(", ")` after the title link when the bookmark has tags, and nothing when it has none.
   - [x] Update existing `render.test.ts` fixtures for the new required `tags` field; add cases for tags shown after the title, comma separated, and for no tags element when empty.
-- [ ] 4. Update the bundle-size baseline (AC: 8)
-  - [ ] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` into `measure/baseline.json` in its own `chore:` commit, and re-run `pnpm measure` to confirm delta 0.
+- [x] 4. Update the bundle-size baseline (AC: 8)
+  - [x] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` into `measure/baseline.json` in its own `chore:` commit, and re-run `pnpm measure` to confirm delta 0.
 - [ ] 5. Live-app check (AC: 1, 2, 5, 6)
   - [ ] Start the API (`pnpm --filter @sample/api start`) and the web dev server (`pnpm --filter @sample/web dev`); create one bookmark with tags `[" News", "news", "Tech "]` and one without via `curl` against the API; confirm `GET /bookmarks` shows `["news","tech"]` and `[]`, and the page shows "news, tech" after the first title and nothing extra after the second. Record the commands and output in Validation Evidence.
 - [ ] 6. Run the full checks from the repository root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 7)
@@ -134,6 +134,7 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/web/index.html
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -141,6 +142,7 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - Task 2: `BookmarkStore.add` calls `normalizeTags` after the title and url checks and before the duplicate-url check (D7); invalid gives `ValidationError("invalid tag")`, which `app.ts` already maps to 400. `app.ts` passes `body.tags` as `unknown`. Hypothesis (no stored state on invalid input, since validation precedes `items.set`) confirmed by the "stores nothing" tests.
 - Observation: the existing test "creates, lists newest first, and deletes" is flaky (about 1 in 12 runs, also on the commit before the api change): two POSTs in the same millisecond tie on `createdAt`, and the stable sort keeps insertion order. Not caused by this change and outside the tasks; left as is.
 - Task 3: `renderList` wraps the title link and, only when tags exist, a `span.tags` (`textContent` = `tags.join(", ")`) in one `span`, so the flex `li` keeps tags next to the title and Remove on the right; `.tags` margin/colour added in `packages/web/index.html`. Display only, per the approved answer on the add form.
+- Task 4: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890` (baseline was 835, delta 55); wrote 890 into `measure/baseline.json`; re-run printed delta 0.
 
 ## Validation Evidence
 
@@ -159,3 +161,4 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 - 2026-10-28: Task 1 implemented (shared tag normalisation).
 - 2026-10-28: Task 2 implemented (api tags).
 - 2026-10-28: Task 3 implemented (web tags display).
+- 2026-10-28: Task 4 done (bundle baseline 835 to 890).
