@@ -7,9 +7,9 @@ source:
   key: FIJIH-37
   revision: 2026-10-28T15:25:14.259+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -124,3 +124,4 @@ so that I can group related bookmarks.
 ## Change Log
 
 - 2026-10-28: Plan drafted from Jira FIJIH-37 (revision 2026-10-28T15:25:14.259+0100); issue assigned to Mattia Panzeri.
+- 2026-10-28: Approved: plan-approval — approve
