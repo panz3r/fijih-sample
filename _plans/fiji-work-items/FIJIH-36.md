@@ -8,12 +8,12 @@ source:
   revision: 2026-10-28T14:00:12.914+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-36-add-tags
   base_branch: null
@@ -132,6 +132,30 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 
 ## Quality Gate
 
+Gate: concerns
+
+Reviewed head: ee7e4fca1e10283f5a4f6b5cd644ebd5e4d953f6
+
+Scope: full branch diff `main...FIJIH-36-add-tags` (attempt 1, no re-entry). Root `pnpm test` (shared 9, api 9, web 4), `pnpm lint`, and `pnpm typecheck` re-run at the reviewed head: all passed.
+
+Acceptance trace:
+
+- AC-1: implementation `normalizeTags` in `packages/shared/src/index.ts` (trim, lower-case, `Set` dedupe in first-occurrence order, `undefined` gives `[]`), called by `BookmarkStore.add` in `packages/api/src/store.ts`; `packages/api/src/app.ts` forwards `body.tags`. Verification: `packages/shared/src/index.test.ts` (default, trim/lower/dedupe order) and `packages/api/src/app.test.ts` ("normalises tags, defaults to [], and returns them from GET": 201 body tags `["work","home"]`, omitted gives `[]`). Met.
+- AC-2: implementation `normalizeTags` throws `InvalidTagError` for non-array, non-string entry, and trimmed empty, over-32, or whitespace-containing tags; `store.add` maps it to `ValidationError("invalid tag")` before `items.set`, so nothing is stored. Verification: shared tests (32 accepted, 33 rejected, padded 32 accepted, space and tab, empty, `1`, `null`, string, object) and api `it.each` cases (too long, inner whitespace, empty after trim, non-string, non-array) asserting `400 {"error":"invalid tag"}` and an unchanged list count. Met.
+- AC-3: implementation stores `tags` on the `Bookmark` returned by `store.list()`. Verification: api GET round-trip in the same test (`["work","home"]` and `[]`). Met.
+- AC-4: implementation `packages/web/src/render.ts` appends `span.tags` with `textContent = tags.join(", ")` after the link only when tags exist. Verification: `packages/web/src/render.test.ts` ("shows tags after the title" checks text `a, b` and that it is the link's next sibling; "renders no tag element without tags" checks no `.tags` and text `ExampleRemove`). Met.
+- AC-5: Vitest tests added in all three packages; root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed (re-run in this review); bundle baseline updated to 881 bytes with re-measure delta 0; changeset `.changeset/add-bookmark-tags.md` summary `Add tags to bookmarks`. Met.
+
+Plan decisions vs criteria: Q1 (no tags input on the add form), Q2 (non-array/non-string is 400), Q3 (empty after trim is 400), and Q4 (limits after trimming) are consistent with AC-2 and AC-4; none contradicts a criterion.
+
+Findings:
+
+- minor — `packages/shared/src/index.ts` (`normalizeTags`): the 32-character limit counts UTF-16 code units (`tag.length`), not characters. Reproduced: a tag of 20 emoji (20 code points, 40 code units) is rejected with `invalid tag`. ASCII tags behave as AC-2 states; only astral-plane characters are affected. Follow-up: count with `[...tag].length` and add a non-ASCII boundary test.
+
+Residual risks:
+
+- Operational Requirements entries carry recorded evidence; none is `evidence: unverified`. No Validation Evidence line is `deferred` and no criterion is `pending-ci`.
+
 ## Review Record
 
 ## Change Log
@@ -144,3 +168,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - 2026-10-28: T4 implemented
 - 2026-10-28: T5 implemented
 - 2026-10-28: T6 implemented; implementation complete, awaiting implementation-approval
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
