@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -74,8 +74,8 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 - [x] Show tags after the title in the web list (AC: 5, 6)
   - [x] `packages/web/src/render.ts`: when `bookmark.tags` is not empty, add a `span.tags` with `tags.join(", ")` directly after the link. Group the link and the span so the existing `li` flex layout keeps them together, away from Remove. When there are no tags, render no span
   - [x] Add tests to `packages/web/src/render.test.ts`: tags joined with `, ` after the title, no tags element when `tags` is `[]`, and add `tags` to the existing fixtures
-- [ ] Run `pnpm build` then `pnpm measure`, and set `web_bundle_gzip_bytes` in `measure/baseline.json` to the printed size (AC: 7)
-- [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root, and record the results in Validation Evidence (AC: 6)
+- [x] Run `pnpm build` then `pnpm measure`, and set `web_bundle_gzip_bytes` in `measure/baseline.json` to the printed size (AC: 7)
+- [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root, and record the results in Validation Evidence (AC: 6)
 
 ## Engineering Context
 
@@ -108,18 +108,30 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 - packages/api/src/store.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- measure/baseline.json
 - packages/shared/src/index.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/shared/src/index.test.ts
+- _plans/fiji-work-items/FIJIH-40.md
 
 ## Implementation Record
 
 - Task 1 (shared): hypothesis: a pure `normalizeTags` returning `null` on invalid input satisfies AC 1-3 at the unit level. Checked with `pnpm --filter @sample/shared test` (10 passed), `typecheck` and `lint packages/shared` clean. Empty-after-trim tags return `null` (default for open decision 2).
 - Task 2 (api): hypothesis: validating in `BookmarkStore.add` before the duplicate-URL check gives 400 `invalid tag` with nothing stored. The store also rejects non-array or non-string `tags` at runtime (default for open decision 2). Checked with `pnpm --filter @sample/api test` (7 passed), `typecheck` and `lint packages/api` clean.
 - Task 3 (web): hypothesis: wrapping the link and a `span.tags` in one `span` keeps them together in the flex `li` and renders no tags element when empty. Tags use `textContent`. `pnpm --filter @sample/web test` (4 passed), `typecheck` and `lint packages/web` clean.
+- Task 4 (baseline): `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=892` (baseline was 835); set `measure/baseline.json` to 892, and `pnpm measure` then printed `web_bundle_gzip_delta=0`.
+- Task 5 (root checks): `pnpm test`, `pnpm lint`, `pnpm typecheck` passed from the repository root.
 
 ## Validation Evidence
+
+- AC-1: passed — shared `normalizeTags` tests (trim, lower-case, dedupe) and api test "trims, lower-cases, and deduplicates tags" (`[" News ", "news", "Tech"]` gives `news`, `tech`, status 201).
+- AC-2: passed — api test "defaults tags to []" (tags missing and `[]`).
+- AC-3: passed — api test "answers 400 invalid tag and stores nothing" (33 characters, inner whitespace, non-string, blank, non-array; follow-up GET lists none) and "accepts a 32-character tag"; shared boundary tests.
+- AC-4: passed — api test checks `GET /bookmarks` returns the created tags.
+- AC-5: passed — web tests: `news, tech` in `.tags` directly after the link; no `.tags` element when `tags` is `[]`.
+- AC-6: passed — tests in shared (10), api (7), web (4); `pnpm test`, `pnpm lint`, `pnpm typecheck` pass from the root.
+- AC-7: passed — `pnpm build` then `pnpm measure`: `web_bundle_gzip_bytes=892`, `web_bundle_gzip_delta=0` with `measure/baseline.json` at 892.
 
 ## Quality Gate
 
@@ -130,3 +142,4 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 - Drafted from FIJIH-40 at revision 2026-10-28T16:43:21.245+0100. The issue was assigned to the current user.
 - Approved: plan-approval — approve
 - Open Plan questions were not answered beyond "approve"; defaults taken at approval: add form unchanged, malformed tags answer 400 `invalid tag`, first-occurrence order kept, README not changed.
+- Implementation complete: all tasks checked off; checkpoint `implementation-approval`. Bundle baseline moved 835 to 892 bytes (+57).
