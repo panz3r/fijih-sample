@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 3
 quality:
   gate: concerns
@@ -293,3 +293,5 @@ Notes:
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Local QA review (full re-review, attempt 3) recorded gate `concerns` at `8707c90`: all nine criteria evidenced, one minor finding (lower-casing after the length check), one residual risk (layout not checked in a browser; browser tool not permitted).
 - 2026-10-28: Finalize (attempt 3): all nine criteria evidenced and all tasks checked; no bookkeeping slips found; File List matches the branch diff against `main`. Fourteen checked tasks (the eight from attempt 1, the three from Re-entry 2, and the three from Re-entry 3) have no Implementation Record entry citing an in-range commit; reported as discrepancies, left checked. Set checkpoint `local-qa-review`, transition `qa-reviewed`.
+- 2026-10-28: Approved: local-qa-review — conditional: Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve. (verified at 360f2ba)
+- 2026-10-28: Delivery (re-entry 3, criterion 9): pushed `360f2ba` (fast-forward from `9fcb896`, carrying `8707c90` and the work-item commits); updated PR #6 body to the final branch state (criterion 9, baseline 950, `680eb98` null rejection, residual risks; approval and earlier Copilot review are on `9fcb896` only); requested a fresh Copilot review on the new head (`review_requested` for Copilot at 21:22:21Z). PR stays ready for review. Set phase `automated-review`, checkpoint null, transition `delivery-complete`. The commit stays local.
