@@ -5,7 +5,7 @@
 #   scripts/seed-jira scenario <id>       the issue of scenarios/<id>.md (its "## Jira issue" section)
 #
 # Environment: JIRA_SITE (for example your-site.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
-# and optionally JIRA_PROJECT (default SCRUM). Prints one line per created issue: "<KEY> <summary>".
+# and optionally JIRA_PROJECT (default FIJIH). Prints one line per created issue: "<KEY> <summary>".
 # Calls go through the api.atlassian.com gateway with the site's cloud ID, which accepts both classic
 # and scoped API tokens (a scoped token is rejected on the site hostname itself).
 set -euo pipefail
@@ -16,24 +16,41 @@ for var in JIRA_SITE JIRA_EMAIL JIRA_API_TOKEN; do
   [ -n "${!var:-}" ] || die "$var is not set"
 done
 command -v jq >/dev/null || die "jq is required"
-PROJECT=${JIRA_PROJECT:-SCRUM}
+PROJECT=${JIRA_PROJECT:-FIJIH}
 ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 
 CLOUD_ID=$(curl -sS -f "https://$JIRA_SITE/_edge/tenant_info" | jq -r '.cloudId // empty')
 [ -n "$CLOUD_ID" ] || die "could not resolve the cloud ID of $JIRA_SITE"
 API="https://api.atlassian.com/ex/jira/$CLOUD_ID/rest/api/2"
+API3="https://api.atlassian.com/ex/jira/$CLOUD_ID/rest/api/3"
 
 # Reading the project needs only read:jira-work, so this check also works with a scoped token.
 project_check=$(curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$API/project/$PROJECT")
 [ "$(printf '%s' "$project_check" | jq -r '.key // empty')" = "$PROJECT" ] ||
   die "cannot read project $PROJECT on $JIRA_SITE as $JIRA_EMAIL: $(printf '%s' "$project_check" | jq -r '.message // .errorMessages[0] // .')"
 
-create_issue() { # type summary description
-  jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
-    '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
-  curl -sS -f -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' \
-    -X POST "$API/issue" --data @- |
-  jq -r --arg summary "$2" '"\(.key) \($summary)"'
+issue_exists() { # summary; true when an issue with exactly this summary already exists in the project
+  local jql count
+  jql=$(jq -rn --arg p "$PROJECT" --arg s "$1" '"project = \($p) AND summary ~ \($s | tojson)"')
+  count=$(curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -G "$API3/search/jql" \
+    --data-urlencode "jql=$jql" --data-urlencode "fields=summary" --data-urlencode "maxResults=20" |
+    jq -r --arg s "$1" '[.issues[]? | select(.fields.summary == $s)] | length')
+  [ "${count:-0}" -gt 0 ]
+}
+
+create_issue() { # type summary description; skips a summary that already exists, dies on a Jira error
+  if issue_exists "$2"; then
+    printf 'skip (exists) %s\n' "$2"
+    return 0
+  fi
+  local response key
+  response=$(jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
+      '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
+    curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' \
+      -X POST "$API/issue" --data @-)
+  key=$(printf '%s' "$response" | jq -r '.key // empty')
+  [ -n "$key" ] || die "creating \"$2\" ($1) failed: $(printf '%s' "$response" | jq -c '{errorMessages, errors}')"
+  printf '%s %s\n' "$key" "$2"
 }
 
 house_format() { # context criteria... ; prints the shared description layout

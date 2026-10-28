@@ -9,7 +9,7 @@ This repository exists to exercise FIJIₕ. Keep changes small and the checks fa
 
 ## Git
 
-- Branch naming: `<JIRA-KEY>-<short-kebab-slug>`, for example `SCRUM-12-add-tags`. The Jira key keeps its upper case.
+- Branch naming: `<JIRA-KEY>-<short-kebab-slug>`, for example `FIJIH-12-add-tags`. The Jira key keeps its upper case.
 - Commits follow Conventional Commits: `feat:`, `fix:`, `test:`, `chore:`, `docs:`, `ci:`. One logical change per commit, subject in the imperative, under 72 characters.
 - Pull requests are squash-merged into `main`; the branch is deleted on merge.
 - The `gh` CLI may be used for GitHub reads and writes.
@@ -37,7 +37,7 @@ Every behaviour change comes with a Vitest test in the package it changes. `pnpm
 
 ## Jira
 
-- Project `SCRUM`. When work starts on an issue, move it to `In Progress`.
+- Project `FIJIH`. When work starts on an issue, move it to `In Progress`.
 
 ## AI tooling
 

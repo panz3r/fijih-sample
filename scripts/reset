@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Returns the repository to the `baseline` tag after a scenario.
 #
-#   scripts/reset            close open pull requests, delete remote SCRUM-* branches, force main back to baseline
+#   scripts/reset            close open pull requests, delete remote FIJIH-* branches, force main back to baseline
 #   scripts/reset --keep-prs same, but leave pull requests open (for scenarios that continue later)
 #
 # Requires push access with ruleset bypass on main (repository admin). Local work-item branches are
@@ -31,7 +31,7 @@ if [ "$KEEP_PRS" = false ]; then
   done
 fi
 
-git for-each-ref --format='%(refname:strip=3)' 'refs/remotes/origin/SCRUM-*' | while read -r branch; do
+git for-each-ref --format='%(refname:strip=3)' 'refs/remotes/origin/FIJIH-*' | while read -r branch; do
   git push origin --delete "$branch" || true
 done
 
