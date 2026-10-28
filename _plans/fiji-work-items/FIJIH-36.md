@@ -56,10 +56,10 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 
 ## Tasks and Subtasks
 
-- [ ] T1. Shared tag model and normaliser (AC: 1, 2, 5)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `readonly string[]`) to `NewBookmark` in `packages/shared/src/index.ts`.
-  - [ ] Add a pure `normalizeTags(value: unknown): string[]` that returns `[]` for `undefined`, trims, lower-cases, and deduplicates (first occurrence wins), and throws (or signals) invalid for a non-array, a non-string entry, an empty trimmed tag, a trimmed tag over 32 characters, or a trimmed tag containing whitespace. Export `MAX_TAG_LENGTH = 32`.
-  - [ ] Tests in `packages/shared/src/index.test.ts`: default `[]`, trim + lower-case + dedupe, exactly 32 characters accepted, 33 rejected, inner space and tab rejected, empty-after-trim rejected, non-array and non-string rejected.
+- [x] T1. Shared tag model and normaliser (AC: 1, 2, 5)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `readonly string[]`) to `NewBookmark` in `packages/shared/src/index.ts`.
+  - [x] Add a pure `normalizeTags(value: unknown): string[]` that returns `[]` for `undefined`, trims, lower-cases, and deduplicates (first occurrence wins), and throws (or signals) invalid for a non-array, a non-string entry, an empty trimmed tag, a trimmed tag over 32 characters, or a trimmed tag containing whitespace. Export `MAX_TAG_LENGTH = 32`.
+  - [x] Tests in `packages/shared/src/index.test.ts`: default `[]`, trim + lower-case + dedupe, exactly 32 characters accepted, 33 rejected, inner space and tab rejected, empty-after-trim rejected, non-array and non-string rejected.
 - [ ] T2. API accepts, stores, and returns tags (AC: 1, 2, 3, 5)
   - [ ] `packages/api/src/store.ts`: `add` normalises tags via `normalizeTags`, maps invalid input to `ValidationError("invalid tag")`, and stores `tags` on the bookmark; validation happens before insertion so a rejected request stores nothing.
   - [ ] `packages/api/src/app.ts`: pass `body.tags` through to `store.add`.
@@ -103,7 +103,12 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 
 ## File List
 
+- `packages/shared/src/index.ts`
+- `packages/shared/src/index.test.ts`
+
 ## Implementation Record
+
+- T1: Added tags to Bookmark/NewBookmark, MAX_TAG_LENGTH, InvalidTagError, and normalizeTags (signals invalid by throwing InvalidTagError). Shared test (9 tests), lint, typecheck passed.
 
 ## Validation Evidence
 
@@ -115,3 +120,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 
 - 2026-10-28: Plan drafted from FIJIH-36 revision `2026-10-28T14:00:12.914+0100`; issue assigned to Mattia Panzeri.
 - 2026-10-28: Approved: plan-approval — approve, assumptions are correct
+- 2026-10-28: T1 implemented
