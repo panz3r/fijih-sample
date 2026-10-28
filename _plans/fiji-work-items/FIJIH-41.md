@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -187,3 +187,4 @@ so that I can group my bookmarks.
 - 2026-10-28: Implementation complete; Jira FIJIH-41 moved from To Do to In Progress. Bundle baseline moved 835 to 881 bytes.
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (no findings; residual risk: pre-existing flaky api ordering test). Reviewed head e734293.
+- 2026-10-28: Finalize (local QA review): all tasks checked and all acceptance criteria evidenced on `FIJIH-41-add-bookmark-tags` since `main`; no bookkeeping slips; checkpoint local-qa-review. Task entries name their work without commit hashes (listed under discrepancies). Quality gate concerns carried forward unchanged.
