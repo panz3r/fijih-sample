@@ -8,9 +8,9 @@ source:
   revision: 2026-10-28T14:00:12.914+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -176,3 +176,5 @@ Residual risks:
 - 2026-10-28: Approved: local-qa-review — approve
 - 2026-10-28: Delivery: committed change intent already on branch (.changeset/add-bookmark-tags.md, summary matches PR title without key, no change); pushed FIJIH-36-add-tags; opened draft PR #1 (base main, label enhancement, assignee panz3r); requested Copilot review (confirmed review_requested event on timeline)
 - 2026-10-28: Copilot pass: 1 finding valid and fixed (ed83a25), thread resolved, re-review clear; set checkpoint ready-for-review
+- 2026-10-28: Approved: ready-for-review — approve
+- 2026-10-28: Ready-for-review: marked PR #1 ready; requested review from duckyduff369 (QA Engineer, owning team Bookmarks; the only other member besides the author panz3r); confirmed review_requested on the timeline
