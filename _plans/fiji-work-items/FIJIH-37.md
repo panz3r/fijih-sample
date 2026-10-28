@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -63,22 +63,22 @@ so that I can group related bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Add tags to the shared model (AC: 1, 2, 3, 4, 6)
-  - [ ] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark` in `packages/shared/src/index.ts`.
-  - [ ] Add a pure `normalizeTags(input: unknown): string[]` that trims, lower-cases, validates (AC 3 rules), and deduplicates in first-occurrence order, throwing a dedicated error (or returning a result the API maps) for invalid input; export `MAX_TAG_LENGTH = 32`.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: normalisation and dedup example, default for `undefined`, the 32/33 code-point boundary, inner whitespace, empty-after-trim, non-array and non-string input.
-- [ ] Accept and return tags in the API (AC: 1, 2, 3, 4, 6)
-  - [ ] `packages/api/src/store.ts`: `add` normalises `input.tags` through `normalizeTags`, raising `ValidationError("invalid tag")` on invalid input before any other side effect, and stores `tags` on the bookmark.
-  - [ ] `packages/api/src/app.ts`: pass `body.tags` through to `store.add` unchanged (validation stays in the store/shared function).
-  - [ ] Tests in `packages/api/src/app.test.ts`: POST with tags (AC 1), without tags and with `[]` (AC 2), each invalid case answers 400 `{"error":"invalid tag"}` and the list is unchanged (AC 3), GET returns tags (AC 4). Update the existing assertions that compare whole bookmarks, if any, for the new field.
-- [ ] Show tags on the page (AC: 5, 6)
-  - [ ] `packages/web/src/render.ts`: after the title link, append an element (for example a `<span class="tags">`) with `bookmark.tags.join(", ")` only when `tags.length > 0`; set it with `textContent`, never HTML.
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is empty; existing fixtures gain `tags`.
-- [ ] Run the root checks (AC: 6)
-  - [ ] `pnpm test`, `pnpm lint`, `pnpm typecheck` from the repository root.
-- [ ] Update the bundle-size baseline (AC: 7)
-  - [ ] `pnpm build && pnpm measure`; write the reported `web_bundle_gzip_bytes` into `measure/baseline.json` in this change.
-- [ ] (Only if Q7 is answered yes) Update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
+- [x] Add tags to the shared model (AC: 1, 2, 3, 4, 6)
+  - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark` in `packages/shared/src/index.ts`.
+  - [x] Add a pure `normalizeTags(input: unknown): string[]` that trims, lower-cases, validates (AC 3 rules), and deduplicates in first-occurrence order, throwing a dedicated error (or returning a result the API maps) for invalid input; export `MAX_TAG_LENGTH = 32`.
+  - [x] Unit tests in `packages/shared/src/index.test.ts`: normalisation and dedup example, default for `undefined`, the 32/33 code-point boundary, inner whitespace, empty-after-trim, non-array and non-string input.
+- [x] Accept and return tags in the API (AC: 1, 2, 3, 4, 6)
+  - [x] `packages/api/src/store.ts`: `add` normalises `input.tags` through `normalizeTags`, raising `ValidationError("invalid tag")` on invalid input before any other side effect, and stores `tags` on the bookmark.
+  - [x] `packages/api/src/app.ts`: pass `body.tags` through to `store.add` unchanged (validation stays in the store/shared function).
+  - [x] Tests in `packages/api/src/app.test.ts`: POST with tags (AC 1), without tags and with `[]` (AC 2), each invalid case answers 400 `{"error":"invalid tag"}` and the list is unchanged (AC 3), GET returns tags (AC 4). Update the existing assertions that compare whole bookmarks, if any, for the new field.
+- [x] Show tags on the page (AC: 5, 6)
+  - [x] `packages/web/src/render.ts`: after the title link, append an element (for example a `<span class="tags">`) with `bookmark.tags.join(", ")` only when `tags.length > 0`; set it with `textContent`, never HTML.
+  - [x] Tests in `packages/web/src/render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is empty; existing fixtures gain `tags`.
+- [x] Run the root checks (AC: 6)
+  - [x] `pnpm test`, `pnpm lint`, `pnpm typecheck` from the repository root.
+- [x] Update the bundle-size baseline (AC: 7)
+  - [x] `pnpm build && pnpm measure`; write the reported `web_bundle_gzip_bytes` into `measure/baseline.json` in this change.
+- [x] (Only if Q7 is answered yes) Update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
 
 ## Engineering Context
 
@@ -113,9 +113,29 @@ so that I can group related bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts, packages/shared/src/index.test.ts
+- packages/api/src/store.ts, packages/api/src/app.ts, packages/api/src/app.test.ts
+- packages/web/src/render.ts, packages/web/src/render.test.ts
+- measure/baseline.json, README.md
+- _plans/fiji-work-items/FIJIH-37.md
+
 ## Implementation Record
 
+- Shared model (3abdc7f): `normalizeTags`, `MAX_TAG_LENGTH`, `InvalidTagError`; tests for dedup order, 32/33 code points (incl. emoji), whitespace, empty, non-array, non-string. 8 tests pass.
+- API (52b526f): store maps `InvalidTagError` to `ValidationError("invalid tag")` after title/url checks and before the duplicate check; app forwards `tags`. 11 tests pass.
+- Web (dff3405): `<span class="tags">` after the link only when tags exist, via textContent. 4 tests pass.
+- Baseline: `pnpm build && pnpm measure` reported 881 bytes (was 835); baseline updated. README shared row updated (Q7 yes). Web Add form unchanged (Q6).
+- Note: the pre-existing API test "creates, lists newest first, and deletes" is occasionally flaky (two POSTs in the same millisecond tie on createdAt); seen once in about 8 runs, unrelated to tags, not changed.
+
 ## Validation Evidence
+
+- AC-1: passed — shared and api tests (`["  News ", "tech", "NEWS"]` gives `["news","tech"]`).
+- AC-2: passed — api tests for missing tags and `[]`.
+- AC-3: passed — shared and api tests for >32, whitespace, empty, non-array, non-string; exactly 32 accepted; list unchanged after 400.
+- AC-4: passed — api GET test.
+- AC-5: passed — web render tests.
+- AC-6: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from root.
+- AC-7: passed — `pnpm build && pnpm measure` gives 881; baseline 881, delta 0.
 
 ## Quality Gate
 
@@ -125,3 +145,4 @@ so that I can group related bookmarks.
 
 - 2026-10-28: Plan drafted from Jira FIJIH-37 (revision 2026-10-28T15:25:14.259+0100); issue assigned to Mattia Panzeri.
 - 2026-10-28: Approved: plan-approval — approve
+- 2026-10-28: Implementation complete; all tasks checked; Jira FIJIH-37 moved to In Progress.
