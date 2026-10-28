@@ -18,12 +18,16 @@ export function normalizeTags(value: unknown): string[] | null {
   if (value === undefined) return [];
   if (!Array.isArray(value)) return null;
   const out: string[] = [];
+  const seen = new Set<string>();
   for (const entry of value) {
     if (typeof entry !== "string") return null;
     const tag = entry.trim();
     if (!tag || tag.length > MAX_TAG_LENGTH || /\s/.test(tag)) return null;
     const lower = tag.toLowerCase();
-    if (!out.includes(lower)) out.push(lower);
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      out.push(lower);
+    }
   }
   return out;
 }
