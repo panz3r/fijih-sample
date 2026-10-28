@@ -67,14 +67,16 @@ fetch_existing() {
 }
 fetch_existing
 
-issue_exists() { cut -f2- "$EXISTING" | grep -Fxq "$1"; }
+existing_key() { awk -F'\t' -v s="$1" '{ k=$1; sub(/^[^\t]*\t/, ""); if ($0 == s) { print k; exit } }' "$EXISTING"; }
 
 create_issue() { # type summary description; skips a summary that already exists, dies on a Jira error
-  if issue_exists "$2"; then
-    printf 'skip (exists) %s\n' "$2"
+  local key
+  key=$(existing_key "$2")
+  if [ -n "$key" ]; then
+    printf 'skip (exists) %s %s\n' "$key" "$2"
     return 0
   fi
-  local response key
+  local response
   response=$(jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
       '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
     jira -X POST "$API/issue" --data @-)
