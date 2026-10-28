@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T18:58:41.144+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -182,3 +182,4 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - 2026-10-28: Approved: local-qa-review — approve; leave the flaky test out of this PR.
 - 2026-10-28: Delivery: pushed `FIJIH-42-add-bookmark-tags` to origin at a808b47; opened draft pull request #5 (https://github.com/panz3r/fijih-sample/pull/5) against `main`, title `[FIJIH-42] Add tags to bookmarks`, label `enhancement`, assignee panz3r; the existing changeset `.changeset/add-bookmark-tags.md` matches the title. Copilot review requested (timeline `review_requested` for Copilot). The flaky api test is named as a known pre-existing follow-up in the PR description and is not changed here. Work-item commit held locally (not pushed).
 - 2026-10-28: Copilot pass: review 5687482217 raised no findings; no fixes; checkpoint ready-for-review.
+- 2026-10-28: Approved: ready-for-review — approve. Pull request #5 marked ready for review and review requested from the QA Engineer `duckyduff369` (owning team per TEAMS.md; the only member besides the author `panz3r`). Copilot review was clean with no open threads. Work-item commits held locally under evidence.held_commits; no push.
