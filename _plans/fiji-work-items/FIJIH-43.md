@@ -8,16 +8,16 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-43-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/6
   jira_context_comment_id: null
 ---
 
@@ -202,4 +202,6 @@ QA re-ran the repository checks at the reviewed head: `pnpm test` exited 0 (shar
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Local QA review recorded gate `concerns` at `9943bb3` (two minor findings, one residual risk).
 - 2026-10-28: Finalize: all tasks checked and all acceptance criteria evidenced; no bookkeeping slips found. Eight checked tasks have no Implementation Record entry citing an in-range commit (reported as discrepancies, left checked). Set checkpoint `local-qa-review`.
+- 2026-10-28: Approved: local-qa-review — Approve.
+- 2026-10-28: Delivery: added changeset `.changeset/bookmark-tags.md`, pushed the branch, opened draft PR #6 (label `enhancement`) and requested a Copilot review.
 
