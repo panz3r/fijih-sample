@@ -64,9 +64,9 @@ Open product questions (also under the Plan result's risks; none blocks drafting
   - [x] `packages/api/src/store.ts`: `add` normalises tags via `normalizeTags`, maps invalid input to `ValidationError("invalid tag")`, and stores `tags` on the bookmark; validation happens before insertion so a rejected request stores nothing.
   - [x] `packages/api/src/app.ts`: pass `body.tags` through to `store.add`.
   - [x] Tests in `packages/api/src/app.test.ts`: POST with mixed-case, padded, duplicate tags returns normalised tags; POST without tags returns `tags: []`; each invalid case answers `400 {"error":"invalid tag"}` and the list is unchanged; GET returns tags per bookmark.
-- [ ] T3. Web page shows tags after the title (AC: 4, 5)
-  - [ ] `packages/web/src/render.ts`: after the link, when `bookmark.tags.length > 0`, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`; append nothing otherwise. Use `textContent`, never HTML.
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags render after the title comma separated; no tag element when `tags` is `[]`; update existing fixtures to include `tags`.
+- [x] T3. Web page shows tags after the title (AC: 4, 5)
+  - [x] `packages/web/src/render.ts`: after the link, when `bookmark.tags.length > 0`, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`; append nothing otherwise. Use `textContent`, never HTML.
+  - [x] Tests in `packages/web/src/render.test.ts`: tags render after the title comma separated; no tag element when `tags` is `[]`; update existing fixtures to include `tags`.
 - [ ] T4. Bundle size baseline (AC: 5)
   - [ ] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change (AGENTS.md).
 - [ ] T5. Change intent (AC: 5)
@@ -108,11 +108,14 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - `packages/api/src/store.ts`
 - `packages/api/src/app.ts`
 - `packages/api/src/app.test.ts`
+- `packages/web/src/render.ts`
+- `packages/web/src/render.test.ts`
 
 ## Implementation Record
 
 - T1: Added tags to Bookmark/NewBookmark, MAX_TAG_LENGTH, InvalidTagError, and normalizeTags (signals invalid by throwing InvalidTagError). Shared test (9 tests), lint, typecheck passed.
 - T2: store.add normalises tags after title/url checks, maps InvalidTagError to ValidationError('invalid tag'); app.ts forwards body.tags. API test (9 tests), lint, typecheck passed.
+- T3: renderList appends span.tags (textContent, joined with ', ') between link and Remove only when tags exist; fixtures updated. Web test (4 tests), lint, typecheck passed.
 
 ## Validation Evidence
 
@@ -126,3 +129,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - 2026-10-28: Approved: plan-approval — approve, assumptions are correct
 - 2026-10-28: T1 implemented
 - 2026-10-28: T2 implemented
+- 2026-10-28: T3 implemented
