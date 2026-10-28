@@ -57,7 +57,7 @@ export function normalizeTags(value: unknown): string[] {
   for (const entry of value) {
     if (typeof entry !== "string") throw new InvalidTagError();
     const tag = entry.trim().toLowerCase();
-    if (tag === "" || tag.length > MAX_TAG_LENGTH || /\s/.test(tag)) throw new InvalidTagError();
+    if (tag === "" || [...tag].length > MAX_TAG_LENGTH || /\s/.test(tag)) throw new InvalidTagError();
     out.add(tag);
   }
   return [...out];

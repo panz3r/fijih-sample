@@ -44,6 +44,10 @@ describe("normalizeTags", () => {
     expect(() => normalizeTags(["a".repeat(33)])).toThrow(InvalidTagError);
     expect(normalizeTags([` ${"a".repeat(32)} `])).toEqual(["a".repeat(32)]);
   });
+  it("counts code points, not UTF-16 units, for the length limit", () => {
+    expect(normalizeTags(["😀".repeat(32)])).toEqual(["😀".repeat(32)]);
+    expect(() => normalizeTags(["😀".repeat(33)])).toThrow(InvalidTagError);
+  });
   it("rejects inner whitespace", () => {
     expect(() => normalizeTags(["a b"])).toThrow("invalid tag");
     expect(() => normalizeTags(["a\tb"])).toThrow("invalid tag");
