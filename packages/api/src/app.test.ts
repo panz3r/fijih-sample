@@ -43,4 +43,43 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  describe("tags", () => {
+    const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+    const list = async () => (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+
+    it("normalises tags and returns them on create and list", async () => {
+      const res = await post({ url: "https://tags.example.com/1", title: "T", tags: ["  News ", "tech", "NEWS"] });
+      expect(res.status).toBe(201);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+      expect((await list()).find((b) => b.url === "https://tags.example.com/1")?.tags).toEqual(["news", "tech"]);
+    });
+
+    it("defaults to an empty list without tags or with []", async () => {
+      const a = await post({ url: "https://tags.example.com/2", title: "T" });
+      expect(a.status).toBe(201);
+      expect(((await a.json()) as { tags: string[] }).tags).toEqual([]);
+      const b = await post({ url: "https://tags.example.com/3", title: "T", tags: [] });
+      expect(b.status).toBe(201);
+      expect(((await b.json()) as { tags: string[] }).tags).toEqual([]);
+    });
+
+    it("accepts a 32 code point tag", async () => {
+      expect((await post({ url: "https://tags.example.com/4", title: "T", tags: ["a".repeat(32)] })).status).toBe(201);
+    });
+
+    it.each([
+      ["too long", ["a".repeat(33)]],
+      ["inner whitespace", ["two words"]],
+      ["empty after trim", ["   "]],
+      ["not an array", "news"],
+      ["non-string element", ["ok", 1]],
+    ])("rejects %s with 400 and stores nothing", async (_name, tags) => {
+      const before = await list();
+      const res = await post({ url: "https://tags.example.com/bad", title: "T", tags });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+      expect(await list()).toEqual(before);
+    });
+  });
 });
