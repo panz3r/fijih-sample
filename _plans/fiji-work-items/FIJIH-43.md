@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 3
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-43-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/6
-  jira_context_comment_id: null
+  jira_context_comment_id: "10005"
 ---
 
 # Work Item FIJIH-43: Add tags to bookmarks
@@ -304,3 +304,4 @@ Notes:
 - 2026-10-28: Ready-for-review (re-request after user-request rework): PR #6 is already ready (head `360f2ba`); `duckyduff369`'s APPROVED review on `9fcb896` (21:14:39Z) predates the new head, so review was re-requested from `duckyduff369` (`review_requested` at 21:33:30Z). No other reviewer requested: the author `panz3r` is excluded. Set phase `remote-review`, checkpoint `null`, transition `review-requested`. The commit stays local.
 - 2026-10-28: Jira handoff Draft (attempt 3, rewrite): replaced the draft marked `Stale — superseded by re-entry 3` with a new draft from the Quality Gate (concerns at `8707c90`), Validation Evidence, Review Record, Change Log and PR #6 (head `360f2ba`, CI run 40771376304 success). States that `duckyduff369`'s approval is on `9fcb896` and the re-review of `360f2ba` is requested but not submitted (nothing posted to Jira). Set checkpoint `jira-handoff`, transition `handoff-drafted`. The commit stays local.
 - 2026-10-28: Jira handoff Draft (attempt 3, targeted repair): GitHub now shows `duckyduff369`'s APPROVED review on the final head `360f2ba` (21:36:32Z); rewrote the draft's review-status wording and source note, and added the Review Record line for that approval. Rest of the draft unchanged (nothing posted to Jira). Checkpoint `jira-handoff`, transition `handoff-drafted`. The commit stays local.
+- 2026-10-28: Approved: jira-handoff — Approve. Posted the approved handoff comment to Jira FIJIH-43 (comment ID 10005), read back and verified; Jira issue status unchanged (In Progress). Checkpoint cleared, transition `handoff-recorded`.
