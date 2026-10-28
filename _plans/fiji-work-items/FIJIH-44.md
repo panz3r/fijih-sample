@@ -8,16 +8,16 @@ source:
   revision: "2026-10-28T22:54:03.939+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-44-add-tags-to-bookmarks
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/7
   jira_context_comment_id: null
 ---
 
@@ -203,3 +203,5 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (one minor finding, residual risks) at 520031f.
 - 2026-10-28: Finalize: evidence checked against commits 896337d..cd0fd28; all acceptance criteria have a Validation Evidence line (AC-6 deferred by the user, see its line); File List matches the branch diff; no bookkeeping slips to fix. Checkpoint set to local-qa-review. Discrepancy: Implementation Record entries for tasks 1-4 and 6 do not cite a commit hash (tasks are checked, not blocking).
+- 2026-10-28: Approved: local-qa-review — Approve.
+- 2026-10-28: Delivery: changeset `.changeset/fijih-44-add-tags-to-bookmarks.md` added (commit 215c364); draft pull request #7 opened (base main, label enhancement, assignee panz3r) and Copilot review requested (timeline `review_requested` for Copilot). Work item commit held locally.
