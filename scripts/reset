@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Returns the repository to the `baseline` tag after a scenario and files the scenario's Jira issues away.
 #
-#   scripts/reset               close open pull requests, delete remote FIJIH-* branches, force main back to
-#                               baseline, then move every issue labelled scenario-* to Done and archive it
+#   scripts/reset               close open pull requests, delete remote and local FIJIH-* branches, force main
+#                               back to baseline, then move every issue labelled scenario-* to Done and archive it
 #   scripts/reset --keep-prs    same, but leave pull requests and Jira issues alone (for scenarios that continue later)
 #   scripts/reset --keep-issues same, but leave the Jira issues alone
 #
@@ -10,7 +10,8 @@
 # JIRA_EMAIL, and JIRA_API_TOKEN are set (JIRA_PROJECT defaults to FIJIH) and is skipped with a notice
 # otherwise. It touches only issues that carry a scenario-* label, so the sibling backlog stays. Archiving
 # needs a Jira Premium site; when the site refuses it the issues stay Done, which already drops them from the
-# backlog. Local work-item branches are left alone; delete them yourself once the work item is gone.
+# backlog. A checkout sitting on a FIJIH-* branch is switched to main first, so its working tree must be clean;
+# a branch checked out in a linked worktree cannot be deleted and is reported instead.
 set -euo pipefail
 
 die() { printf 'reset: %s\n' "$*" >&2; exit 1; }
@@ -32,6 +33,14 @@ REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 git fetch --prune --tags origin
 git rev-parse -q --verify refs/tags/baseline >/dev/null || die "tag baseline is missing"
 
+CURRENT=$(git rev-parse --abbrev-ref HEAD)
+case "$CURRENT" in
+  FIJIH-*)
+    git diff --quiet && git diff --cached --quiet ||
+      die "the working tree on $CURRENT has uncommitted changes; commit, discard, or stash them, then re-run"
+    ;;
+esac
+
 if [ "$KEEP_PRS" = false ]; then
   gh pr list --repo "$REPO" --state open --json number --jq '.[].number' | while read -r number; do
     gh pr close "$number" --repo "$REPO" --comment "Closed by scripts/reset." --delete-branch || true
@@ -43,9 +52,15 @@ git for-each-ref --format='%(refname:strip=3)' 'refs/remotes/origin/FIJIH-*' | w
 done
 
 git push --force origin refs/tags/baseline:refs/heads/main
-if [ "$(git rev-parse --abbrev-ref HEAD)" = main ]; then
+case "$CURRENT" in
+  FIJIH-*) git checkout -q main; CURRENT=main ;;
+esac
+if [ "$CURRENT" = main ]; then
   git reset --hard origin/main
 fi
+git for-each-ref --format='%(refname:short)' 'refs/heads/FIJIH-*' | while read -r branch; do
+  git branch -D "$branch" || true
+done
 echo "reset: main is at $(git rev-parse --short refs/tags/baseline) (baseline)"
 
 [ "$KEEP_ISSUES" = false ] || exit 0
