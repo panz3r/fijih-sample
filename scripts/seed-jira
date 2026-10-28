@@ -4,7 +4,7 @@
 #   scripts/seed-jira siblings            10 Stories, 10 Bugs, 10 Tasks in the house format, for convention learning
 #   scripts/seed-jira scenario <id>       the issue of scenarios/<id>.md (its "## Jira issue" section)
 #
-# Environment: JIRA_SITE (for example external-team-xxxx.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
+# Environment: JIRA_SITE (for example your-site.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
 # and optionally JIRA_PROJECT (default SCRUM). Prints one line per created issue: "<KEY> <summary>".
 set -euo pipefail
 
