@@ -7,9 +7,9 @@ source:
   key: FIJIH-44
   revision: "2026-10-28T22:54:03.939+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -137,3 +137,4 @@ The issue does not settle these. The plan uses the proposed answer in brackets u
 ## Change Log
 
 - 2026-10-28: Plan drafted from FIJIH-44 at revision 2026-10-28T22:54:03.939+0100; issue assigned to Mattia Panzeri.
+- 2026-10-28: Approved: plan-approval — Approve, with the proposed answers.
