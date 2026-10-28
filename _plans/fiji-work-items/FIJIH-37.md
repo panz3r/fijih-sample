@@ -8,9 +8,9 @@ source:
   revision: 2026-10-28T15:25:14.259+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -179,3 +179,5 @@ Residual risks:
 - 2026-10-28: Approved: local-qa-review — approve
 - 2026-10-28: Delivery: changeset added (c9c88f1); draft PR #2 opened against main with label enhancement; Copilot review requested; no `(verify: ci)` criteria, so no CI measurement.
 - 2026-10-28: Copilot findings pass: review 5685135181 raised no findings; checkpoint ready-for-review.
+- 2026-10-28: Approved: ready-for-review — approve
+- 2026-10-28: Pull request #2 marked ready for review; review requested from duckyduff369 (QA Engineer, per TEAMS.md); author panz3r excluded.
