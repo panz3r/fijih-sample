@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-44-add-tags-to-bookmarks
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/7
-  jira_context_comment_id: null
+  jira_context_comment_id: "10006"
 ---
 
 # Work Item FIJIH-44: Add tags to bookmarks
@@ -227,3 +227,4 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 - 2026-10-28: Copilot findings pass: 1 finding fixed (d94d95b, F1 resolved), thread resolved, re-review clean. Checkpoint set to ready-for-review.
 - 2026-10-28: Approved: ready-for-review — Approve.
 - 2026-10-28: Jira handoff drafted (comment: outcome, decisions, deferred AC-6 page check, two pre-existing issues); checkpoint set to jira-handoff. Nothing posted to Jira.
+- 2026-10-28: Approved: jira-handoff — Approve.
