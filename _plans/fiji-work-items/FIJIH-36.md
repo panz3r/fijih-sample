@@ -69,8 +69,8 @@ Open product questions (also under the Plan result's risks; none blocks drafting
   - [x] Tests in `packages/web/src/render.test.ts`: tags render after the title comma separated; no tag element when `tags` is `[]`; update existing fixtures to include `tags`.
 - [x] T4. Bundle size baseline (AC: 5)
   - [x] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change (AGENTS.md).
-- [ ] T5. Change intent (AC: 5)
-  - [ ] Add a changeset in `.changeset/` whose summary is `Add tags to bookmarks`, bumping `@sample/shared`, `@sample/api`, and `@sample/web` (patch/minor per team convention; minor for a new feature).
+- [x] T5. Change intent (AC: 5)
+  - [x] Add a changeset in `.changeset/` whose summary is `Add tags to bookmarks`, bumping `@sample/shared`, `@sample/api`, and `@sample/web` (patch/minor per team convention; minor for a new feature).
 - [ ] T6. Full checks (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the repository root and record results.
 
@@ -111,6 +111,7 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - `packages/web/src/render.ts`
 - `packages/web/src/render.test.ts`
 - `measure/baseline.json`
+- `.changeset/add-bookmark-tags.md`
 
 ## Implementation Record
 
@@ -118,6 +119,7 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - T2: store.add normalises tags after title/url checks, maps InvalidTagError to ValidationError('invalid tag'); app.ts forwards body.tags. API test (9 tests), lint, typecheck passed.
 - T3: renderList appends span.tags (textContent, joined with ', ') between link and Remove only when tags exist; fixtures updated. Web test (4 tests), lint, typecheck passed.
 - T4: pnpm build then pnpm measure: 881 bytes, delta +46 from 835; baseline updated to 881 (re-measure delta 0).
+- T5: Added changeset 'Add tags to bookmarks' with minor bumps for shared, api, web.
 
 ## Validation Evidence
 
@@ -133,3 +135,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - 2026-10-28: T2 implemented
 - 2026-10-28: T3 implemented
 - 2026-10-28: T4 implemented
+- 2026-10-28: T5 implemented
