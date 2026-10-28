@@ -74,14 +74,14 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - [x] Shared unit tests in `packages/shared/src/index.test.ts` (AC: 5)
   - [x] `normalizeTags`: trims, lower-cases, deduplicates `["News", " news ", "NEWS"]` to `["news"]`, keeps first-occurrence order, returns `[]` for `[]`, and does not mutate its input.
   - [x] `isValidTag`: accepts a 32-character tag and a tag with surrounding whitespace; rejects a 33-character tag, `"my tag"`, a tab or newline inside, and (per question 3) an empty or blank tag.
-- [ ] API store and route in `packages/api/src/store.ts` and `packages/api/src/app.ts` (AC: 1, 2, 3)
-  - [ ] In `BookmarkStore.add`, validate `input.tags ?? []` (array of strings, per question 2), throw `ValidationError("invalid tag")` on the first invalid tag before storing, and store `normalizeTags(...)` on the bookmark.
-  - [ ] In `createApp`, pass `body.tags` through from the POST body to `store.add` without changing the existing `url`/`title` handling.
-- [ ] API tests in `packages/api/src/app.test.ts` (AC: 5)
-  - [ ] POST with `tags: [" News ", "news", "Tech"]` answers 201 with `tags: ["news", "tech"]`; POST without `tags` answers 201 with `tags: []`.
-  - [ ] POST with a 33-character tag and with `"my tag"` each answers 400 `{"error":"invalid tag"}`, and the following GET does not contain those bookmarks; a 32-character tag is accepted.
-  - [ ] (per question 2) POST with `tags: "news"` and with `tags: [1]` answers 400 `{"error":"invalid tag"}`.
-  - [ ] GET `/bookmarks` returns each bookmark's normalised `tags`.
+- [x] API store and route in `packages/api/src/store.ts` and `packages/api/src/app.ts` (AC: 1, 2, 3)
+  - [x] In `BookmarkStore.add`, validate `input.tags ?? []` (array of strings, per question 2), throw `ValidationError("invalid tag")` on the first invalid tag before storing, and store `normalizeTags(...)` on the bookmark.
+  - [x] In `createApp`, pass `body.tags` through from the POST body to `store.add` without changing the existing `url`/`title` handling.
+- [x] API tests in `packages/api/src/app.test.ts` (AC: 5)
+  - [x] POST with `tags: [" News ", "news", "Tech"]` answers 201 with `tags: ["news", "tech"]`; POST without `tags` answers 201 with `tags: []`.
+  - [x] POST with a 33-character tag and with `"my tag"` each answers 400 `{"error":"invalid tag"}`, and the following GET does not contain those bookmarks; a 32-character tag is accepted.
+  - [x] (per question 2) POST with `tags: "news"` and with `tags: [1]` answers 400 `{"error":"invalid tag"}`.
+  - [x] GET `/bookmarks` returns each bookmark's normalised `tags`.
 - [ ] Web rendering in `packages/web/src/render.ts` (AC: 4)
   - [ ] After the title link, append a `<span class="tags">` whose text is `bookmark.tags.join(", ")` only when `bookmark.tags.length > 0`; append nothing otherwise. Keep the Remove button last.
   - [ ] Adjust `packages/web/index.html` styles only as needed so the tags sit next to the title and the Remove button stays at the end of the row (the `li` is `display: flex; justify-content: space-between`).
@@ -131,10 +131,14 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 - Shared tag model/tests: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, `isValidTag` (trimmed, non-empty, <=32, no whitespace), `normalizeTags` (Set keeps first-occurrence order). Focused: `pnpm --filter @sample/shared test` 8 passed.
+- API store/route: `BookmarkStore.add` validates `input.tags ?? []` after title/url/duplicate checks (non-array, non-string, blank, >32, inner whitespace all throw `ValidationError("invalid tag")`), stores normalised tags; POST passes `body.tags` through. Focused: `pnpm --filter @sample/api test` 11 passed.
 
 ## Validation Evidence
 
@@ -147,4 +151,5 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - 2026-10-28: Drafted from Jira FIJIH-43 revision `2026-10-28T21:48:02.496+0100` (issue assigned to Mattia Panzeri during Plan).
 - 2026-10-28: Approved: plan-approval — Approve, with the defaults for all six questions.
 - 2026-10-28: Implemented shared tag model and tests.
+- 2026-10-28: Implemented API tags handling and tests.
 

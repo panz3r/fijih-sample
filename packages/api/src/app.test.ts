@@ -43,4 +43,43 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  describe("tags", () => {
+    const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+    const listUrls = async () => ((await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[]).map((b) => b.url);
+
+    it("normalizes tags on create and returns them from GET", async () => {
+      const res = await post({ url: "https://tags.example/a", title: "T", tags: [" News ", "news", "Tech"] });
+      expect(res.status).toBe(201);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+      expect(list.find((b) => b.url === "https://tags.example/a")?.tags).toEqual(["news", "tech"]);
+    });
+
+    it("defaults to an empty tags array", async () => {
+      const res = await post({ url: "https://tags.example/none", title: "T" });
+      expect(res.status).toBe(201);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+      expect(list.find((b) => b.url === "https://tags.example/none")?.tags).toEqual([]);
+    });
+
+    it("accepts a 32-character tag", async () => {
+      expect((await post({ url: "https://tags.example/32", title: "T", tags: ["a".repeat(32)] })).status).toBe(201);
+    });
+
+    it.each([
+      ["a 33-character tag", ["a".repeat(33)]],
+      ["inner whitespace", ["my tag"]],
+      ["a blank tag", ["  "]],
+      ["a non-array tags value", "news"],
+      ["a non-string element", [1]],
+    ])("rejects %s and stores nothing", async (_name, tags) => {
+      const url = `https://tags.example/bad-${_name.replace(/\W/g, "")}`;
+      const res = await post({ url, title: "T", tags });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+      expect(await listUrls()).not.toContain(url);
+    });
+  });
 });
