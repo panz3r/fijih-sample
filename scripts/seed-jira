@@ -6,6 +6,8 @@
 #
 # Environment: JIRA_SITE (for example your-site.atlassian.net), JIRA_EMAIL, JIRA_API_TOKEN,
 # and optionally JIRA_PROJECT (default SCRUM). Prints one line per created issue: "<KEY> <summary>".
+# Calls go through the api.atlassian.com gateway with the site's cloud ID, which accepts both classic
+# and scoped API tokens (a scoped token is rejected on the site hostname itself).
 set -euo pipefail
 
 die() { printf 'seed-jira: %s\n' "$*" >&2; exit 1; }
@@ -17,11 +19,18 @@ command -v jq >/dev/null || die "jq is required"
 PROJECT=${JIRA_PROJECT:-SCRUM}
 ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 
+CLOUD_ID=$(curl -sS -f "https://$JIRA_SITE/_edge/tenant_info" | jq -r '.cloudId // empty')
+[ -n "$CLOUD_ID" ] || die "could not resolve the cloud ID of $JIRA_SITE"
+API="https://api.atlassian.com/ex/jira/$CLOUD_ID/rest/api/2"
+
+me=$(curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$API/myself" | jq -r '.accountId // empty')
+[ -n "$me" ] || die "authentication failed for $JIRA_EMAIL on $JIRA_SITE (check the token and that this email owns it)"
+
 create_issue() { # type summary description
   jq -n --arg project "$PROJECT" --arg type "$1" --arg summary "$2" --arg description "$3" \
     '{fields: {project: {key: $project}, issuetype: {name: $type}, summary: $summary, description: $description}}' |
   curl -sS -f -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'content-type: application/json' \
-    -X POST "https://$JIRA_SITE/rest/api/2/issue" --data @- |
+    -X POST "$API/issue" --data @- |
   jq -r --arg summary "$2" '"\(.key) \($summary)"'
 }
 
