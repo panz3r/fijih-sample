@@ -8,8 +8,8 @@ source:
   revision: 2026-10-28T15:25:14.259+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
+  phase: automated-review
+  checkpoint: null
   transition: qa-reviewed
   attempt: 1
 quality:
@@ -17,7 +17,7 @@ quality:
 artifacts:
   branch: FIJIH-37-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/2
   jira_context_comment_id: null
 ---
 
@@ -174,3 +174,5 @@ Residual risks:
 - 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-28: Quality gate recorded: concerns (reviewed head ad56ce1).
 - 2026-10-28: Finalize run: File List matches the branch diff; evidence discrepancies recorded in the result (baseline, README, and root-check tasks lack an in-range commit citation in their Implementation Record entries); checkpoint local-qa-review.
+- 2026-10-28: Approved: local-qa-review — approve
+- 2026-10-28: Delivery: changeset added (c9c88f1); draft PR #2 opened against main with label enhancement; Copilot review requested; no `(verify: ci)` criteria, so no CI measurement.
