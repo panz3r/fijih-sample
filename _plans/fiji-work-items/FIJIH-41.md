@@ -8,12 +8,12 @@ source:
   revision: "2026-10-28T18:30:03.635+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-41-add-bookmark-tags
   base_branch: null
@@ -163,6 +163,21 @@ so that I can group my bookmarks.
 
 ## Quality Gate
 
+- Gate: concerns
+- Reviewed head: e734293c81fe4bfc06e0c62692ada641e8e667ed
+- Scope: whole branch diff against `main` (first review).
+- Acceptance trace:
+  - AC-1: implementation `normalizeTags` (packages/shared/src/index.ts), `store.add` (packages/api/src/store.ts), `app.ts` passes `body.tags` through; verification shared `normalizeTags` tests (absent, trim/lower-case/dedupe in order) and api tests "defaults tags to [] when absent" and "normalizes tags on POST and returns them on GET".
+  - AC-2: implementation `normalizeTags` returns `null` for non-array, non-string entry, empty, over 32, or whitespace tags; `store.add` throws `ValidationError("invalid tag")` before the duplicate-URL check and before storing; verification api `it.each` over null, string, number, object, non-string entry, empty, 33-character, and whitespace tags (400 `{"error":"invalid tag"}`, list length unchanged) and "accepts a 32-character tag"; shared boundary tests.
+  - AC-3: implementation `Bookmark.tags` is required and always set in `store.add`; verification api GET assertions for default `[]` and normalized tags.
+  - AC-4: implementation `renderList` appends `<span class="tags">` with `tags.join(", ")` after the link only when tags exist (packages/web/src/render.ts); verification web tests (text `news, tech`, next sibling of the link; no `.tags` and item text `ExampleRemove` without tags). Add form and `main.ts` unchanged (user decision 1).
+  - AC-5: shared 11, api 14, web 4 Vitest tests pass (re-run in this review).
+  - AC-6: `.changeset/add-bookmark-tags.md` names `@sample/shared`, `@sample/api`, `@sample/web` with "Add tags to bookmarks"; `pnpm build && pnpm measure` re-run in this review prints `web_bundle_gzip_bytes=881`, delta 0 against `measure/baseline.json`; root `pnpm lint` and `pnpm typecheck` exit 0; `pnpm test` passes (see residual risk on the pre-existing flake).
+- Findings: none.
+- Residual risks:
+  - Pre-existing flaky api test, outside this change: "creates, lists newest first, and deletes" (packages/api/src/app.test.ts) failed once in the first root `pnpm test` run of this review and 1 of 30 repeated `pnpm --filter @sample/api test` runs. Two POSTs in the same millisecond get equal `createdAt`, and `sortByCreatedDesc` (packages/shared/src/index.ts) then keeps insertion order, so the list reads `["A", "B"]`. Neither file's relevant code changed on this branch (last changed in 78b1748). It can fail the required CI `test` job. Confirm by repeating the api tests on `main`; fix in a separate issue (for example, inject `now` in the test or add a tie-breaker).
+  - No Operational Requirements entry is `evidence: unverified`; no Validation Evidence line is `deferred`.
+
 ## Review Record
 
 ## Change Log
@@ -170,3 +185,5 @@ so that I can group my bookmarks.
 - 2026-10-28: Plan drafted from FIJIH-41 at revision `2026-10-28T18:30:03.635+0100`. It records the user's three answers to the earlier Plan block (no tags input on the add form; a non-array value or a non-string entry answers 400 invalid tag; a tag that is empty after trimming answers 400 invalid tag).
 - 2026-10-28: Approved: plan-approval — approve
 - 2026-10-28: Implementation complete; Jira FIJIH-41 moved from To Do to In Progress. Bundle baseline moved 835 to 881 bytes.
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Quality gate recorded: concerns (no findings; residual risk: pre-existing flaky api ordering test). Reviewed head e734293.
