@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-42-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/5
-  jira_context_comment_id: null
+  jira_context_comment_id: "10004"
 ---
 
 # Work Item FIJIH-42: Add tags to bookmarks
@@ -202,3 +202,4 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - 2026-10-28: Copilot pass: review 5687482217 raised no findings; no fixes; checkpoint ready-for-review.
 - 2026-10-28: Approved: ready-for-review — approve. Pull request #5 marked ready for review and review requested from the QA Engineer `duckyduff369` (owning team per TEAMS.md; the only member besides the author `panz3r`). Copilot review was clean with no open threads. Work-item commits held locally under evidence.held_commits; no push.
 - 2026-10-28: Jira context handoff drafted from current evidence (PR #5 approved by QA Engineer `duckyduff369` on a808b47, Copilot clean, 0 threads, CI run 40742295947 success); no Jira comment posted; checkpoint jira-handoff. Work-item commit held locally.
+- 2026-10-28: Approved: jira-handoff — approve. Posted the marked Jira handoff comment on FIJIH-42 (comment 10004, verified by read-back); no status transition. Work-item commit held locally under evidence.held_commits; cleanup pushes.
