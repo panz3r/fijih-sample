@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T22:54:03.939+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -209,3 +209,4 @@ Reviewed head: 520031f9e61cdec307da7054871c52c7392db4a4
 - 2026-10-28: Approved: local-qa-review — Approve.
 - 2026-10-28: Delivery: changeset `.changeset/fijih-44-add-tags-to-bookmarks.md` added (commit 215c364); draft pull request #7 opened (base main, label enhancement, assignee panz3r) and Copilot review requested (timeline `review_requested` for Copilot). Work item commit held locally.
 - 2026-10-28: Copilot findings pass: 1 finding fixed (d94d95b, F1 resolved), thread resolved, re-review clean. Checkpoint set to ready-for-review.
+- 2026-10-28: Approved: ready-for-review — Approve.
