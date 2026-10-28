@@ -8,12 +8,12 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-43-add-bookmark-tags
   base_branch: null
@@ -161,6 +161,34 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 
 ## Quality Gate
 
+Gate: **concerns**. Every criterion is evidenced. Two minor findings and one residual risk remain.
+
+Reviewed head: `9943bb3a3f084eaa74063a53882c417cfa696184` (full branch diff against `main`, commits 0bdf80a..9943bb3).
+
+QA re-ran the repository checks at the reviewed head: `pnpm test` exited 0 (shared 8, api 11, web 4 tests), `pnpm lint` exited 0, `pnpm typecheck` exited 0, and `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` and `web_bundle_gzip_delta=0`.
+
+### Acceptance trace
+
+| AC | Implementation | Verification |
+|---|---|---|
+| 1 | `packages/shared/src/index.ts` `normalizeTags` (trim, `toLowerCase`, `Set` keeps first occurrence). `packages/api/src/store.ts` `add` stores `normalizeTags(input.tags ?? [])`. `packages/api/src/app.ts` passes `body.tags` through. | `packages/shared/src/index.test.ts` `normalizeTags` cases (dedup, order, `[]`, no mutation). `packages/api/src/app.test.ts` "normalizes tags on create..." (201 `["news","tech"]`) and "defaults to an empty tags array". |
+| 2 | `isValidTag` (trimmed, non-empty, <= 32, no `/\s/`). `store.add` throws `ValidationError("invalid tag")` for non-array or non-string values before `items.set`. | `index.test.ts` `isValidTag` cases at 32/33, space, tab, newline, empty, blank. `app.test.ts` "accepts a 32-character tag" and the `it.each` cases for 33 chars, inner whitespace, blank, non-array, and non-string: each returns 400 `{"error":"invalid tag"}`, and the URL is absent from the GET that follows. |
+| 3 | `Bookmark.tags: string[]` is required. `store.list()` returns the stored bookmarks. | `app.test.ts`: GET returns `["news","tech"]` and `[]`. |
+| 4 | `packages/web/src/render.ts` appends `span.tags` (`textContent`, `join(", ")`) between the link and Remove only when `tags.length > 0`. `packages/web/index.html` adds the `li a` and `li .tags` styles. | `packages/web/src/render.test.ts`: `news, tech`, child order `A, SPAN, BUTTON`. No `.tags` element when empty, and text is `ExampleRemove`. The existing Remove test still passes. |
+| 5 | Vitest tests added in all three packages. | Listed above. QA re-ran `pnpm test`: 23 tests passed. |
+| 6 | `measure/baseline.json` `web_bundle_gzip_bytes` is 881. | QA re-ran `pnpm build && pnpm measure`: 881, delta 0. |
+| 7 | — | QA re-ran `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root: all exited 0. |
+
+### Findings
+
+1. **minor**: `packages/api/src/store.ts:20`. `rawTags = input.tags ?? []` treats a JSON `"tags": null` as absent. The approved plan-approval default for question 2 says a `tags` value that is present but not an array answers 400 `{"error":"invalid tag"}`. Reproduced over HTTP through `createApp`: `POST /bookmarks {"url":"https://h.example/null","title":"T","tags":null}` answered 201 with `"tags":[]`. `"news"` and `{"a":1}` correctly answered 400. No invalid data is stored, because the result equals the no-tags default. This is a deviation from the decision's wording, and no test covers `null`.
+2. **minor**: `packages/shared/src/index.ts` `isValidTag` and `normalizeTags`. The length check runs on the trimmed tag before lower-casing, but `toLowerCase()` can lengthen a string. Reproduced against `BookmarkStore.add`: the tag `"İ" + "a".repeat(31)` (32 UTF-16 code units) is accepted and stored as `"i̇aaaa…"` with `length` 33. This exceeds `MAX_TAG_LENGTH`. It matches AC-2's literal wording ("after trimming"), so the criterion is met, but a stored tag can be longer than the documented maximum.
+
+### Residual risks
+
+- Suspected: the `index.html` flex styles (`li a { margin-right }`, `li .tags { flex: 1 }`) have not been checked in a browser. jsdom tests cover DOM order only, not layout, and the Testing Strategy plans no live-app check. To confirm, load the page with a bookmark that has tags and one without, and check that the tags sit next to the title and Remove stays at the row end.
+- No Operational Requirements entry has `evidence: unverified`, and no Validation Evidence line is `deferred` or `pending-ci`.
+
 ## Review Record
 
 ## Change Log
@@ -171,4 +199,6 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - 2026-10-28: Implemented API tags handling and tests.
 - 2026-10-28: Implemented web tag rendering and tests.
 - 2026-10-28: Updated bundle baseline to 881 and ran repository checks.
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Local QA review recorded gate `concerns` at `9943bb3` (two minor findings, one residual risk).
 
