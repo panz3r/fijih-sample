@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: ready-for-review
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 quality:
   gate: concerns
@@ -94,12 +94,12 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - [x] Repository checks (AC: 7)
   - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
 
-- [ ] Shared tag-count helper (AC: 8; Scope change entry, Re-entry 2)
-  - [ ] Add a pure `countTags(bookmarks: readonly { tags: readonly string[] }[]): number` in `packages/shared/src/index.ts` summing tag counts, duplicates counted (`["news"]` on two bookmarks is 2), with a unit test in `packages/shared/src/index.test.ts` (0 for none, 0 with no tags, duplicates counted).
-- [ ] Web total-tags heading and tab title (AC: 8; Scope change entry, Re-entry 2)
-  - [ ] Whenever `renderList` renders (including the empty list), set the `<h1>` text and `document.title` to `Bookmarks (N)`; web tests in `packages/web/src/render.test.ts` cover 0 (no bookmarks and no tags), duplicates counted, and update after a re-render following add and remove.
-- [ ] Bundle baseline for AC 8 (AC: 6, 8; Scope change entry, Re-entry 2)
-  - [ ] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
+- [x] Shared tag-count helper (AC: 8; Scope change entry, Re-entry 2)
+  - [x] Add a pure `countTags(bookmarks: readonly { tags: readonly string[] }[]): number` in `packages/shared/src/index.ts` summing tag counts, duplicates counted (`["news"]` on two bookmarks is 2), with a unit test in `packages/shared/src/index.test.ts` (0 for none, 0 with no tags, duplicates counted).
+- [x] Web total-tags heading and tab title (AC: 8; Scope change entry, Re-entry 2)
+  - [x] Whenever `renderList` renders (including the empty list), set the `<h1>` text and `document.title` to `Bookmarks (N)`; web tests in `packages/web/src/render.test.ts` cover 0 (no bookmarks and no tags), duplicates counted, and update after a re-render following add and remove.
+- [x] Bundle baseline for AC 8 (AC: 6, 8; Scope change entry, Re-entry 2)
+  - [x] Run `pnpm build` then `pnpm measure`; set `measure/baseline.json` to the printed value and confirm delta 0.
 
 ## Engineering Context
 
@@ -157,6 +157,7 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - Repository checks: `pnpm test`, `pnpm lint`, `pnpm typecheck` run from the root, all passed (the first two ran before the baseline edit, which touches no code input).
 - Approved product defaults (plan-approval): no web tags input; non-array/non-string tags and blank tags answer 400 invalid tag; validation on trimmed tag; `, ` separator; README row unchanged.
 - Review fix `680eb98`: `store.add` uses `input.tags === undefined ? [] : input.tags`, so explicit `null` answers 400 `invalid tag`; added the `null` case to the `it.each` rejection cases in `packages/api/src/app.test.ts`. `pnpm test` (shared 8, api 12, web 4), `pnpm lint`, `pnpm typecheck` pass; web bundle unaffected (api-only change).
+- Re-entry 2 (AC 8): added pure `countTags` in shared (sum of `tags.length`, duplicates counted) with unit tests; `renderList` now sets `document.title` and the `<h1>` text to `Bookmarks (N)` on every render, including the empty list. Web tests cover 0 (none, and no tags), duplicates across bookmarks, and re-render after add and remove. `pnpm build` then `pnpm measure` printed 940 (baseline 881, delta 59); set baseline to 940, re-run: delta 0. `pnpm test` (shared 10, api 12, web 7), `pnpm lint`, `pnpm typecheck` pass. No other product change.
 
 ## Validation Evidence
 
@@ -165,8 +166,9 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 - AC-3: passed — API test: GET returns normalised tags, `[]` when none.
 - AC-4: passed — web render tests: `news, tech` between link and Remove; no `.tags` element when empty.
 - AC-5: passed — Vitest tests added in packages/shared, packages/api, packages/web.
-- AC-6: passed — baseline 881; `pnpm measure` prints delta 0.
+- AC-6: passed — baseline 940; `pnpm build` then `pnpm measure` prints delta 0.
 - AC-7: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` pass from the root.
+- AC-8: passed — shared `countTags` tests and web `render.test.ts` cases: `Bookmarks (0)` for no bookmarks and for no tags, `Bookmarks (2)` for `["news"]` on two bookmarks, and h1 and `document.title` update across add and remove re-renders.
 
 ## Quality Gate
 
@@ -220,3 +222,4 @@ QA re-ran the repository checks at the reviewed head: `pnpm test` exited 0 (shar
 - 2026-10-28: Re-entry 2: user-request — ready-for-review at 906b043; user's decision: "Yes, criterion 8 as proposed: both the h1 and the tab title, total tags with duplicates counted. Make exactly that change, then approve ready-for-review."
 - 2026-10-28: Scope change: "Yes, criterion 8 as proposed: both the h1 and the tab title, total tags with duplicates counted. Make exactly that change, then approve ready-for-review." — ready-for-review at 906b043
 - 2026-10-28: Approved: scope change — "Yes, criterion 8 as proposed: both the h1 and the tab title, total tags with duplicates counted. Make exactly that change, then approve ready-for-review."
+- 2026-10-28: Implemented criterion 8 (total tags in h1 and tab title), updated bundle baseline to 940, repository checks pass. Set checkpoint `implementation-approval`, transition `implementation-complete`.

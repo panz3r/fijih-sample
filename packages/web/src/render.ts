@@ -1,7 +1,11 @@
-import type { Bookmark } from "@sample/shared";
+import { countTags, type Bookmark } from "@sample/shared";
 
 /** Renders the bookmark list into `list`; `onRemove` is called with the id of a clicked Remove button. */
 export function renderList(list: HTMLElement, bookmarks: readonly Bookmark[], onRemove: (id: string) => void): void {
+  const heading = `Bookmarks (${countTags(bookmarks)})`;
+  document.title = heading;
+  const h1 = document.querySelector("h1");
+  if (h1) h1.textContent = heading;
   list.replaceChildren();
   if (bookmarks.length === 0) {
     const empty = document.createElement("li");

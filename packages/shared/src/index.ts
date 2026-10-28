@@ -49,3 +49,8 @@ export function normalizeUrl(value: string): string {
 export function sortByCreatedDesc<T extends { createdAt: string }>(items: readonly T[]): T[] {
   return [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
+
+/** Total number of tags across bookmarks; duplicates across bookmarks are counted. */
+export function countTags(bookmarks: readonly { tags: readonly string[] }[]): number {
+  return bookmarks.reduce((total, bookmark) => total + bookmark.tags.length, 0);
+}

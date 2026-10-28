@@ -32,4 +32,41 @@ describe("renderList", () => {
     expect(list.querySelector(".tags")).toBeNull();
     expect(list.querySelector("li")?.textContent).toBe("ExampleRemove");
   });
+
+  describe("total tags heading", () => {
+    const bm = (id: string, tags: string[]) => ({ id, url: `https://example.com/${id}`, title: id, createdAt: "2026-01-01T00:00:00Z", tags });
+    const setup = () => {
+      document.body.innerHTML = "<h1>Bookmarks</h1>";
+      return document.createElement("ul");
+    };
+
+    it("shows Bookmarks (0) with no bookmarks and with no tags", () => {
+      const list = setup();
+      renderList(list, [], () => {});
+      expect(document.querySelector("h1")?.textContent).toBe("Bookmarks (0)");
+      expect(document.title).toBe("Bookmarks (0)");
+      renderList(list, [bm("a", []), bm("b", [])], () => {});
+      expect(document.querySelector("h1")?.textContent).toBe("Bookmarks (0)");
+      expect(document.title).toBe("Bookmarks (0)");
+    });
+
+    it("counts duplicate tags across bookmarks", () => {
+      const list = setup();
+      renderList(list, [bm("a", ["news"]), bm("b", ["news"])], () => {});
+      expect(document.querySelector("h1")?.textContent).toBe("Bookmarks (2)");
+      expect(document.title).toBe("Bookmarks (2)");
+    });
+
+    it("updates on re-render after an add and a remove", () => {
+      const list = setup();
+      renderList(list, [bm("a", ["x"])], () => {});
+      expect(document.title).toBe("Bookmarks (1)");
+      renderList(list, [bm("a", ["x"]), bm("b", ["y", "z"])], () => {});
+      expect(document.querySelector("h1")?.textContent).toBe("Bookmarks (3)");
+      expect(document.title).toBe("Bookmarks (3)");
+      renderList(list, [bm("b", ["y", "z"])], () => {});
+      expect(document.querySelector("h1")?.textContent).toBe("Bookmarks (2)");
+      expect(document.title).toBe("Bookmarks (2)");
+    });
+  });
 });

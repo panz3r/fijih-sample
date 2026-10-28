@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, isValidTag, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, countTags, isValidTag, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -55,5 +55,16 @@ describe("isValidTag", () => {
     expect(isValidTag("my\ntag")).toBe(false);
     expect(isValidTag("")).toBe(false);
     expect(isValidTag("   ")).toBe(false);
+  });
+});
+
+describe("countTags", () => {
+  it("returns 0 for no bookmarks and for bookmarks without tags", () => {
+    expect(countTags([])).toBe(0);
+    expect(countTags([{ tags: [] }, { tags: [] }])).toBe(0);
+  });
+  it("sums tags across bookmarks, counting duplicates", () => {
+    expect(countTags([{ tags: ["news"] }, { tags: ["news"] }])).toBe(2);
+    expect(countTags([{ tags: ["a", "b"] }, { tags: [] }, { tags: ["c"] }])).toBe(3);
   });
 });
