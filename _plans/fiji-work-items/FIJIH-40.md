@@ -63,10 +63,10 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 
 ## Tasks and Subtasks
 
-- [ ] Add tags to the shared model and a tag normaliser in `packages/shared/src/index.ts` (AC: 1, 2, 3, 6)
-  - [ ] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`
-  - [ ] Add `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(tags)` function. It trims, lower-cases, and deduplicates the tags, and returns `null` when any tag is invalid (more than 32 code points after trimming, or whitespace inside after trimming)
-  - [ ] Add tests to `packages/shared/src/index.test.ts`: trim, lower-case, dedupe, empty input, a 32-character tag accepted, a 33-character tag rejected, inner whitespace rejected, input not mutated
+- [x] Add tags to the shared model and a tag normaliser in `packages/shared/src/index.ts` (AC: 1, 2, 3, 6)
+  - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`
+  - [x] Add `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(tags)` function. It trims, lower-cases, and deduplicates the tags, and returns `null` when any tag is invalid (more than 32 code points after trimming, or whitespace inside after trimming)
+  - [x] Add tests to `packages/shared/src/index.test.ts`: trim, lower-case, dedupe, empty input, a 32-character tag accepted, a 33-character tag rejected, inner whitespace rejected, input not mutated
 - [ ] Accept, validate, store, and return tags in the API (AC: 1, 2, 3, 4, 6)
   - [ ] `packages/api/src/store.ts`: `add` sets `tags` from `normalizeTags(input.tags ?? [])`, and throws `ValidationError("invalid tag")` when the result is `null`, before the bookmark is stored
   - [ ] `packages/api/src/app.ts`: pass the request body's `tags` to `store.add`
@@ -105,7 +105,12 @@ Open product decisions. These are not in the issue, and they are asked at plan a
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+- Task 1 (shared): hypothesis: a pure `normalizeTags` returning `null` on invalid input satisfies AC 1-3 at the unit level. Checked with `pnpm --filter @sample/shared test` (10 passed), `typecheck` and `lint packages/shared` clean. Empty-after-trim tags return `null` (default for open decision 2).
 
 ## Validation Evidence
 
