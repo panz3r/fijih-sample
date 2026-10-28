@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -71,8 +71,8 @@ Open product questions (also under the Plan result's risks; none blocks drafting
   - [x] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change (AGENTS.md).
 - [x] T5. Change intent (AC: 5)
   - [x] Add a changeset in `.changeset/` whose summary is `Add tags to bookmarks`, bumping `@sample/shared`, `@sample/api`, and `@sample/web` (patch/minor per team convention; minor for a new feature).
-- [ ] T6. Full checks (AC: 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the repository root and record results.
+- [x] T6. Full checks (AC: 5)
+  - [x] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the repository root and record results.
 
 ## Engineering Context
 
@@ -120,8 +120,15 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - T3: renderList appends span.tags (textContent, joined with ', ') between link and Remove only when tags exist; fixtures updated. Web test (4 tests), lint, typecheck passed.
 - T4: pnpm build then pnpm measure: 881 bytes, delta +46 from 835; baseline updated to 881 (re-measure delta 0).
 - T5: Added changeset 'Add tags to bookmarks' with minor bumps for shared, api, web.
+- T6: Root pnpm test, pnpm lint, pnpm typecheck all passed.
 
 ## Validation Evidence
+
+- AC-1: passed — shared normalizeTags tests and api POST tests (normalised tags, default []) (pnpm test)
+- AC-2: passed — api tests for each invalid case answer 400 {"error":"invalid tag"} and list unchanged; shared boundary tests (pnpm test)
+- AC-3: passed — api GET round-trip test returns tags per bookmark (pnpm test)
+- AC-4: passed — web render tests: tags after title joined with ", ", no element when empty (pnpm test)
+- AC-5: passed — per-package tests, and root pnpm test, pnpm lint, pnpm typecheck pass; bundle baseline 881 bytes (delta 0)
 
 ## Quality Gate
 
@@ -136,3 +143,4 @@ Open product questions (also under the Plan result's risks; none blocks drafting
 - 2026-10-28: T3 implemented
 - 2026-10-28: T4 implemented
 - 2026-10-28: T5 implemented
+- 2026-10-28: T6 implemented; implementation complete, awaiting implementation-approval
