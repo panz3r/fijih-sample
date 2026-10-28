@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -169,6 +169,24 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 ## Review Record
 
 - Copilot pass (2026-10-28): Copilot review 5687482217 (COMMENTED, 2026-10-28T18:10:11Z, after the review request at 18:08:25Z) reported no findings ("Approval recommended", no open issues); the pull request has 0 review threads and no inline comments. No finding to triage, no fix commits, no replies, no re-review request. CI on PR head a808b47: ci run 40742295947 success (test, lint, typecheck, measure, scenarios).
+- Jira handoff draft (2026-10-28): comment text, to post only after the `jira-handoff` approval:
+
+  > FIJI-CONTEXT:FIJIH-42:fiji/orchestrate-development/v1
+  >
+  > **Outcome.** Bookmarks now carry an optional `tags` list. `POST /bookmarks` accepts `tags`, trims, lower-cases, and deduplicates them (first occurrence kept), and defaults to `[]`; `GET /bookmarks` returns `tags` on every bookmark; the web page shows them after the title as `work, read` and shows nothing when there are none. Pull request: https://github.com/panz3r/fijih-sample/pull/5 (base `main`, ready for review). Acceptance criteria 1-10 are met; criteria 9 and 10 were added at plan approval.
+  >
+  > **Validation.** Vitest tests in `packages/shared` (10), `packages/api` (16), and `packages/web` (4); root `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass. CI run 40742295947 succeeded on head a808b47 (test, lint, typecheck, measure, scenarios). Review: QA Engineer `duckyduff369` approved on a808b47 ("Looks good."); Copilot review 5687482217 raised no findings; the pull request has 0 review threads.
+  >
+  > **Decisions made at plan approval.** (1) The add form gets no tags input: tags are set through the API only. (2) A `tags` value that is not an array, or an array holding a non-string entry (`null` included), answers 400 `{"error":"invalid tag"}`. (3) A tag that is empty after trimming answers 400 `{"error":"invalid tag"}`; the 32-character and whitespace checks apply after trimming and lower-casing. (4) Pull request #4 (FIJIH-41, same feature) is a test run that will be closed; this change is not stacked on it.
+  >
+  > **Bundle size.** `measure/baseline.json` `web_bundle_gzip_bytes` was updated from 835 to 881 (+46) in the same change.
+  >
+  > **Follow-ups and known limitations.**
+  > - Pre-existing flaky api test "creates, lists newest first, and deletes" (`packages/api/src/app.test.ts`): two POSTs in the same millisecond get equal `createdAt` and `sortByCreatedDesc` keeps insertion order, so it failed 2 of 30 repeated api test runs in the quality review (`expected [ 'A', 'B' ] to deeply equal [ 'B', 'A' ]`). It is not touched by this change, was left out of this pull request by decision, and is named as a follow-up in the pull request description. It can fail the required CI `test` job; it needs a separate issue (for example inject `now` in the test or add a tie-breaker to the sort). The quality gate was `concerns` solely for this finding.
+  > - Tags cannot be entered on the web page (API only) and are not filterable or searchable; editing tags of an existing bookmark is out of scope (per the issue).
+  > - Closing pull request #4 is left to the user.
+  >
+  > **Operations.** None needed: the required `test` check and one-approval, squash-only rule on `main` are unchanged by this change.
 
 ## Change Log
 
@@ -183,3 +201,4 @@ so that I can group my bookmarks and see each bookmark's group next to its title
 - 2026-10-28: Delivery: pushed `FIJIH-42-add-bookmark-tags` to origin at a808b47; opened draft pull request #5 (https://github.com/panz3r/fijih-sample/pull/5) against `main`, title `[FIJIH-42] Add tags to bookmarks`, label `enhancement`, assignee panz3r; the existing changeset `.changeset/add-bookmark-tags.md` matches the title. Copilot review requested (timeline `review_requested` for Copilot). The flaky api test is named as a known pre-existing follow-up in the PR description and is not changed here. Work-item commit held locally (not pushed).
 - 2026-10-28: Copilot pass: review 5687482217 raised no findings; no fixes; checkpoint ready-for-review.
 - 2026-10-28: Approved: ready-for-review — approve. Pull request #5 marked ready for review and review requested from the QA Engineer `duckyduff369` (owning team per TEAMS.md; the only member besides the author `panz3r`). Copilot review was clean with no open threads. Work-item commits held locally under evidence.held_commits; no push.
+- 2026-10-28: Jira context handoff drafted from current evidence (PR #5 approved by QA Engineer `duckyduff369` on a808b47, Copilot clean, 0 threads, CI run 40742295947 success); no Jira comment posted; checkpoint jira-handoff. Work-item commit held locally.
