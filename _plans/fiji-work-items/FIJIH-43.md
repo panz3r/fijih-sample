@@ -8,9 +8,9 @@ source:
   revision: "2026-10-28T21:48:02.496+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 3
 quality:
   gate: concerns
@@ -184,47 +184,53 @@ Open product questions (also under the Plan result's `risks`; answer at `plan-ap
 
 ## Quality Gate
 
-Gate: **concerns**. All eight criteria are evidenced. One minor finding and one residual risk remain.
+Gate: **concerns**. All nine criteria are evidenced. One minor finding and one residual risk remain.
 
-Reviewed head: `d325e9209e8c07da47ebe8f82df1e5895da88f79`. This is a full re-review of the branch diff against `main` (commits 993848b..d325e92), including the Copilot fix `680eb98` and the criterion 8 commits `863bbb0` and `d325e92`.
+Reviewed head: `8707c901b0c7a06f9213d70d57c844029c4e3cb3`. This is a full re-review of the branch diff against `main` (commits 993848b..8707c90). Re-entry 3 commits since the previous reviewed head `d325e92` change product files, so the review covers all nine criteria at this tip.
 
-At the reviewed head, QA re-ran the repository checks. `pnpm test` exited 0 (shared 10, api 12, web 7 tests). `pnpm lint` exited 0. `pnpm typecheck` exited 0. `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=940` and `web_bundle_gzip_delta=0`.
+At the reviewed head, QA re-ran the repository checks. `pnpm test` exited 0 (shared 10, api 12, web 8 tests). `pnpm lint` exited 0. `pnpm typecheck` exited 0. `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=950` and `web_bundle_gzip_delta=0`.
 
-Scope of Re-entry 2: since `906b043` (ready-for-review), the only product changes are these:
-- `countTags` and its tests in `packages/shared`.
-- The four heading lines in `packages/web/src/render.ts` and their tests.
-- The baseline moving from 881 to 940.
+Scope of Re-entry 3: since `d325e92`, the only product changes are in `8707c90`:
+- One line in `packages/web/src/render.ts`: the `span.tags` text is now `` `${bookmark.tags.join(", ")} (${bookmark.tags.length})` ``.
+- `packages/web/src/render.test.ts`: the AC-4 exact-text expectation changes from `news, tech` to `news, tech (2)` (a required consequence), and one new single-tag test (`news (1)`).
+- `measure/baseline.json` moves from 940 to 950.
 
-`906b043` and `267ea8f` change only this work item. Nothing outside criterion 8 was changed.
+The commits `5c1a772`, `9fcb896`, `4a5710c`, `8c36c8a`, `f9b56a4`, `fd2b1da`, and `eb5c6b0` change only this work item. In the work item, criteria 1 to 8 are worded as before; criterion 9 is the only new criterion. Nothing beyond criterion 9 changed.
+
+Criterion consistency: criterion 9 does not conflict with criterion 4 or criterion 8.
+- Criterion 4: the tags are still joined by `, ` and come after the title. With no tags there is still no span and no tag text, and no `(0)` is shown. This matches criterion 9's "renders unchanged".
+- Criterion 8: the `<h1>` and `document.title` show the total over all bookmarks (`countTags`). The span shows the count for one bookmark (`bookmark.tags.length`). Both count the same stored (normalised) tags, so the span counts add up to the heading count.
 
 ### Acceptance trace
 
 | AC | Implementation | Verification |
 |---|---|---|
-| 1 | `packages/shared/src/index.ts` `normalizeTags`: trims, applies `toLowerCase`, and uses a `Set` that keeps the first occurrence. `packages/api/src/store.ts` `add` stores `normalizeTags(rawTags)` and defaults to `[]` only when `tags` is `undefined`. `packages/api/src/app.ts` passes `body.tags` through. | `packages/shared/src/index.test.ts` `normalizeTags` cases: dedup, order, `[]`, no mutation. `packages/api/src/app.test.ts` "normalizes tags on create and returns them from GET" (201 with `["news","tech"]`) and "defaults to an empty tags array". |
-| 2 | `isValidTag` checks the trimmed tag: non-empty, at most 32 characters, no `/\s/`. Before `items.set`, `store.add` throws `ValidationError("invalid tag")` for a non-array (now including `null`), a non-string element, or an invalid tag. | `index.test.ts` `isValidTag` cases: 32 and 33 characters, space, tab, newline, empty, blank. `app.test.ts` "accepts a 32-character tag". Its `it.each` covers a 33-character tag, inner whitespace, a blank tag, a non-array, a non-string, and `null`. Each answers 400 `{"error":"invalid tag"}`, and the URL is absent from the GET that follows. QA confirmed against `BookmarkStore.add` that `tags: null` throws `invalid tag`. |
-| 3 | `Bookmark.tags: string[]` is required. `store.list()` returns the stored bookmarks. | `app.test.ts`: GET returns `["news","tech"]` and `[]`. |
-| 4 | `packages/web/src/render.ts` appends `span.tags` (`textContent`, `join(", ")`) between the link and Remove, only when `tags.length > 0`. `packages/web/index.html` adds the `li a` and `li .tags` styles. | `packages/web/src/render.test.ts`: the text is `news, tech` and the child order is `A, SPAN, BUTTON`. With no tags there is no `.tags` element and the text is `ExampleRemove`. The Remove test still passes. |
-| 5 | Vitest tests were added in all three packages. | See the rows above. QA re-ran `pnpm test`: 29 tests passed. |
-| 6 | `measure/baseline.json` `web_bundle_gzip_bytes` is 940. | QA re-ran `pnpm build && pnpm measure`: 940, delta 0. |
+| 1 | `packages/shared/src/index.ts` `normalizeTags`: trims, applies `toLowerCase`, and uses a `Set` that keeps the first occurrence. `packages/api/src/store.ts` `add` stores `normalizeTags(rawTags)` and defaults to `[]` only when `tags` is `undefined`. `packages/api/src/app.ts` passes `body.tags` through. | `packages/shared/src/index.test.ts` `normalizeTags` cases: dedup, order, `[]`, no mutation. `packages/api/src/app.test.ts` "normalizes tags on create and returns them from GET" (201 with `["news","tech"]`) and "defaults to an empty tags array". QA also checked against the running API: `["News","tech"]` was stored as `["news","tech"]`, and a POST without `tags` was stored with `[]`. |
+| 2 | `isValidTag` checks the trimmed tag: non-empty, at most 32 characters, no `/\s/`. Before `items.set`, `store.add` throws `ValidationError("invalid tag")` for a non-array (including `null`), a non-string element, or an invalid tag. | `index.test.ts` `isValidTag` cases: 32 and 33 characters, space, tab, newline, empty, blank. `app.test.ts` "accepts a 32-character tag". Its `it.each` covers a 33-character tag, inner whitespace, a blank tag, a non-array, a non-string, and `null`. Each answers 400 `{"error":"invalid tag"}`, and the URL is absent from the GET that follows. |
+| 3 | `Bookmark.tags: string[]` is required. `store.list()` returns the stored bookmarks. | `app.test.ts`: GET returns `["news","tech"]` and `[]`. QA's GET through the Vite proxy returned `tags` on every bookmark. |
+| 4 | `packages/web/src/render.ts` appends `span.tags` (`textContent`) between the link and Remove, only when `tags.length > 0`. The text starts with `tags.join(", ")`. `packages/web/index.html` adds the `li a` and `li .tags` styles. | `packages/web/src/render.test.ts`: the text is `news, tech (2)` (count suffix per AC-9) and the child order is `A, SPAN, BUTTON`. With no tags there is no `.tags` element and the text is `ExampleRemove`. The Remove test still passes. |
+| 5 | Vitest tests are in all three packages. | See the rows above. QA re-ran `pnpm test`: 30 tests passed. |
+| 6 | `measure/baseline.json` `web_bundle_gzip_bytes` is 950. | QA re-ran `pnpm build && pnpm measure`: 950, delta 0. |
 | 7 | — | QA re-ran `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root. All exited 0. |
-| 8 | `packages/shared/src/index.ts` `countTags` sums `tags.length` and counts duplicates. On every call, `renderList` sets `document.title` and the first `<h1>` text to `Bookmarks (N)` before the empty-list return, so the empty list is covered. `packages/web/src/main.ts` (unchanged) calls `renderList` through `refresh()` on load, after a successful add, and after a remove. | `index.test.ts` `countTags`: 0 for none, 0 with no tags, duplicates counted. `render.test.ts` "total tags heading": `Bookmarks (0)` for no bookmarks and for bookmarks without tags, and `Bookmarks (2)` for `["news"]` on two bookmarks. On re-renders the h1 and `document.title` go 1, then 3 after an add, then 2 after a remove. |
+| 8 | `countTags` sums `tags.length` and counts duplicates. On every call, `renderList` sets `document.title` and the first `<h1>` to `Bookmarks (N)`, before the empty-list return. `packages/web/src/main.ts` (unchanged) calls `renderList` through `refresh()` on load, after an add, and after a remove. | `index.test.ts` `countTags`: 0 for none, 0 with no tags, duplicates counted. `render.test.ts` "total tags heading": `Bookmarks (0)` for no bookmarks and for bookmarks without tags, `Bookmarks (2)` for `["news"]` on two bookmarks, and the count updates on re-render (1, then 3 after an add, then 2 after a remove). |
+| 9 | `packages/web/src/render.ts` sets the `span.tags` text to `` `${bookmark.tags.join(", ")} (${bookmark.tags.length})` ``, still with `textContent`. The no-tags branch is untouched. | `render.test.ts`: `news, tech (2)` for two tags, `news (1)` for one tag (new test), and for no tags there is no `.tags` element and the item text is `ExampleRemove`. |
 
-Notes on AC-8:
-- Until the first `refresh()` completes, the static `index.html` text `Bookmarks` shows without a count. It also stays that way if the initial `GET /bookmarks` fails. The criterion ties the count to rendering, so this is within it and is not a finding.
-- `renderList` now writes to the global `document` (its title and first `h1`) as well as to `list`. The page has exactly one `h1`, so this is correct, and it is not a finding.
+Notes:
+- On AC-8: until the first `refresh()` completes, the static `index.html` heading `Bookmarks` shows without a count. It also stays that way if the initial `GET /bookmarks` fails. The criterion ties the count to rendering, so this is not a finding.
+- On AC-9: a tag may itself contain parentheses, because only whitespace is disallowed. For example `a(1)` renders as `a(1) (1)`. This is cosmetic and within the criterion, so it is not a finding. The text goes through `textContent`, so there is no injection path.
 
 ### Findings
 
-1. **minor**: `packages/shared/src/index.ts` `isValidTag` and `normalizeTags`. The length check runs on the trimmed tag before lower-casing, but `toLowerCase()` can make a string longer. This was found in the previous review and is still present (the code has not changed). Reproduced again at `d325e92` against `BookmarkStore.add`: the tag `"İ" + "a".repeat(31)` (32 UTF-16 code units) is accepted and stored with `length` 33, which is longer than `MAX_TAG_LENGTH`. AC-2's literal wording ("after trimming") is met. The user accepted this as a follow-up at `local-qa-review`.
-
-The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed in `680eb98`. QA confirmed it by the `null` case in `app.test.ts` and by a direct reproduction.
+1. **minor**: `packages/shared/src/index.ts` `isValidTag` and `normalizeTags`. The length check runs on the trimmed tag before lower-casing, and `toLowerCase()` can make a string longer. The code is unchanged since the earlier reviews. QA reproduced it again at `8707c90` against the shared functions: the tag `"İ" + "a".repeat(31)` is 32 UTF-16 code units, `isValidTag` accepts it, and `normalizeTags` returns a tag of length 33. That is longer than `MAX_TAG_LENGTH` (32). AC-2's literal wording ("after trimming") is met. The user accepted this as a follow-up at `local-qa-review`.
 
 ### Residual risks
 
-- Suspected: the `index.html` flex styles (`li a { margin-right }`, `li .tags { flex: 1 }`) have still not been checked in a browser. jsdom tests cover DOM order only, not layout, and the Testing Strategy plans no live-app check. QA tried a live check in this review: it started the API and the Vite dev server and seeded bookmarks with and without tags. The browser tool was not permitted in this session, so the layout stays unconfirmed. To confirm, load the page with one bookmark that has tags and one without. Check that the tags sit next to the title, that Remove stays at the end of the row, and that the h1 and tab title read `Bookmarks (N)`.
+- Suspected: the `index.html` flex styles (`li a { margin-right }`, `li .tags { flex: 1 }`) have still not been checked in a browser. AC-9 makes the tags span text longer, so this layout matters a little more. jsdom tests cover DOM order only, not layout, and the Testing Strategy plans no live-app check.
+  - What QA tried: it started the API (with a `.js`-to-`.ts` resolve hook outside the worktree, because of the start-script failure noted below) and the Vite dev server. It seeded a bookmark with two tags, one with one tag, and one with none, and confirmed the data through the Vite proxy.
+  - Why it stays unconfirmed: the browser tool (Chrome DevTools MCP) was not permitted in this session, so the visual check was not run.
+  - To confirm, load the page with those three bookmarks and check four things: the tags and their `(N)` count sit next to the title, Remove stays at the end of the row, the untagged row shows only the title and Remove, and the h1 and tab title read `Bookmarks (3)`.
 - No Operational Requirements entry has `evidence: unverified`. No Validation Evidence line is `deferred` or `pending-ci`.
-- Observation outside this change: `pnpm --filter @sample/api start` (`node --experimental-strip-types src/server.ts`) fails with `ERR_MODULE_NOT_FOUND` for `./app.js`. This branch does not change `server.ts` or the start script, so the failure was not introduced here and it is not a finding.
+- Observation outside this change: `pnpm --filter @sample/api start` (`node --experimental-strip-types src/server.ts`) still fails to resolve `./app.js`, because Node's type stripping does not map `.js` imports to `.ts` files. This branch changes neither `server.ts` nor the start script, so the failure was not introduced here and it is not a finding.
 
 ## Review Record
 
@@ -284,3 +290,5 @@ The previous finding about `tags: null` (`packages/api/src/store.ts`) is fixed i
 - 2026-10-28: Scope change: "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve." — jira-handoff at fd2b1da
 - 2026-10-28: Approved: scope change — "Add acceptance criterion 9: each bookmark's tags span ends with its tag count in parentheses, for example `news, tech (2)`; a bookmark without tags renders unchanged. Make exactly that change, then approve."
 - 2026-10-28: Implemented criterion 9 (tag count suffix in the tags span), updated bundle baseline to 950, repository checks pass. Set checkpoint `implementation-approval`, transition `implementation-complete`.
+- 2026-10-28: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-28: Local QA review (full re-review, attempt 3) recorded gate `concerns` at `8707c90`: all nine criteria evidenced, one minor finding (lower-casing after the length check), one residual risk (layout not checked in a browser; browser tool not permitted).
