@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -131,10 +131,14 @@ This change adds, removes, or renames no CI check context.
 ## Implementation Record
 
 Task 1 — Shared: tag model and normalisation. Added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and pure `normalizeTags` (returns `string[]`, or `null` for an invalid tag). Judged on the trimmed, lower-cased tag; length counts code points. Focused: `pnpm --filter @sample/shared test` 9 passed, typecheck passed.
+(commit 6e24263)
 Task 2 — API: accept, validate, store, and return tags. `POST /bookmarks` passes raw `body.tags`; `BookmarkStore.add` validates after the existing checks and before storing, throwing `ValidationError("invalid tag")`. HTTP tests cover default, normalisation, 32-char boundary, and seven rejections (33 chars, whitespace, non-array, null, non-string, empty, blank) each leaving the list unchanged. Focused: `pnpm --filter @sample/api test` 13 passed.
+(commit 4d30432)
 Task 3 — Web: show tags after the title. `renderList` appends a `span.tags` (via `textContent`, joined with ", ") only when tags exist; CSS `margin-right: auto` keeps it beside the title. Fixtures updated; two cases added. Focused: `pnpm --filter @sample/web test` 4 passed. D1: no tag input, `main.ts` unchanged.
+(commit 214e575)
 Task 4 — Root checks. `pnpm test` (shared 9, api 13, web 4 passed), `pnpm lint` (eslint clean), `pnpm typecheck` (clean), all from the repository root.
 Task 5 — Delivery conventions. Added changeset `.changeset/add-bookmark-tags.md` (minor for shared, api, web; summary `Add tags to bookmarks`). `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` and `web_bundle_gzip_delta=46` against 835; baseline updated to 881.
+(commit e8b500d)
 
 ## Validation Evidence
 
@@ -182,6 +186,7 @@ Reviewed head: e8b500dc16846e4e14db13f5ad080da8ea5bcf7e
 - 2026-10-29 — Implementation: task 4 done (root checks pass).
 - 2026-10-29 — Implementation: task 5 done (changeset and bundle baseline).
 - 2026-10-29 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-29 — Finalize: reconciled commit citations for tasks 1, 2, 3, and 5 (commits 6e24263, 4d30432, 214e575, e8b500d). Task 4 (root checks) has no committed evidence: its entry was added by e5aa329, which changes only the work item; the task stays checked and is listed as a discrepancy. Set checkpoint local-qa-review and transition qa-reviewed.
 
 
 
