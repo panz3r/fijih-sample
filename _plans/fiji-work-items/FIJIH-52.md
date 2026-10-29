@@ -7,9 +7,9 @@ source:
   key: FIJIH-52
   revision: 2026-10-29T19:10:08.049+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -123,3 +123,4 @@ None. The four questions raised in the first plan were answered by the user at p
 
 - 2026-10-29: Drafted from Jira FIJIH-52 at revision 2026-10-29T19:10:08.049+0100 (after assigning the issue to the current user).
 - 2026-10-29: Plan-approval conditional approval, user's words: "Approve. Answers: 1 no tags input on the add form; 2 a non-array tags value or a non-string item answers 400 invalid tag; 3 a tag empty after trimming is rejected with 400 invalid tag; 4 confirmed: trim first, reject only interior whitespace, and count the 32-character limit on the trimmed tag." Applied: AC 3 and its tasks and tests cover non-array tags, non-string items, and empty-after-trim tags; the add form tags input is recorded as out of scope; open questions resolved.
+- 2026-10-29: Approved: plan-approval — conditional: Approve. Answers: 1 no tags input on the add form; 2 a non-array tags value or a non-string item answers 400 invalid tag; 3 a tag empty after trimming is rejected with 400 invalid tag; 4 confirmed: trim first, reject only interior whitespace, and count the 32-character limit on the trimmed tag. (verified at 0164c06)
