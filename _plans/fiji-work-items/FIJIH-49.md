@@ -8,9 +8,9 @@ source:
   revision: "2026-10-29T17:44:20.074+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -192,3 +192,4 @@ Copilot pass (PR #11, review 5701698049 on baa223d, submitted 2026-10-29T16:55:5
 - 2026-10-29 — Approved: local-qa-review — Approve. Keep the U+0130 finding as a recorded follow-up.
 - 2026-10-29 — Delivery: pushed branch FIJIH-49-add-bookmark-tags (9 commits, tip baa223d); opened draft PR #11 (https://github.com/panz3r/fijih-sample/pull/11) titled `[FIJIH-49] Add tags to bookmarks`, label enhancement, base main; Copilot review requested (review_requested event confirmed). Change intent `.changeset/add-bookmark-tags.md` already on the branch, reused unchanged. No (verify: ci) criterion, so no CI measurement. Transition delivery-complete; this commit is held locally.
 - 2026-10-29 — Automated review: Copilot reviewed PR #11 (review 5701698049) with no findings. Set checkpoint ready-for-review and transition ready-for-review.
+- 2026-10-29 — Approved: ready-for-review — Approve.
