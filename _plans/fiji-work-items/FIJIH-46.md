@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -123,18 +123,22 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 ## Implementation Record
 
 ### Task 1 — shared tag model and normalisation
+(commit 87f9ca0)
 
 `Bookmark.tags: string[]`, `NewBookmark` gains optional `tags`, `MAX_TAG_LENGTH = 32`, and `normalizeTags(input: unknown): string[] | null` (null signals an invalid tag; checks run after trimming and lower-casing; empty, non-string, non-array, over-length and whitespace all invalid). Hypothesis: a pure helper returning null keeps the api free of shared-side error types; checked by the shared tests (10 passed in `pnpm --filter @sample/shared test`).
 
 ### Task 2 — API accepts, validates, stores, and returns tags
+(commit 87f9ca0)
 
 `app.ts` passes `body.tags` through untouched; `store.ts` normalises after the title, URL and duplicate checks and throws `ValidationError("invalid tag")`. `pnpm --filter @sample/api test`: 11 passed, including 33-character, whitespace, empty, non-string, non-array and null cases each followed by a GET proving nothing was stored.
 
 ### Task 3 — web page shows tags after the title
+(commit 8365553)
 
 `render.ts` appends `<span class="tags">` (via `textContent` of `tags.join(", ")`) between the link and Remove only when `tags.length > 0`; the existing flex layout needs no CSS. Fixtures gained `tags: []`; new cases cover `work, news` and the no-tags row (`ExampleRemove`). `pnpm --filter @sample/web test`: 4 passed.
 
 ### Task 6 — README packages/shared row
+(commit 14d7f6a)
 
 The row now reads "URL validation and normalisation, tag normalisation, sorting" (Q4 approved).
 
@@ -201,3 +205,4 @@ Product decisions checked against the criteria: Q1–Q4 as approved match AC 1�
 - 2026-10-29: Tasks 4 and 5 done; implementation complete, awaiting implementation-approval.
 - 2026-10-29: Approved: implementation-approval — Approve; I accept the jsdom evidence for the page check.
 - 2026-10-29: Quality gate recorded: concerns (two minor findings, one residual risk) at reviewed head 958fd92.
+- 2026-10-29: Finalize (local QA review): reconciled Implementation Record entries for Tasks 1, 2, 3, and 6 with their task commits (87f9ca0, 8365553, 14d7f6a); no other record changed. Task 4 (live check) and Task 5 (root checks and baseline) are checked but their entries were added by the work-item-only commit 958fd92 and cite no commit, so they are listed as task/evidence discrepancies; their acceptance evidence (AC-1, AC-3, AC-4, AC-6) is in Validation Evidence. Checkpoint local-qa-review set.
