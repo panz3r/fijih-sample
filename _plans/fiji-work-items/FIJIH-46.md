@@ -7,9 +7,9 @@ source:
   key: FIJIH-46
   revision: 2026-10-29T11:46:05.481+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -69,13 +69,12 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - [ ] Web page shows tags after the title (AC: 4)
   - [ ] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing otherwise. Use `textContent`, never `innerHTML`.
   - [ ] Update fixtures in `packages/web/src/render.test.ts` for the new required `tags` field and add cases: two tags render `work, news` after the title; no tags renders no tag element and the row text is title + `Remove` only.
-  - [ ] Only if Q1 is answered "in scope": add a tags input to the form in `packages/web/index.html` and send its comma-separated values as `tags` from `packages/web/src/main.ts`, with a test of the parsing helper.
 - [ ] Live check of the web page against the API (AC: 1, 3, 4)
   - [ ] Run `pnpm --filter @sample/api start` and `pnpm --filter @sample/web dev`, create one bookmark with tags (via `curl -X POST` to the api, or the form if Q1 adds it) and one without, and record in Validation Evidence that the page shows `<title> work, news` for the first and only the title for the second.
 - [ ] Root checks and bundle baseline (AC: 5, 6)
   - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root.
   - [ ] Run `pnpm build && pnpm measure`; if `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in its own `chore:` commit, and record before/after values in Validation Evidence.
-- [ ] Only if Q4 is answered "yes": update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
+- [ ] Update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
 
 ## Engineering Context
 
@@ -126,3 +125,5 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 ## Change Log
 
 - 2026-10-29: Plan drafted from FIJIH-46 at revision 2026-10-29T11:46:05.481+0100; issue assigned to Mattia Panzeri.
+- 2026-10-29: Approved: plan-approval — Approve as proposed.
+- 2026-10-29: Plan approval accepts the proposed answers: Q1 form tags input out of scope (its conditional subtask removed); Q2 non-array/non-string tags answer 400 `invalid tag`; Q3 empty-after-trim tags rejected, checks run after trimming; Q4 README `packages/shared` row is updated (its task is now unconditional).
