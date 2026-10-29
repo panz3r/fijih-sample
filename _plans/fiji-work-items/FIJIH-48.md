@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -142,12 +142,16 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 ## Implementation Record
 
 Task 1 and 2 — shared tag types, `isValidTag` (trimmed, non-blank, <= 32 chars, no whitespace) and `normalizeTags` (trim, lower-case, de-duplicate in first-occurrence order), with unit tests for 32/33 boundary, inner space/tab, trimming, blank, case and duplicate folding, order, immutability, and `[]`.
+(commit 448d349)
 
 Task 3 and 4 — `BookmarkStore.add()` validates `tags` after the URL checks and before inserting (non-array, non-string element, blank, over 32 characters, or inner whitespace throw `ValidationError("invalid tag")`), stores `normalizeTags(tags)`, defaults to `[]`; the POST handler passes `body.tags` through uncoerced. API tests drive the real server for round-trip, default, 32-character acceptance, and five 400 cases that store nothing.
+(commit 31f1e27)
 
 Task 5 and 6 — `renderList` appends `<span class="tags">` with `tags.join(", ")` textContent between the title link and Remove, only when the bookmark has tags; existing fixtures gained `tags: []`; new tests cover the tags text and position and the no-tags item text (`ExampleRemove`).
+(commit 1b4bb87)
 
 Task 7 — added the changeset (`@sample/shared`, `@sample/api`, `@sample/web` minor, summary `Add tags to bookmarks`); `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (delta 46), so `measure/baseline.json` moved from 835 to 881. Root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
+(commit 6aefb64)
 
 ## Validation Evidence
 
@@ -193,3 +197,4 @@ Residual risks: none. The Operational Requirements entries carry evidence; no Va
 - 2026-10-29: Implemented web tag rendering and tests (tasks 5-6).
 - 2026-10-29: Delivery conventions done (task 7); all tasks checked; checkpoint implementation-approval.
 - 2026-10-29: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-29: Finalize: every task and acceptance criterion has committed evidence on the branch; added `(commit <hash>)` lines to the four Implementation Record entries (tasks 1-2 448d349, 3-4 31f1e27, 5-6 1b4bb87, 7 6aefb64). Recorded quality gate concerns with two minor findings as follow-ups; checkpoint local-qa-review.
