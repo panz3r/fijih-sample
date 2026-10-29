@@ -7,9 +7,9 @@ source:
   key: FIJIH-49
   revision: "2026-10-29T17:44:20.074+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -128,3 +128,4 @@ This change adds, removes, or renames no CI check context.
 ## Change Log
 
 - 2026-10-29 — Plan: drafted from FIJIH-49 revision `2026-10-29T17:44:20.074+0100`; issue assigned to the current user. Open decisions D1 to D6 await plan approval.
+- 2026-10-29 — Approved: plan-approval — Approve. Answers: D1 no tag input on the add form; D2 yes, 400 invalid tag; D3 yes, 400 invalid tag; D4 yes to both; D5 yes, join with ", "; D6 leave README.md unchanged.
