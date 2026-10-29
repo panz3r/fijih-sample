@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-48-add-tags-to-bookmarks
   base_branch: main
   pull_request: https://github.com/panz3r/fijih-sample/pull/9
-  jira_context_comment_id: null
+  jira_context_comment_id: "10008"
 ---
 
 # Work Item FIJIH-48: Add tags to bookmarks
@@ -226,3 +226,5 @@ Operational: merging into main needs the required status check "test" and one ap
 - 2026-10-29: Approved: ready-for-review — Approve.
 - 2026-10-29: Ready-for-review: marked pull request #9 ready for review and requested review from `duckyduff369` (QA Engineer, owning team in TEAMS.md; the only other team member, `panz3r`, is the author). Transition review-requested; held locally with the earlier work-item-only commits.
 - 2026-10-29: Jira handoff draft: wrote the Jira handoff draft comment (outcome, validation, review state, plan-approval decisions, two kept follow-ups, operational notes) in the Review Record; PR #9 head d6b9082 shows approval by `duckyduff369` (review 5700305678) and no open findings. Transition handoff-drafted, checkpoint jira-handoff; held locally with the earlier work-item-only commits.
+- 2026-10-29: Approved: jira-handoff — Approve.
+- 2026-10-29: Jira handoff recorded: posted the approved handoff comment on FIJIH-48 (comment 10008, marker `FIJI-CONTEXT:FIJIH-48:fiji/orchestrate-development/v1`) and read it back. Transition handoff-recorded, checkpoint cleared; held locally with the earlier work-item-only commits.
