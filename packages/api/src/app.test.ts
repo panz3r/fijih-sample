@@ -44,3 +44,43 @@ describe("bookmarks api", () => {
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
 });
+
+describe("bookmark tags", () => {
+  const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+  const list = async () => (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+
+  it("normalises tags on create and returns them from GET", async () => {
+    const res = await post({ url: "https://tags.example.com/a", title: "T", tags: [" News ", "news", "TECH"] });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+    expect((await list()).find((b) => b.url === "https://tags.example.com/a")?.tags).toEqual(["news", "tech"]);
+  });
+
+  it("defaults tags to an empty array", async () => {
+    const res = await post({ url: "https://tags.example.com/none", title: "T" });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    expect((await list()).find((b) => b.url === "https://tags.example.com/none")?.tags).toEqual([]);
+  });
+
+  it("accepts a 32-character tag", async () => {
+    const res = await post({ url: "https://tags.example.com/32", title: "T", tags: ["a".repeat(32)] });
+    expect(res.status).toBe(201);
+  });
+
+  it.each([
+    ["a 33-character tag", ["a".repeat(33)]],
+    ["a tag with inner whitespace", ["two words"]],
+    ["a blank tag", ["   "]],
+    ["a non-string element", ["ok", 5]],
+    ["a non-array tags value", "news"],
+  ])("rejects %s and stores nothing", async (_name, tags) => {
+    const before = (await list()).length;
+    const res = await post({ url: "https://tags.example.com/bad", title: "T", tags });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid tag" });
+    const after = await list();
+    expect(after).toHaveLength(before);
+    expect(after.some((b) => b.url === "https://tags.example.com/bad")).toBe(false);
+  });
+});

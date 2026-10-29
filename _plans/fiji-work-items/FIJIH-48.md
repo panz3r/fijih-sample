@@ -79,14 +79,14 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 - [x] Shared unit tests in `packages/shared/src/index.test.ts` (AC: 5)
   - [x] `isValidTag`: 32 characters accepted, 33 rejected, inner space and tab rejected, surrounding whitespace accepted, blank per open question 1.
   - [x] `normalizeTags`: trimming, lower-casing, duplicate folding across case and whitespace, order kept, input not mutated, `[]` in gives `[]` out.
-- [ ] API store and route (AC: 1, 2, 3)
-  - [ ] `packages/api/src/store.ts` `add()`: when `input.tags` is given, throw `ValidationError("invalid tag")` if any tag fails `isValidTag` (and for malformed input per open question 2), else store `normalizeTags(input.tags)`; default `[]`. Validate before inserting, so a rejected request stores nothing.
-  - [ ] `packages/api/src/app.ts` POST handler: read `tags` from the body and pass it to `store.add` without coercing it, so the store can reject malformed values.
-- [ ] API tests in `packages/api/src/app.test.ts` (AC: 5)
-  - [ ] POST with `tags: [" News ", "news", "TECH"]` answers 201 with `tags: ["news", "tech"]`, and GET returns the same tags on that bookmark.
-  - [ ] POST without `tags` answers 201 with `tags: []`.
-  - [ ] POST with a 33-character tag and with `"two words"` each answer 400 `{"error":"invalid tag"}`, and GET shows no new bookmark.
-  - [ ] Malformed and blank tags per open questions 1 and 2.
+- [x] API store and route (AC: 1, 2, 3)
+  - [x] `packages/api/src/store.ts` `add()`: when `input.tags` is given, throw `ValidationError("invalid tag")` if any tag fails `isValidTag` (and for malformed input per open question 2), else store `normalizeTags(input.tags)`; default `[]`. Validate before inserting, so a rejected request stores nothing.
+  - [x] `packages/api/src/app.ts` POST handler: read `tags` from the body and pass it to `store.add` without coercing it, so the store can reject malformed values.
+- [x] API tests in `packages/api/src/app.test.ts` (AC: 5)
+  - [x] POST with `tags: [" News ", "news", "TECH"]` answers 201 with `tags: ["news", "tech"]`, and GET returns the same tags on that bookmark.
+  - [x] POST without `tags` answers 201 with `tags: []`.
+  - [x] POST with a 33-character tag and with `"two words"` each answer 400 `{"error":"invalid tag"}`, and GET shows no new bookmark.
+  - [x] Malformed and blank tags per open questions 1 and 2.
 - [ ] Web rendering in `packages/web/src/render.ts` (AC: 4)
   - [ ] After the title link, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`, only when `bookmark.tags.length > 0`.
 - [ ] Web tests in `packages/web/src/render.test.ts` (AC: 5)
@@ -128,9 +128,15 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
 
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
+
 ## Implementation Record
 
 Task 1 and 2 — shared tag types, `isValidTag` (trimmed, non-blank, <= 32 chars, no whitespace) and `normalizeTags` (trim, lower-case, de-duplicate in first-occurrence order), with unit tests for 32/33 boundary, inner space/tab, trimming, blank, case and duplicate folding, order, immutability, and `[]`.
+
+Task 3 and 4 — `BookmarkStore.add()` validates `tags` after the URL checks and before inserting (non-array, non-string element, blank, over 32 characters, or inner whitespace throw `ValidationError("invalid tag")`), stores `normalizeTags(tags)`, defaults to `[]`; the POST handler passes `body.tags` through uncoerced. API tests drive the real server for round-trip, default, 32-character acceptance, and five 400 cases that store nothing.
 
 ## Validation Evidence
 
@@ -143,3 +149,4 @@ Task 1 and 2 — shared tag types, `isValidTag` (trimmed, non-blank, <= 32 chars
 - 2026-10-29: Drafted from Jira FIJIH-48 revision `2026-10-29T16:12:10.397+0100` (issue assigned to the current user before reading the revision). Six open product questions recorded in Product Context for `plan-approval`.
 - 2026-10-29: Approved: plan-approval — Approve. Answers: 1 yes, a blank tag after trimming answers 400 invalid tag; 2 yes, a non-array or non-string tags value answers 400; 3 yes, the rules apply to the trimmed tag; 4 yes, keep first-occurrence order; 5 no tags input on the add form; 6 leave README.md unchanged.
 - 2026-10-29: Implemented shared tag helpers and tests (tasks 1-2).
+- 2026-10-29: Implemented API tag validation, storage, and tests (tasks 3-4).
