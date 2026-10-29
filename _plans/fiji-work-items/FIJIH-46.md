@@ -8,9 +8,9 @@ source:
   revision: 2026-10-29T11:46:05.481+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -220,3 +220,5 @@ Re-review requested at 2026-10-29T11:00:13Z; Copilot review 5696649144 on 4914d6
 - 2026-10-29: Approved: local-qa-review — Approve; keep both findings as follow-ups.
 - 2026-10-29: Delivery: changeset `.changeset/add-tags-to-bookmarks.md` pushed; draft PR #8 (https://github.com/panz3r/fijih-sample/pull/8) opened with label `enhancement`, Copilot review requested (timeline `review_requested`). Both quality-gate minor findings kept as follow-ups. No `(verify: ci)` criteria. Reviewer QA Engineer `duckyduff369` to be requested at ready-for-review.
 - 2026-10-29: Copilot pass: 2 valid findings fixed in 4914d6a (the two quality-gate minor findings), threads resolved, re-review clean. Checkpoint ready-for-review set.
+- 2026-10-29: Approved: ready-for-review — Approve; the Copilot-pass fixes are fine.
+- 2026-10-29: Ready for review: PR #8 marked ready (timeline `ready_for_review` at 11:04:37Z) and review requested from QA Engineer `duckyduff369` (timeline `review_requested` at 11:04:38Z). Owning team per TEAMS.md; author `panz3r` not requested. Commit held locally (work-item-only).
