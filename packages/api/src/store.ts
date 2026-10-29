@@ -10,21 +10,25 @@ export class BookmarkStore {
     return sortByCreatedDesc([...this.items.values()]);
   }
 
-  add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
+  add(input: NewBookmark, now: () => Date = () => new Date(), options: { allowDuplicateUrl?: boolean } = {}): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
     const url = normalizeUrl(input.url);
-    for (const existing of this.items.values()) {
-      if (existing.url === url) throw new ValidationError("url already bookmarked");
+    // Admins may bookmark a URL twice, for example to keep two titles for it.
+    if (!options.allowDuplicateUrl) {
+      for (const existing of this.items.values()) {
+        if (existing.url === url) throw new ValidationError("url already bookmarked");
+      }
     }
     const rawTags: unknown = input.tags ?? [];
     if (!Array.isArray(rawTags) || !rawTags.every((tag) => typeof tag === "string" && isValidTag(tag))) {
       throw new ValidationError("invalid tag");
     }
+    const title = input.title.trim();
     const bookmark: Bookmark = {
       id: randomUUID(),
       url,
-      title: input.title.trim(),
+      title,
       createdAt: now().toISOString(),
       tags: normalizeTags(rawTags as string[]),
     };
