@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -124,9 +124,16 @@ None. The four questions raised in the first plan were answered by the user at p
 ## Implementation Record
 
 Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags`, `normalizeTags`, `isValidTag` (empty, >32 chars, or any `/\s/` is invalid), with 7 new tests.
+(commit 136e46d)
+
 Task 2 — api tags: POST passes `body.tags`; `BookmarkStore.add` validates via `parseTags` (non-array, non-string item, or invalid normalized tag throws `ValidationError("invalid tag")` before storing), defaults `[]`, saves `tags`; 6 new test cases plus 3 more.
+(commit 162dcbd)
+
 Task 3 — web tags: `renderList` appends `<span class="tags">` with `tags.join(", ")` between the title link and Remove only when tags exist; fixtures updated; 2 new tests.
+(commit ace9e25)
+
 Task 4 — release: changeset `.changeset/add-bookmark-tags.md` (minor for shared, api, web; summary `Add tags to bookmarks`); `pnpm build` then `pnpm measure` gave 881 bytes against the 835 baseline, so `measure/baseline.json` is now 881.
+(commit 2831d70)
 Task 5 — root validation: `pnpm test`, `pnpm lint`, `pnpm typecheck` all passed from the repository root.
 
 ## Validation Evidence
@@ -177,3 +184,4 @@ Reviewed head: 1687c164a597907797ebb43f566e4f5a8629f5d4
 - 2026-10-29: Task 5 root validation passed; implementation complete, checkpoint implementation-approval.
 - 2026-10-29: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-29: Quality review recorded gate concerns at 1687c16 (one minor finding: tag length counted in UTF-16 code units).
+- 2026-10-29: Finalize (local QA review): added `(commit <hash>)` lines to the Task 1 to 4 Implementation Record entries (routine reconciliation). Task 5 (root validation) has no committed evidence: its entry was added by 1687c16, which changes only the work item; listed as a discrepancy, non-blocking. Checkpoint local-qa-review.
