@@ -18,7 +18,14 @@ export function renderList(list: HTMLElement, bookmarks: readonly Bookmark[], on
     const remove = document.createElement("button");
     remove.textContent = "Remove";
     remove.addEventListener("click", () => onRemove(bookmark.id));
-    item.append(link, remove);
+    item.append(link);
+    if (bookmark.tags.length > 0) {
+      const tags = document.createElement("span");
+      tags.className = "tags";
+      tags.textContent = bookmark.tags.join(", ");
+      item.append(tags);
+    }
+    item.append(remove);
     list.append(item);
   }
 }

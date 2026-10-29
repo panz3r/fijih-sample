@@ -87,11 +87,11 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
   - [x] POST without `tags` answers 201 with `tags: []`.
   - [x] POST with a 33-character tag and with `"two words"` each answer 400 `{"error":"invalid tag"}`, and GET shows no new bookmark.
   - [x] Malformed and blank tags per open questions 1 and 2.
-- [ ] Web rendering in `packages/web/src/render.ts` (AC: 4)
-  - [ ] After the title link, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`, only when `bookmark.tags.length > 0`.
-- [ ] Web tests in `packages/web/src/render.test.ts` (AC: 5)
-  - [ ] Add `tags` to the existing fixtures so they type-check.
-  - [ ] A bookmark with `["news", "tech"]` shows `news, tech` after its title; a bookmark with `[]` renders no tags element and its item text is only the title and `Remove`.
+- [x] Web rendering in `packages/web/src/render.ts` (AC: 4)
+  - [x] After the title link, append an element (for example `<span class="tags">`) whose text is `bookmark.tags.join(", ")`, only when `bookmark.tags.length > 0`.
+- [x] Web tests in `packages/web/src/render.test.ts` (AC: 5)
+  - [x] Add `tags` to the existing fixtures so they type-check.
+  - [x] A bookmark with `["news", "tech"]` shows `news, tech` after its title; a bookmark with `[]` renders no tags element and its item text is only the title and `Remove`.
 - [ ] Delivery conventions (AC: 6)
   - [ ] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` with summary `Add tags to bookmarks`.
   - [ ] Run `pnpm build` then `pnpm measure`, and update `web_bundle_gzip_bytes` in `measure/baseline.json` to the printed value when it differs from 835.
@@ -132,11 +132,16 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
 
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+
 ## Implementation Record
 
 Task 1 and 2 — shared tag types, `isValidTag` (trimmed, non-blank, <= 32 chars, no whitespace) and `normalizeTags` (trim, lower-case, de-duplicate in first-occurrence order), with unit tests for 32/33 boundary, inner space/tab, trimming, blank, case and duplicate folding, order, immutability, and `[]`.
 
 Task 3 and 4 — `BookmarkStore.add()` validates `tags` after the URL checks and before inserting (non-array, non-string element, blank, over 32 characters, or inner whitespace throw `ValidationError("invalid tag")`), stores `normalizeTags(tags)`, defaults to `[]`; the POST handler passes `body.tags` through uncoerced. API tests drive the real server for round-trip, default, 32-character acceptance, and five 400 cases that store nothing.
+
+Task 5 and 6 — `renderList` appends `<span class="tags">` with `tags.join(", ")` textContent between the title link and Remove, only when the bookmark has tags; existing fixtures gained `tags: []`; new tests cover the tags text and position and the no-tags item text (`ExampleRemove`).
 
 ## Validation Evidence
 
@@ -150,3 +155,4 @@ Task 3 and 4 — `BookmarkStore.add()` validates `tags` after the URL checks and
 - 2026-10-29: Approved: plan-approval — Approve. Answers: 1 yes, a blank tag after trimming answers 400 invalid tag; 2 yes, a non-array or non-string tags value answers 400; 3 yes, the rules apply to the trimmed tag; 4 yes, keep first-occurrence order; 5 no tags input on the add form; 6 leave README.md unchanged.
 - 2026-10-29: Implemented shared tag helpers and tests (tasks 1-2).
 - 2026-10-29: Implemented API tag validation, storage, and tests (tasks 3-4).
+- 2026-10-29: Implemented web tag rendering and tests (tasks 5-6).
