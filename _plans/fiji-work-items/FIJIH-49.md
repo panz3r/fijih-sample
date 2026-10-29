@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-49-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/11
-  jira_context_comment_id: null
+  jira_context_comment_id: "10009"
 ---
 
 # Work Item FIJIH-49: Add tags to bookmarks
@@ -213,3 +213,5 @@ Jira handoff draft:
 - 2026-10-29 — Delivery: pushed branch FIJIH-49-add-bookmark-tags (9 commits, tip baa223d); opened draft PR #11 (https://github.com/panz3r/fijih-sample/pull/11) titled `[FIJIH-49] Add tags to bookmarks`, label enhancement, base main; Copilot review requested (review_requested event confirmed). Change intent `.changeset/add-bookmark-tags.md` already on the branch, reused unchanged. No (verify: ci) criterion, so no CI measurement. Transition delivery-complete; this commit is held locally.
 - 2026-10-29 — Automated review: Copilot reviewed PR #11 (review 5701698049) with no findings. Set checkpoint ready-for-review and transition ready-for-review.
 - 2026-10-29 — Approved: ready-for-review — Approve.
+- 2026-10-29 — Approved: jira-handoff — Approve.
+- 2026-10-29 — Jira handoff: posted the handoff comment on FIJIH-49 (comment 10009, marker FIJI-CONTEXT:FIJIH-49:fiji/orchestrate-development/v1), read back and verified; no other comment exists for the marker. Transition handoff-recorded.
