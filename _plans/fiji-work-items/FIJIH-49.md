@@ -69,10 +69,10 @@ The issue does not settle these. The acceptance criteria below use the proposed 
 
 ## Tasks and Subtasks
 
-- [ ] Shared: tag model and normalisation (AC: 1, 2, 3, 4, 6)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `string[]`) input to `NewBookmark` in `packages/shared/src/index.ts`.
-  - [ ] Add a pure `normalizeTags(input)` that returns `[]` for `undefined`, trims, lower-cases, and deduplicates (first-occurrence order), and reports an invalid tag (length over 32 code points after trimming, internal whitespace, and per D2/D3 a non-string element, non-array value, or empty tag).
-  - [ ] Vitest cases in `packages/shared/src/index.test.ts`: default `[]`, trimming, lower-casing, deduplication and order, exactly 32 accepted, 33 rejected, internal whitespace rejected, and the D2/D3 cases.
+- [x] Shared: tag model and normalisation (AC: 1, 2, 3, 4, 6)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `string[]`) input to `NewBookmark` in `packages/shared/src/index.ts`.
+  - [x] Add a pure `normalizeTags(input)` that returns `[]` for `undefined`, trims, lower-cases, and deduplicates (first-occurrence order), and reports an invalid tag (length over 32 code points after trimming, internal whitespace, and per D2/D3 a non-string element, non-array value, or empty tag).
+  - [x] Vitest cases in `packages/shared/src/index.test.ts`: default `[]`, trimming, lower-casing, deduplication and order, exactly 32 accepted, 33 rejected, internal whitespace rejected, and the D2/D3 cases.
 - [ ] API: accept, validate, store, and return tags (AC: 1, 2, 3, 4, 6)
   - [ ] Pass `body.tags` from `POST /bookmarks` in `packages/api/src/app.ts` to `BookmarkStore.add`.
   - [ ] In `packages/api/src/store.ts`, normalise tags with `normalizeTags`, throw `ValidationError("invalid tag")` for an invalid tag before anything is stored, and store `tags` on the bookmark.
@@ -117,7 +117,12 @@ This change adds, removes, or renames no CI check context.
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — Shared: tag model and normalisation. Added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and pure `normalizeTags` (returns `string[]`, or `null` for an invalid tag). Judged on the trimmed, lower-cased tag; length counts code points. Focused: `pnpm --filter @sample/shared test` 9 passed, typecheck passed.
 
 ## Validation Evidence
 
@@ -129,3 +134,5 @@ This change adds, removes, or renames no CI check context.
 
 - 2026-10-29 — Plan: drafted from FIJIH-49 revision `2026-10-29T17:44:20.074+0100`; issue assigned to the current user. Open decisions D1 to D6 await plan approval.
 - 2026-10-29 — Approved: plan-approval — Approve. Answers: D1 no tag input on the add form; D2 yes, 400 invalid tag; D3 yes, 400 invalid tag; D4 yes to both; D5 yes, join with ", "; D6 leave README.md unchanged.
+- 2026-10-29 — Implementation: task 1 done (shared tag model and `normalizeTags`).
+
