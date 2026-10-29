@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -114,7 +114,7 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 
 ## File List
 
-- `packages/shared/src/index.ts`, `packages/shared/src/index.test.ts`
+- `packages/shared/src/index.ts`, `packages/shared/src/index.test.ts` (also changed by Copilot fix 4914d6a)
 - `packages/api/src/store.ts`, `packages/api/src/app.ts`, `packages/api/src/app.test.ts`
 - `packages/web/src/render.ts`, `packages/web/src/render.test.ts`
 - `README.md`
@@ -149,6 +149,10 @@ Ran `pnpm --filter @sample/web dev` (Vite, proxy to :3000). `pnpm --filter @samp
 ### Task 5 — root checks and baseline
 
 `pnpm test` (10 + 11 + 4 passed), `pnpm lint`, `pnpm typecheck` pass. `pnpm build && pnpm measure` printed `web_bundle_gzip_bytes=881`, delta 46 against baseline 835; baseline set to 881 in its own `chore:` commit, re-measure delta 0.
+
+### Copilot review fixes (automated-review, attempt 1)
+
+Fix commit 4914d6a (`packages/shared/src/index.ts`, `packages/shared/src/index.test.ts`): `normalizeTags` checks empty, length, and whitespace on the trimmed value before lower-casing, and de-duplicates with a `Set` (first-occurrence order kept). Two new shared tests: boundary-length tag with an expanding case mapping, and 50,000 unique tags in order. `pnpm test` (12 + 11 + 4 passed), `pnpm lint`, `pnpm typecheck` pass; `pnpm measure` still 881 (delta 0); `ci` run 40861858565 passed on 4914d6a. This closes quality-gate minor findings 1 and 2 (no tag-count cap was added).
 
 ## Validation Evidence
 
@@ -194,6 +198,13 @@ Product decisions checked against the criteria: Q1–Q4 as approved match AC 1�
 
 ## Review Record
 
+Copilot review 5696602764 on 39f5f1a, two threads:
+
+- PRRT_kwDOVaYq_M6xhOs3 (`packages/shared/src/index.ts`, length checked after lower-casing): `valid`; fixed in 4914d6a; replied; resolved. Matches quality-gate minor finding 1. The user's local-qa-review decision to keep it as a follow-up is superseded because Copilot raised it and it contradicts AC-2 (trimmed 32-character tag accepted).
+- PRRT_kwDOVaYq_M6xhOta (`packages/shared/src/index.ts`, quadratic de-duplication): `valid`; fixed in 4914d6a (`Set`; no tag cap, which would widen the contract); replied; resolved. Matches quality-gate minor finding 2.
+
+Re-review requested at 2026-10-29T11:00:13Z; Copilot review 5696649144 on 4914d6a: approval recommended, no open issues.
+
 ## Change Log
 
 - 2026-10-29: Plan drafted from FIJIH-46 at revision 2026-10-29T11:46:05.481+0100; issue assigned to Mattia Panzeri.
@@ -208,3 +219,4 @@ Product decisions checked against the criteria: Q1–Q4 as approved match AC 1�
 - 2026-10-29: Finalize (local QA review): reconciled Implementation Record entries for Tasks 1, 2, 3, and 6 with their task commits (87f9ca0, 8365553, 14d7f6a); no other record changed. Task 4 (live check) and Task 5 (root checks and baseline) are checked but their entries were added by the work-item-only commit 958fd92 and cite no commit, so they are listed as task/evidence discrepancies; their acceptance evidence (AC-1, AC-3, AC-4, AC-6) is in Validation Evidence. Checkpoint local-qa-review set.
 - 2026-10-29: Approved: local-qa-review — Approve; keep both findings as follow-ups.
 - 2026-10-29: Delivery: changeset `.changeset/add-tags-to-bookmarks.md` pushed; draft PR #8 (https://github.com/panz3r/fijih-sample/pull/8) opened with label `enhancement`, Copilot review requested (timeline `review_requested`). Both quality-gate minor findings kept as follow-ups. No `(verify: ci)` criteria. Reviewer QA Engineer `duckyduff369` to be requested at ready-for-review.
+- 2026-10-29: Copilot pass: 2 valid findings fixed in 4914d6a (the two quality-gate minor findings), threads resolved, re-review clean. Checkpoint ready-for-review set.
