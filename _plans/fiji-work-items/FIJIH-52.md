@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -68,7 +68,7 @@ so that I can group related bookmarks.
 - [x] Record the release work (AC: 6)
   - [x] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary `Add tags to bookmarks`.
   - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_bytes` differs from `measure/baseline.json` (835), update the baseline in this change and record both numbers in Validation Evidence.
-- [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 6)
+- [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 6)
 
 ## Engineering Context
 
@@ -127,6 +127,7 @@ Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags`, `no
 Task 2 — api tags: POST passes `body.tags`; `BookmarkStore.add` validates via `parseTags` (non-array, non-string item, or invalid normalized tag throws `ValidationError("invalid tag")` before storing), defaults `[]`, saves `tags`; 6 new test cases plus 3 more.
 Task 3 — web tags: `renderList` appends `<span class="tags">` with `tags.join(", ")` between the title link and Remove only when tags exist; fixtures updated; 2 new tests.
 Task 4 — release: changeset `.changeset/add-bookmark-tags.md` (minor for shared, api, web; summary `Add tags to bookmarks`); `pnpm build` then `pnpm measure` gave 881 bytes against the 835 baseline, so `measure/baseline.json` is now 881.
+Task 5 — root validation: `pnpm test`, `pnpm lint`, `pnpm typecheck` all passed from the repository root.
 
 ## Validation Evidence
 
@@ -134,6 +135,12 @@ Task 4 — release: changeset `.changeset/add-bookmark-tags.md` (minor for share
 - Task 2 focused: `pnpm --filter @sample/api test` 12 passed; `pnpm --filter @sample/api typecheck` passed; `pnpm lint packages/api packages/shared` clean.
 - Task 3 focused: `pnpm --filter @sample/web test` 4 passed; typecheck passed; `pnpm lint packages/web` clean.
 - Task 4: `web_bundle_gzip_bytes` was 835 in `measure/baseline.json`, now 881 (delta +46); baseline updated, `pnpm measure` then reports delta 0.
+- AC-1: passed — shared `normalizeTags` tests and api test (`["  Work ", "work", "READ"]` gives `["work", "read"]` in the 201 body).
+- AC-2: passed — api test: POST without tags returns and lists `tags: []`.
+- AC-3: passed — api tests: 33 chars, interior whitespace, empty, whitespace-only, non-array, non-string item each 400 `{"error":"invalid tag"}` with nothing stored; 32 chars and `" ab "` accepted.
+- AC-4: passed — api test: GET /bookmarks returns `tags` in stored order, `[]` when none.
+- AC-5: passed — web tests: `work, read` in `.tags` after the title link; no `.tags` element for empty tags.
+- AC-6: passed — tests in shared (11), api (12), web (4); root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed.
 
 ## Quality Gate
 
@@ -148,3 +155,4 @@ Task 4 — release: changeset `.changeset/add-bookmark-tags.md` (minor for share
 - 2026-10-29: Task 2 (api tags) implemented and checked off.
 - 2026-10-29: Task 3 (web tags) implemented and checked off.
 - 2026-10-29: Task 4 (changeset and bundle baseline 835 to 881) done and checked off.
+- 2026-10-29: Task 5 root validation passed; implementation complete, checkpoint implementation-approval.
