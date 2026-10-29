@@ -66,9 +66,9 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
   - [x] `packages/api/src/app.ts`: pass `body.tags` through to `store.add` unchanged (no coercion), so the store validates it.
   - [x] `packages/api/src/store.ts`: normalise tags with the shared helper after the existing title and URL checks; on an invalid tag throw `ValidationError("invalid tag")` so the existing handler answers 400 `{"error":"invalid tag"}`; store `tags` on the bookmark.
   - [x] Vitest cases in `packages/api/src/app.test.ts`: POST with tags returns normalised tags (201); POST without tags returns `tags: []`; GET lists tags per bookmark; POST with a 33-character tag and with `"a b"` answers 400 `{"error":"invalid tag"}` and the bookmark is absent from a following GET; the Q2/Q3 cases.
-- [ ] Web page shows tags after the title (AC: 4)
-  - [ ] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing otherwise. Use `textContent`, never `innerHTML`.
-  - [ ] Update fixtures in `packages/web/src/render.test.ts` for the new required `tags` field and add cases: two tags render `work, news` after the title; no tags renders no tag element and the row text is title + `Remove` only.
+- [x] Web page shows tags after the title (AC: 4)
+  - [x] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing otherwise. Use `textContent`, never `innerHTML`.
+  - [x] Update fixtures in `packages/web/src/render.test.ts` for the new required `tags` field and add cases: two tags render `work, news` after the title; no tags renders no tag element and the row text is title + `Remove` only.
 - [ ] Live check of the web page against the API (AC: 1, 3, 4)
   - [ ] Run `pnpm --filter @sample/api start` and `pnpm --filter @sample/web dev`, create one bookmark with tags (via `curl -X POST` to the api, or the form if Q1 adds it) and one without, and record in Validation Evidence that the page shows `<title> work, news` for the first and only the title for the second.
 - [ ] Root checks and bundle baseline (AC: 5, 6)
@@ -116,6 +116,7 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 
 - `packages/shared/src/index.ts`, `packages/shared/src/index.test.ts`
 - `packages/api/src/store.ts`, `packages/api/src/app.ts`, `packages/api/src/app.test.ts`
+- `packages/web/src/render.ts`, `packages/web/src/render.test.ts`
 
 ## Implementation Record
 
@@ -126,6 +127,10 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 ### Task 2 — API accepts, validates, stores, and returns tags
 
 `app.ts` passes `body.tags` through untouched; `store.ts` normalises after the title, URL and duplicate checks and throws `ValidationError("invalid tag")`. `pnpm --filter @sample/api test`: 11 passed, including 33-character, whitespace, empty, non-string, non-array and null cases each followed by a GET proving nothing was stored.
+
+### Task 3 — web page shows tags after the title
+
+`render.ts` appends `<span class="tags">` (via `textContent` of `tags.join(", ")`) between the link and Remove only when `tags.length > 0`; the existing flex layout needs no CSS. Fixtures gained `tags: []`; new cases cover `work, news` and the no-tags row (`ExampleRemove`). `pnpm --filter @sample/web test`: 4 passed.
 
 ## Validation Evidence
 
@@ -139,3 +144,4 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - 2026-10-29: Approved: plan-approval — Approve as proposed.
 - 2026-10-29: Plan approval accepts the proposed answers: Q1 form tags input out of scope (its conditional subtask removed); Q2 non-array/non-string tags answer 400 `invalid tag`; Q3 empty-after-trim tags rejected, checks run after trimming; Q4 README `packages/shared` row is updated (its task is now unconditional).
 - 2026-10-29: Tasks 1 and 2 implemented and checked off.
+- 2026-10-29: Task 3 implemented and checked off.
