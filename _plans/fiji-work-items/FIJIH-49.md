@@ -81,7 +81,7 @@ The issue does not settle these. The acceptance criteria below use the proposed 
   - [x] In `packages/web/src/render.ts`, append an element after the title link holding the tags joined with the D5 separator, only when the bookmark has tags.
   - [x] Keep the tags visually next to the title in `packages/web/index.html` (the `li` is `display: flex; justify-content: space-between`, which would otherwise centre the tags between the title and the Remove button).
   - [x] Update the existing fixtures in `packages/web/src/render.test.ts` with `tags`, and add cases: tags shown after the title and comma separated, and no tag text or element when `tags` is `[]`.
-- [ ] Run the root checks `pnpm test`, `pnpm lint`, and `pnpm typecheck` and record their results in Validation Evidence (AC: 6)
+- [x] Run the root checks `pnpm test`, `pnpm lint`, and `pnpm typecheck` and record their results in Validation Evidence (AC: 6)
 - [ ] Delivery conventions (AC: 7)
   - [ ] Add a changeset in `.changeset/` (`pnpm changeset` or by hand) for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary `Add tags to bookmarks`.
   - [ ] Run `pnpm build` then `pnpm measure`, record the output in Validation Evidence, and when `web_bundle_gzip_bytes` differs from 835 update `measure/baseline.json` to the new value in the same change.
@@ -131,8 +131,16 @@ This change adds, removes, or renames no CI check context.
 Task 1 — Shared: tag model and normalisation. Added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and pure `normalizeTags` (returns `string[]`, or `null` for an invalid tag). Judged on the trimmed, lower-cased tag; length counts code points. Focused: `pnpm --filter @sample/shared test` 9 passed, typecheck passed.
 Task 2 — API: accept, validate, store, and return tags. `POST /bookmarks` passes raw `body.tags`; `BookmarkStore.add` validates after the existing checks and before storing, throwing `ValidationError("invalid tag")`. HTTP tests cover default, normalisation, 32-char boundary, and seven rejections (33 chars, whitespace, non-array, null, non-string, empty, blank) each leaving the list unchanged. Focused: `pnpm --filter @sample/api test` 13 passed.
 Task 3 — Web: show tags after the title. `renderList` appends a `span.tags` (via `textContent`, joined with ", ") only when tags exist; CSS `margin-right: auto` keeps it beside the title. Fixtures updated; two cases added. Focused: `pnpm --filter @sample/web test` 4 passed. D1: no tag input, `main.ts` unchanged.
+Task 4 — Root checks. `pnpm test` (shared 9, api 13, web 4 passed), `pnpm lint` (eslint clean), `pnpm typecheck` (clean), all from the repository root.
 
 ## Validation Evidence
+
+- AC-1: passed — api test "defaults tags to an empty array".
+- AC-2: passed — api test "normalises tags and returns them from GET" (`[" Work ","work","READ"]` gives `["work","read"]`); shared `normalizeTags` tests.
+- AC-3: passed — api rejection cases (33 chars, whitespace, non-array, null, non-string, empty, blank) answer 400 `{"error":"invalid tag"}` with the list unchanged; 32 characters accepted.
+- AC-4: passed — api test reads tags back from `GET /bookmarks`.
+- AC-5: passed — web tests "shows tags after the title, comma separated" and "renders no tag text or tag element without tags".
+- AC-6: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` pass from the root; tests exist in shared, api, and web.
 
 ## Quality Gate
 
@@ -145,6 +153,8 @@ Task 3 — Web: show tags after the title. `renderList` appends a `span.tags` (v
 - 2026-10-29 — Implementation: task 1 done (shared tag model and `normalizeTags`).
 - 2026-10-29 — Implementation: task 2 done (API tags).
 - 2026-10-29 — Implementation: task 3 done (web tag display).
+- 2026-10-29 — Implementation: task 4 done (root checks pass).
+
 
 
 
