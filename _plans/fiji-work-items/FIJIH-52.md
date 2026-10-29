@@ -65,9 +65,9 @@ so that I can group related bookmarks.
 - [x] Show tags in `packages/web` (AC: 5, 6)
   - [x] In `src/render.ts`, after the title link, append an element (for example `<span class="tags">`) holding `bookmark.tags.join(", ")` only when the bookmark has tags.
   - [x] Update the fixtures in `src/render.test.ts` to the new `Bookmark` type, and add tests: tags shown after the title, comma separated; no tag element and no extra text when `tags` is empty.
-- [ ] Record the release work (AC: 6)
-  - [ ] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary `Add tags to bookmarks`.
-  - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_bytes` differs from `measure/baseline.json` (835), update the baseline in this change and record both numbers in Validation Evidence.
+- [x] Record the release work (AC: 6)
+  - [x] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` with the summary `Add tags to bookmarks`.
+  - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_bytes` differs from `measure/baseline.json` (835), update the baseline in this change and record both numbers in Validation Evidence.
 - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 6)
 
 ## Engineering Context
@@ -118,18 +118,22 @@ None. The four questions raised in the first plan were answered by the user at p
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- .changeset/add-bookmark-tags.md
+- measure/baseline.json
 
 ## Implementation Record
 
 Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags`, `normalizeTags`, `isValidTag` (empty, >32 chars, or any `/\s/` is invalid), with 7 new tests.
 Task 2 — api tags: POST passes `body.tags`; `BookmarkStore.add` validates via `parseTags` (non-array, non-string item, or invalid normalized tag throws `ValidationError("invalid tag")` before storing), defaults `[]`, saves `tags`; 6 new test cases plus 3 more.
 Task 3 — web tags: `renderList` appends `<span class="tags">` with `tags.join(", ")` between the title link and Remove only when tags exist; fixtures updated; 2 new tests.
+Task 4 — release: changeset `.changeset/add-bookmark-tags.md` (minor for shared, api, web; summary `Add tags to bookmarks`); `pnpm build` then `pnpm measure` gave 881 bytes against the 835 baseline, so `measure/baseline.json` is now 881.
 
 ## Validation Evidence
 
 - Task 1 focused: `pnpm --filter @sample/shared test` 11 passed; `pnpm --filter @sample/shared typecheck` passed.
 - Task 2 focused: `pnpm --filter @sample/api test` 12 passed; `pnpm --filter @sample/api typecheck` passed; `pnpm lint packages/api packages/shared` clean.
 - Task 3 focused: `pnpm --filter @sample/web test` 4 passed; typecheck passed; `pnpm lint packages/web` clean.
+- Task 4: `web_bundle_gzip_bytes` was 835 in `measure/baseline.json`, now 881 (delta +46); baseline updated, `pnpm measure` then reports delta 0.
 
 ## Quality Gate
 
@@ -143,3 +147,4 @@ Task 3 — web tags: `renderList` appends `<span class="tags">` with `tags.join(
 - 2026-10-29: Task 1 (shared tag helpers) implemented and checked off.
 - 2026-10-29: Task 2 (api tags) implemented and checked off.
 - 2026-10-29: Task 3 (web tags) implemented and checked off.
+- 2026-10-29: Task 4 (changeset and bundle baseline 835 to 881) done and checked off.
