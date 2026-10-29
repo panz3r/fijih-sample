@@ -8,12 +8,12 @@ source:
   revision: "2026-10-29T16:12:10.397+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-48-add-tags-to-bookmarks
   base_branch: main
@@ -160,6 +160,28 @@ Task 7 — added the changeset (`@sample/shared`, `@sample/api`, `@sample/web` m
 
 ## Quality Gate
 
+Gate: concerns — every criterion is evidenced and every required validation passes; two minor findings remain as follow-up.
+
+Reviewed head: 6aefb64b332a0ff1ec79b5f78048a9d3f210cfdc
+
+Validations re-run at the reviewed head: `pnpm test` (shared 11, api 11, web 4 tests pass), `pnpm lint`, and `pnpm typecheck` pass; `pnpm build` then `pnpm measure` prints `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`.
+
+Acceptance trace:
+
+- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (trim, lower-case, `Set` keeps first occurrence); `packages/api/src/store.ts` `add()` stores `normalizeTags(rawTags)` with `input.tags ?? []`; `packages/api/src/app.ts` passes `body.tags` through and returns the stored bookmark with 201. Verification: `app.test.ts` "normalises tags on create and returns them from GET" and "defaults tags to an empty array"; `index.test.ts` `normalizeTags` cases. Met.
+- AC-2: implementation `isValidTag` (trimmed, non-blank, at most 32, no `/\s/`) and the `store.add()` check that throws `ValidationError("invalid tag")` before `items.set`, which `app.ts` maps to 400 `{"error":"invalid tag"}`. Verification: `index.test.ts` `isValidTag` (32 accepted, 33 rejected, space and tab, trimmed, blank); `app.test.ts` "accepts a 32-character tag" and the five "rejects … and stores nothing" cases (33 characters, inner whitespace, blank, non-string element, non-array string). Met, with finding 1 for `tags: null`.
+- AC-3: implementation `Bookmark.tags: string[]` and every stored bookmark gets `tags`; `GET /bookmarks` returns `store.list()`. Verification: `app.test.ts` GET checks for `["news", "tech"]` and `[]`. Met.
+- AC-4: implementation `packages/web/src/render.ts` appends `<span class="tags">` with `textContent = tags.join(", ")` between the link and Remove, only when `tags.length > 0`. Verification: `render.test.ts` "shows tags after the title, comma separated" (text `news, tech`, position after the `A`) and "renders no tags element for a bookmark without tags" (`.tags` absent, item text `ExampleRemove`). Met.
+- AC-5: tests added in `packages/shared/src/index.test.ts`, `packages/api/src/app.test.ts`, and `packages/web/src/render.test.ts` cover the 32/33 boundary, inner whitespace, case and duplicate folding, the omitted-`tags` default, and no-tags rendering. Met.
+- AC-6: root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass at the reviewed head; `.changeset/add-tags-to-bookmarks.md` bumps `@sample/shared`, `@sample/api`, `@sample/web` with summary `Add tags to bookmarks`; `measure/baseline.json` holds 881, which `pnpm build` then `pnpm measure` prints. Met.
+
+Findings:
+
+1. minor — `packages/api/src/store.ts` (`const rawTags: unknown = input.tags ?? [];`): `POST /bookmarks` with `"tags": null` answers 201 and stores `tags: []`, while the approved plan-approval answer 2 says a non-array `tags` value answers 400. Reproduced against the real server at the reviewed head: `{"url":"https://a.example.com","title":"T","tags":null}` → `201 {…,"tags":[]}`. No test covers `null`. Treating JSON `null` as omitted is defensible; the user decides whether to keep it or require 400.
+2. minor — `packages/shared/src/index.ts` (`isValidTag` / `normalizeTags`): the length rule is checked before lower-casing, and `toLowerCase()` can lengthen a string, so a stored tag can be longer than 32 characters. Reproduced: `isValidTag("İ".repeat(32))` is `true` and `normalizeTags(["İ".repeat(32)])[0].length` is 64. This matches AC-2 and open question 3 as written (the rule applies to the trimmed input). It is noted for any later consumer that assumes stored tags are at most 32 characters.
+
+Residual risks: none. The Operational Requirements entries carry evidence; no Validation Evidence line is `deferred` or `pending-ci`.
+
 ## Review Record
 
 ## Change Log
@@ -170,3 +192,4 @@ Task 7 — added the changeset (`@sample/shared`, `@sample/api`, `@sample/web` m
 - 2026-10-29: Implemented API tag validation, storage, and tests (tasks 3-4).
 - 2026-10-29: Implemented web tag rendering and tests (tasks 5-6).
 - 2026-10-29: Delivery conventions done (task 7); all tasks checked; checkpoint implementation-approval.
+- 2026-10-29: Approved: implementation-approval — automatic (no risk triggers)
