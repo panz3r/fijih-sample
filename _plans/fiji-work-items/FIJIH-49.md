@@ -8,12 +8,12 @@ source:
   revision: "2026-10-29T17:44:20.074+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-49-add-bookmark-tags
   base_branch: null
@@ -148,6 +148,28 @@ Task 5 — Delivery conventions. Added changeset `.changeset/add-bookmark-tags.m
 
 ## Quality Gate
 
+Gate: concerns — every criterion is evidenced and the required validations pass; one minor finding remains.
+
+Acceptance trace (reviewed range `main` afa0afb..e8b500d; QA re-ran `pnpm test` (shared 9, api 13, web 4 passed), `pnpm lint` (clean), `pnpm typecheck` (clean), `pnpm build` then `pnpm measure` (`web_bundle_gzip_bytes=881`, delta 0 against the updated baseline) from the root at e8b500d):
+
+- AC-1: implementation `normalizeTags` returns `[]` for `undefined` (`packages/shared/src/index.ts`), `BookmarkStore.add` stores it (`packages/api/src/store.ts`), `POST /bookmarks` passes raw `body.tags` (`packages/api/src/app.ts`); verification api test "defaults tags to an empty array", shared "defaults to an empty array".
+- AC-2: implementation trim, `toLowerCase`, `Set` in first-occurrence order (`packages/shared/src/index.ts`); verification api "normalises tags and returns them from GET" (`[" Work ","work","READ"]` → `["work","read"]`), shared "trims, lower-cases, and deduplicates in first-occurrence order".
+- AC-3: implementation `normalizeTags` returns `null` for non-array, non-string, empty, whitespace, or over 32 code points; `add` throws `ValidationError("invalid tag")` before `items.set`, mapped to `400`; verification api "accepts a 32-character tag" and seven "rejects … and stores nothing" cases (33 chars, internal whitespace, non-array, null, non-string, empty, blank) each asserting `{"error":"invalid tag"}` and an unchanged list; shared boundary cases including 32 emoji (code points, not UTF-16 units). See finding 1 for a boundary deviation.
+- AC-4: implementation `Bookmark.tags: string[]` required and always set in `add`; `list()` returns stored bookmarks; verification api "normalises tags and returns them from GET".
+- AC-5: implementation `renderList` appends `span.tags` via `textContent` joined with `", "` after the link only when tags exist (`packages/web/src/render.ts`), CSS `li .tags { margin-right: auto }` keeps it beside the title (`packages/web/index.html`); verification web "shows tags after the title, comma separated" and "renders no tag text or element without tags".
+- AC-6: Vitest tests added in shared, api, and web; root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass (Implementation result validations and QA re-run).
+- AC-7: `.changeset/add-bookmark-tags.md` lists `@sample/shared`, `@sample/api`, `@sample/web` (minor) with summary `Add tags to bookmarks`; `measure/baseline.json` holds 881, matching `pnpm measure` at e8b500d.
+
+Product decisions D1–D6 checked against the criteria: none contradicts a criterion (D1 `main.ts` unchanged; D2/D3 tested; D4 order tested; D5 separator tested; D6 `README.md` unchanged).
+
+Findings:
+
+1. minor — `packages/shared/src/index.ts` (`normalizeTags`): the 32-code-point limit is checked on the lower-cased tag, not the trimmed tag that AC-3 and D4 name. `toLowerCase` expands `İ` (U+0130) to two code points, so a valid trimmed tag of 32 code points containing it is rejected: `normalizeTags(["İ".repeat(32)])` returns `null` (trimmed length 32, lower-cased length 64), so `POST /bookmarks` answers `400 invalid tag` where AC-3 says a 32-character tag is accepted. Reproduced with a Vitest probe outside the worktree. Fix as a follow-up: measure `[...value.trim()].length` before lower-casing, and add a case for it.
+
+Residual risks: none. No Operational Requirements entry is `evidence: unverified`, no Validation Evidence line is `deferred`, and no criterion is `pending-ci`. The intermediate commits 6e24263 and 4d30432 do not typecheck at the root on their own; pull requests are squash-merged, so `main` never holds them.
+
+Reviewed head: e8b500dc16846e4e14db13f5ad080da8ea5bcf7e
+
 ## Review Record
 
 ## Change Log
@@ -159,6 +181,7 @@ Task 5 — Delivery conventions. Added changeset `.changeset/add-bookmark-tags.m
 - 2026-10-29 — Implementation: task 3 done (web tag display).
 - 2026-10-29 — Implementation: task 4 done (root checks pass).
 - 2026-10-29 — Implementation: task 5 done (changeset and bundle baseline).
+- 2026-10-29 — Approved: implementation-approval — automatic (no risk triggers)
 
 
 
