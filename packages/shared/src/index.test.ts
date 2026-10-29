@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, isValidTag, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,42 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("trims, lower-cases, dedupes after normalization, and keeps first-occurrence order", () => {
+    expect(normalizeTags(["  Work ", "work", "READ"])).toEqual(["work", "read"]);
+  });
+
+  it("returns an empty array for no tags", () => {
+    expect(normalizeTags([])).toEqual([]);
+  });
+
+  it("does not mutate its input", () => {
+    const input = [" A ", "a"];
+    normalizeTags(input);
+    expect(input).toEqual([" A ", "a"]);
+  });
+});
+
+describe("isValidTag", () => {
+  it("accepts a 32-character tag and rejects 33", () => {
+    expect(isValidTag("a".repeat(32))).toBe(true);
+    expect(isValidTag("a".repeat(33))).toBe(false);
+  });
+
+  it("rejects an empty tag", () => {
+    expect(isValidTag("")).toBe(false);
+  });
+
+  it("rejects interior space, tab, and newline", () => {
+    expect(isValidTag("a b")).toBe(false);
+    expect(isValidTag("a\tb")).toBe(false);
+    expect(isValidTag("a\nb")).toBe(false);
+  });
+
+  it("accepts a plain tag", () => {
+    expect(isValidTag("work")).toBe(true);
   });
 });

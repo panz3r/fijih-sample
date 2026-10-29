@@ -54,10 +54,10 @@ so that I can group related bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Add tag support to `packages/shared` (AC: 1, 3, 6)
-  - [ ] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`.
-  - [ ] Add a pure tag helper (for example `normalizeTags(values)`, returning the trimmed, lower-cased, deduplicated tags in first-occurrence order, and `isValidTag(tag)`, false for an empty tag, more than 32 characters, or any whitespace character). Export both from `src/index.ts`.
-  - [ ] Add tests in `src/index.test.ts`: trim, lower-case, dedupe after normalization, order kept, the 32/33-character boundary, interior whitespace rejected, an empty tag rejected, the input not mutated.
+- [x] Add tag support to `packages/shared` (AC: 1, 3, 6)
+  - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`.
+  - [x] Add a pure tag helper (for example `normalizeTags(values)`, returning the trimmed, lower-cased, deduplicated tags in first-occurrence order, and `isValidTag(tag)`, false for an empty tag, more than 32 characters, or any whitespace character). Export both from `src/index.ts`.
+  - [x] Add tests in `src/index.test.ts`: trim, lower-case, dedupe after normalization, order kept, the 32/33-character boundary, interior whitespace rejected, an empty tag rejected, the input not mutated.
 - [ ] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 4, 6)
   - [ ] In `src/app.ts`, pass `body.tags` from the POST body to the store.
   - [ ] In `src/store.ts` `add`, normalize the tags with the shared helper, throw `ValidationError("invalid tag")` when `tags` is present but not an array, when any item is not a string, or when any normalized tag is invalid, including empty after trimming (before the bookmark is stored), default to `[]`, and save `tags` on the bookmark.
@@ -111,9 +111,16 @@ None. The four questions raised in the first plan were answered by the user at p
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
 
+Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags`, `normalizeTags`, `isValidTag` (empty, >32 chars, or any `/\s/` is invalid), with 7 new tests.
+
 ## Validation Evidence
+
+- Task 1 focused: `pnpm --filter @sample/shared test` 11 passed; `pnpm --filter @sample/shared typecheck` passed.
 
 ## Quality Gate
 
@@ -124,3 +131,4 @@ None. The four questions raised in the first plan were answered by the user at p
 - 2026-10-29: Drafted from Jira FIJIH-52 at revision 2026-10-29T19:10:08.049+0100 (after assigning the issue to the current user).
 - 2026-10-29: Plan-approval conditional approval, user's words: "Approve. Answers: 1 no tags input on the add form; 2 a non-array tags value or a non-string item answers 400 invalid tag; 3 a tag empty after trimming is rejected with 400 invalid tag; 4 confirmed: trim first, reject only interior whitespace, and count the 32-character limit on the trimmed tag." Applied: AC 3 and its tasks and tests cover non-array tags, non-string items, and empty-after-trim tags; the add form tags input is recorded as out of scope; open questions resolved.
 - 2026-10-29: Approved: plan-approval — conditional: Approve. Answers: 1 no tags input on the add form; 2 a non-array tags value or a non-string item answers 400 invalid tag; 3 a tag empty after trimming is rejected with 400 invalid tag; 4 confirmed: trim first, reject only interior whitespace, and count the 32-character limit on the trimmed tag. (verified at 0164c06)
+- 2026-10-29: Task 1 (shared tag helpers) implemented and checked off.
