@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -177,6 +177,26 @@ Reviewed head: e8b500dc16846e4e14db13f5ad080da8ea5bcf7e
 ## Review Record
 
 Copilot pass (PR #11, review 5701698049 on baa223d, submitted 2026-10-29T16:55:52Z): approval recommended, no review threads and no findings. No fixes, no replies or resolutions needed. The U+0130 `normalizeTags` finding stays a recorded follow-up per the local-qa-review decision.
+
+Jira handoff draft:
+
+> FIJI-CONTEXT:FIJIH-49:fiji/orchestrate-development/v1
+>
+> **FIJIH-49 context handoff** — pull request: https://github.com/panz3r/fijih-sample/pull/11 (`[FIJIH-49] Add tags to bookmarks`, branch `FIJIH-49-add-bookmark-tags`, base `main`).
+>
+> **Outcome.** Bookmarks carry an optional `tags` list. `POST /bookmarks` accepts `tags` (trimmed, lower-cased, deduplicated in first-occurrence order; omitted gives `[]`), `GET /bookmarks` returns them, and the web page shows them after the title joined with ", " (nothing rendered when empty). Tag normalisation is the pure `normalizeTags` in `packages/shared/src/index.ts`; `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing, so a rejected request stores nothing.
+>
+> **Validation.** Local QA re-ran `pnpm test` (shared 9, api 13, web 4 passed), `pnpm lint`, `pnpm typecheck`, and `pnpm build` then `pnpm measure` at e8b500d, all clean. Checks test/lint/typecheck/measure/scenarios succeeded on PR head baa223d (run 40916094104). Copilot reviewed baa223d with no findings; the QA Engineer `duckyduff369` approved baa223d. Quality gate: concerns (one minor finding, below).
+>
+> **Decisions taken at plan approval.** D1: no tag input on the web add form (display only; tags are set through the API). D2/D3: a non-array or non-string `tags` value, or a tag empty after trimming, answers `400 {"error":"invalid tag"}`. D4: first-occurrence order, and the 32-character limit counts Unicode code points. D5: separator ", ". D6: `README.md` unchanged. The whitespace and length checks apply to the trimmed tag, so `" work "` is valid and `"two words"` is not.
+>
+> **Bundle size.** `web_bundle_gzip_bytes` goes from 835 to 881 gzipped bytes (+46); `measure/baseline.json` is updated to 881 in the same change.
+>
+> **Follow-up (not fixed in this change).** `normalizeTags` measures the 32-code-point limit after lower-casing instead of on the trimmed tag. `toLowerCase` expands U+0130 to two code points, so a valid 32-code-point tag containing U+0130 (for example 32 repetitions of it) is rejected with `400 invalid tag`. Suggested fix: measure `[...value.trim()].length` before lower-casing and add a test. Decision at local QA review: keep it as a recorded follow-up.
+>
+> **Out of scope per the issue.** Filtering or searching by tag; editing tags of an existing bookmark.
+>
+> **Operational.** None beyond the existing merge rules (required `test` check; one approval; squash merge); no CI or ruleset change.
 
 ## Change Log
 
