@@ -73,10 +73,10 @@ The issue does not settle these. The acceptance criteria below use the proposed 
   - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `string[]`) input to `NewBookmark` in `packages/shared/src/index.ts`.
   - [x] Add a pure `normalizeTags(input)` that returns `[]` for `undefined`, trims, lower-cases, and deduplicates (first-occurrence order), and reports an invalid tag (length over 32 code points after trimming, internal whitespace, and per D2/D3 a non-string element, non-array value, or empty tag).
   - [x] Vitest cases in `packages/shared/src/index.test.ts`: default `[]`, trimming, lower-casing, deduplication and order, exactly 32 accepted, 33 rejected, internal whitespace rejected, and the D2/D3 cases.
-- [ ] API: accept, validate, store, and return tags (AC: 1, 2, 3, 4, 6)
-  - [ ] Pass `body.tags` from `POST /bookmarks` in `packages/api/src/app.ts` to `BookmarkStore.add`.
-  - [ ] In `packages/api/src/store.ts`, normalise tags with `normalizeTags`, throw `ValidationError("invalid tag")` for an invalid tag before anything is stored, and store `tags` on the bookmark.
-  - [ ] Vitest cases in `packages/api/src/app.test.ts`: `201` with `tags: []` when omitted, `201` with normalised tags, `400 {"error":"invalid tag"}` for a 33-character tag, a tag with internal whitespace, and the D2/D3 cases, with the list unchanged after each rejection, and `GET /bookmarks` returning each bookmark's `tags`.
+- [x] API: accept, validate, store, and return tags (AC: 1, 2, 3, 4, 6)
+  - [x] Pass `body.tags` from `POST /bookmarks` in `packages/api/src/app.ts` to `BookmarkStore.add`.
+  - [x] In `packages/api/src/store.ts`, normalise tags with `normalizeTags`, throw `ValidationError("invalid tag")` for an invalid tag before anything is stored, and store `tags` on the bookmark.
+  - [x] Vitest cases in `packages/api/src/app.test.ts`: `201` with `tags: []` when omitted, `201` with normalised tags, `400 {"error":"invalid tag"}` for a 33-character tag, a tag with internal whitespace, and the D2/D3 cases, with the list unchanged after each rejection, and `GET /bookmarks` returning each bookmark's `tags`.
 - [ ] Web: show tags after the title (AC: 5, 6)
   - [ ] In `packages/web/src/render.ts`, append an element after the title link holding the tags joined with the D5 separator, only when the bookmark has tags.
   - [ ] Keep the tags visually next to the title in `packages/web/index.html` (the `li` is `display: flex; justify-content: space-between`, which would otherwise centre the tags between the title and the Remove button).
@@ -119,10 +119,14 @@ This change adds, removes, or renames no CI check context.
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task 1 — Shared: tag model and normalisation. Added `Bookmark.tags`, `NewBookmark.tags?: unknown`, and pure `normalizeTags` (returns `string[]`, or `null` for an invalid tag). Judged on the trimmed, lower-cased tag; length counts code points. Focused: `pnpm --filter @sample/shared test` 9 passed, typecheck passed.
+Task 2 — API: accept, validate, store, and return tags. `POST /bookmarks` passes raw `body.tags`; `BookmarkStore.add` validates after the existing checks and before storing, throwing `ValidationError("invalid tag")`. HTTP tests cover default, normalisation, 32-char boundary, and seven rejections (33 chars, whitespace, non-array, null, non-string, empty, blank) each leaving the list unchanged. Focused: `pnpm --filter @sample/api test` 13 passed.
 
 ## Validation Evidence
 
@@ -135,4 +139,6 @@ Task 1 — Shared: tag model and normalisation. Added `Bookmark.tags`, `NewBookm
 - 2026-10-29 — Plan: drafted from FIJIH-49 revision `2026-10-29T17:44:20.074+0100`; issue assigned to the current user. Open decisions D1 to D6 await plan approval.
 - 2026-10-29 — Approved: plan-approval — Approve. Answers: D1 no tag input on the add form; D2 yes, 400 invalid tag; D3 yes, 400 invalid tag; D4 yes to both; D5 yes, join with ", "; D6 leave README.md unchanged.
 - 2026-10-29 — Implementation: task 1 done (shared tag model and `normalizeTags`).
+- 2026-10-29 — Implementation: task 2 done (API tags).
+
 
