@@ -58,10 +58,10 @@ so that I can group related bookmarks.
   - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`.
   - [x] Add a pure tag helper (for example `normalizeTags(values)`, returning the trimmed, lower-cased, deduplicated tags in first-occurrence order, and `isValidTag(tag)`, false for an empty tag, more than 32 characters, or any whitespace character). Export both from `src/index.ts`.
   - [x] Add tests in `src/index.test.ts`: trim, lower-case, dedupe after normalization, order kept, the 32/33-character boundary, interior whitespace rejected, an empty tag rejected, the input not mutated.
-- [ ] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 4, 6)
-  - [ ] In `src/app.ts`, pass `body.tags` from the POST body to the store.
-  - [ ] In `src/store.ts` `add`, normalize the tags with the shared helper, throw `ValidationError("invalid tag")` when `tags` is present but not an array, when any item is not a string, or when any normalized tag is invalid, including empty after trimming (before the bookmark is stored), default to `[]`, and save `tags` on the bookmark.
-  - [ ] Add tests in `src/app.test.ts`: POST with tags (normalized in the 201 body), POST without tags (`[]`), GET returns the tags of each bookmark, a 33-character tag, a tag with interior whitespace, an empty or whitespace-only tag, a non-array `tags` value, and a non-string item each answer 400 `{"error":"invalid tag"}`, and a rejected POST adds nothing to the list.
+- [x] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 4, 6)
+  - [x] In `src/app.ts`, pass `body.tags` from the POST body to the store.
+  - [x] In `src/store.ts` `add`, normalize the tags with the shared helper, throw `ValidationError("invalid tag")` when `tags` is present but not an array, when any item is not a string, or when any normalized tag is invalid, including empty after trimming (before the bookmark is stored), default to `[]`, and save `tags` on the bookmark.
+  - [x] Add tests in `src/app.test.ts`: POST with tags (normalized in the 201 body), POST without tags (`[]`), GET returns the tags of each bookmark, a 33-character tag, a tag with interior whitespace, an empty or whitespace-only tag, a non-array `tags` value, and a non-string item each answer 400 `{"error":"invalid tag"}`, and a rejected POST adds nothing to the list.
 - [ ] Show tags in `packages/web` (AC: 5, 6)
   - [ ] In `src/render.ts`, after the title link, append an element (for example `<span class="tags">`) holding `bookmark.tags.join(", ")` only when the bookmark has tags.
   - [ ] Update the fixtures in `src/render.test.ts` to the new `Bookmark` type, and add tests: tags shown after the title, comma separated; no tag element and no extra text when `tags` is empty.
@@ -113,14 +113,19 @@ None. The four questions raised in the first plan were answered by the user at p
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/app.ts
+- packages/api/src/store.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags`, `normalizeTags`, `isValidTag` (empty, >32 chars, or any `/\s/` is invalid), with 7 new tests.
+Task 2 — api tags: POST passes `body.tags`; `BookmarkStore.add` validates via `parseTags` (non-array, non-string item, or invalid normalized tag throws `ValidationError("invalid tag")` before storing), defaults `[]`, saves `tags`; 6 new test cases plus 3 more.
 
 ## Validation Evidence
 
 - Task 1 focused: `pnpm --filter @sample/shared test` 11 passed; `pnpm --filter @sample/shared typecheck` passed.
+- Task 2 focused: `pnpm --filter @sample/api test` 12 passed; `pnpm --filter @sample/api typecheck` passed; `pnpm lint packages/api packages/shared` clean.
 
 ## Quality Gate
 
@@ -132,3 +137,4 @@ Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags`, `no
 - 2026-10-29: Plan-approval conditional approval, user's words: "Approve. Answers: 1 no tags input on the add form; 2 a non-array tags value or a non-string item answers 400 invalid tag; 3 a tag empty after trimming is rejected with 400 invalid tag; 4 confirmed: trim first, reject only interior whitespace, and count the 32-character limit on the trimmed tag." Applied: AC 3 and its tasks and tests cover non-array tags, non-string items, and empty-after-trim tags; the add form tags input is recorded as out of scope; open questions resolved.
 - 2026-10-29: Approved: plan-approval — conditional: Approve. Answers: 1 no tags input on the add form; 2 a non-array tags value or a non-string item answers 400 invalid tag; 3 a tag empty after trimming is rejected with 400 invalid tag; 4 confirmed: trim first, reject only interior whitespace, and count the 32-character limit on the trimmed tag. (verified at 0164c06)
 - 2026-10-29: Task 1 (shared tag helpers) implemented and checked off.
+- 2026-10-29: Task 2 (api tags) implemented and checked off.
