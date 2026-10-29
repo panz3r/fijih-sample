@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Audits a headless scenario run recorded by scripts/scenario-turn.
+#
+#   scripts/run-audit <run-name | run-dir>
+#
+# Prints three sections, all read from the orchestrator's own messages (subagent traffic is skipped):
+#   turns     each turn's orchestrator model and its own cost, and the session total
+#   spawns    each phase spawn's model and effort next to the model-binding output run before it, marked
+#             ok, MISMATCH, or NO BINDING (no model-binding run since the previous spawn)
+#   commands  every shell command the orchestrator ran, one call per line, to check against the command
+#             list at the top of the installed fiji-orchestrate-development/SKILL.md
+set -euo pipefail
+
+die() { printf 'run-audit: %s\n' "$*" >&2; exit 1; }
+
+[ $# -eq 1 ] || die "usage: run-audit <run-name | run-dir>"
+command -v jq >/dev/null || die "jq is not on PATH"
+if [ -d "$1" ]; then
+  DIR=$1
+else
+  RUNS=${FIJIH_RUNS_DIR:-${TMPDIR:-/tmp}/fijih-runs}
+  DIR="${RUNS%/}/$1"
+fi
+[ -e "$DIR/turn1.jsonl" ] || die "no turn1.jsonl in $DIR"
+
+FILES=()
+N=1
+while [ -e "$DIR/turn$N.jsonl" ]; do FILES+=("$DIR/turn$N.jsonl"); N=$((N + 1)); done
+
+# A resumed session reports its running total, so a turn's own cost is the difference from the previous turn.
+echo "## turns"
+PREV=0
+for f in "${FILES[@]}"; do
+  TOTAL=$(jq -r 'select(.type=="result") | .total_cost_usd' "$f" | tail -n 1)
+  jq -rn --arg f "$(basename "$f" .jsonl)" --argjson prev "$PREV" --argjson total "${TOTAL:-0}" \
+    --arg model "$(jq -r 'select(.type=="system" and .subtype=="init") | .model' "$f" | head -n 1)" \
+    '"\($f)  model \($model)  cost $\(($total - $prev) * 100 | round / 100)"'
+  PREV=${TOTAL:-$PREV}
+done
+jq -rn --argjson total "$PREV" '"total $\($total * 100 | round / 100)"'
+
+echo
+echo "## spawns"
+jq -rn '
+  def text: if type=="array" then map(.text? // "") | join("") else (. // "") end;
+  def fields: split("\n") | map(select(test("\t")) | split("\t") | {(.[0]): .[1]}) | add;
+  def verdict($b; $m; $e; $t):
+    if $b == null then "NO BINDING"
+    elif $b.model == "inherit" then (if $m == null and $e == null then "ok" else "MISMATCH" end)
+    elif ($m == null and $t == $b.model and ($b.effort == "-")) then "ok"
+    elif $m == null or (($b.model | contains($m)) | not) then "MISMATCH"
+    elif $b.effort == "-" then (if $e == null then "ok" else "MISMATCH" end)
+    elif $e == $b.effort then "ok"
+    else "MISMATCH" end;
+  reduce (inputs | select(.parent_tool_use_id == null)) as $ev ({b: null, out: []};
+    if $ev.type == "user" then
+      reduce ($ev.message.content[]? | select(.type == "tool_result") | .content | text
+              | select(test("(^|\n)tier\t"))) as $r (.; .b = ($r | fields))
+    elif $ev.type == "assistant" then
+      reduce ($ev.message.content[]? | select(.type == "tool_use" and (.name == "Agent" or .name == "Task"))
+              | .input) as $i (.;
+        .out += ["\(verdict(.b; $i.model; $i.effort; $i.subagent_type))  \($i.description)  passed model=\($i.model // "-") effort=\($i.effort // "-")  binding \(if .b then "\(.b.skill // "?") tier=\(.b.tier) model=\(.b.model) effort=\(.b.effort)" else "-" end)"]
+        | .b = null)
+    else . end)
+  | .out[]' "${FILES[@]}"
+
+echo
+echo "## commands"
+jq -r 'select(.type=="assistant" and .parent_tool_use_id==null) | .message.content[]?
+  | select(.type=="tool_use" and .name=="Bash") | .input.command | gsub("\n"; " ⏎ ")' "${FILES[@]}"

@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Runs one headless agent turn of a scenario and prints its session, cost, and final reply.
+#
+#   scripts/scenario-turn [--model <model>] <run-name> <message>
+#
+# The first turn of a run starts a new Claude Code session; later turns resume it. Each turn's stream-json
+# transcript goes to <run-dir>/turn<N>.jsonl, stderr to turn<N>.err, and the session id to <run-dir>/session.
+# <run-dir> is $FIJIH_RUNS_DIR/<run-name> (default: ${TMPDIR:-/tmp}/fijih-runs/<run-name>). --model sets the
+# orchestrator's model; a resumed turn keeps the session's model unless --model names another.
+# scripts/run-audit reads the same directory.
+#
+# Script secrets (QA_GH_TOKEN, JIRA_*) are loaded from $FIJIH_SAMPLE_ENV (default: ~/.config/fijih-sample.env)
+# when that file exists. The session may use the shell, subagents, file tools inside this repository, the run
+# directory, and the temporary directories (where phase agents write their result files), and the MCP servers
+# named in $FIJIH_ALLOWED_MCP (default: atlassian-mcp-server github).
+set -euo pipefail
+
+die() { printf 'scenario-turn: %s\n' "$*" >&2; exit 1; }
+
+MODEL=()
+if [ "${1:-}" = "--model" ]; then
+  [ $# -ge 2 ] || die "--model needs a value"
+  MODEL=(--model "$2"); shift 2
+fi
+[ $# -eq 2 ] || die "usage: scenario-turn [--model <model>] <run-name> <message>"
+RUN=$1; MESSAGE=$2
+case "$RUN" in */*|.*|'') die "run name must be a plain name: $RUN" ;; esac
+command -v claude >/dev/null || die "claude is not on PATH"
+command -v jq >/dev/null || die "jq is not on PATH"
+
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+RUNS=${FIJIH_RUNS_DIR:-${TMPDIR:-/tmp}/fijih-runs}
+DIR="${RUNS%/}/$RUN"
+mkdir -p "$DIR"
+DIR=$(CDPATH='' cd -- "$DIR" && pwd -P)
+
+ENV_FILE=${FIJIH_SAMPLE_ENV:-$HOME/.config/fijih-sample.env}
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck disable=SC1090 # the env file is the user's own
+  . "$ENV_FILE"
+  set +a
+fi
+
+N=1
+while [ -e "$DIR/turn$N.jsonl" ]; do N=$((N + 1)); done
+RESUME=()
+if [ "$N" -gt 1 ]; then
+  [ -s "$DIR/session" ] || die "$DIR has turns but no session file"
+  RESUME=(--resume "$(cat "$DIR/session")")
+fi
+
+ALLOW=(Bash Read Glob Grep Agent ToolSearch Skill TaskStop SendMessage)
+# Phase agents write their result files outside the worktree, usually under a temporary directory.
+TMP_REAL=$(CDPATH='' cd -- "${TMPDIR:-/tmp}" && pwd -P)
+for path in "$ROOT" "$DIR" /tmp /private/tmp "$TMP_REAL"; do ALLOW+=("Edit(/${path%/}/**)" "Write(/${path%/}/**)"); done
+for server in ${FIJIH_ALLOWED_MCP:-atlassian-mcp-server github}; do ALLOW+=("mcp__$server"); done
+
+cd "$ROOT"
+claude -p ${MODEL[@]+"${MODEL[@]}"} ${RESUME[@]+"${RESUME[@]}"} "$MESSAGE" --output-format stream-json --verbose \
+  --allowedTools "${ALLOW[@]}" > "$DIR/turn$N.jsonl" 2> "$DIR/turn$N.err" < /dev/null ||
+  die "the turn failed; see $DIR/turn$N.err"
+
+jq -r 'select(.type=="result") | .session_id' "$DIR/turn$N.jsonl" | tail -n 1 > "$DIR/session"
+[ -s "$DIR/session" ] || die "turn $N has no result; see $DIR/turn$N.jsonl"
+printf 'run %s turn %s (%s)\n' "$RUN" "$N" "$DIR/turn$N.jsonl"
+jq -r 'select(.type=="system" and .subtype=="init") | "model: \(.model)"' "$DIR/turn$N.jsonl" | head -n 1
+jq -r 'select(.type=="result") | "session: \(.session_id)  session cost so far: $\(.total_cost_usd)\n\n\(.result)"' "$DIR/turn$N.jsonl"
