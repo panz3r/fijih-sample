@@ -7,9 +7,9 @@ source:
   key: FIJIH-48
   revision: "2026-10-29T16:12:10.397+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -136,3 +136,4 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 ## Change Log
 
 - 2026-10-29: Drafted from Jira FIJIH-48 revision `2026-10-29T16:12:10.397+0100` (issue assigned to the current user before reading the revision). Six open product questions recorded in Product Context for `plan-approval`.
+- 2026-10-29: Approved: plan-approval — Approve. Answers: 1 yes, a blank tag after trimming answers 400 invalid tag; 2 yes, a non-array or non-string tags value answers 400; 3 yes, the rules apply to the trimmed tag; 4 yes, keep first-occurrence order; 5 no tags input on the add form; 6 leave README.md unchanged.
