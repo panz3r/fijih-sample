@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -92,10 +92,10 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 - [x] Web tests in `packages/web/src/render.test.ts` (AC: 5)
   - [x] Add `tags` to the existing fixtures so they type-check.
   - [x] A bookmark with `["news", "tech"]` shows `news, tech` after its title; a bookmark with `[]` renders no tags element and its item text is only the title and `Remove`.
-- [ ] Delivery conventions (AC: 6)
-  - [ ] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` with summary `Add tags to bookmarks`.
-  - [ ] Run `pnpm build` then `pnpm measure`, and update `web_bundle_gzip_bytes` in `measure/baseline.json` to the printed value when it differs from 835.
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
+- [x] Delivery conventions (AC: 6)
+  - [x] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` with summary `Add tags to bookmarks`.
+  - [x] Run `pnpm build` then `pnpm measure`, and update `web_bundle_gzip_bytes` in `measure/baseline.json` to the printed value when it differs from 835.
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
 
 ## Engineering Context
 
@@ -135,6 +135,10 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 
+- .changeset/add-tags-to-bookmarks.md
+- measure/baseline.json
+- _plans/fiji-work-items/FIJIH-48.md
+
 ## Implementation Record
 
 Task 1 and 2 — shared tag types, `isValidTag` (trimmed, non-blank, <= 32 chars, no whitespace) and `normalizeTags` (trim, lower-case, de-duplicate in first-occurrence order), with unit tests for 32/33 boundary, inner space/tab, trimming, blank, case and duplicate folding, order, immutability, and `[]`.
@@ -143,7 +147,16 @@ Task 3 and 4 — `BookmarkStore.add()` validates `tags` after the URL checks and
 
 Task 5 and 6 — `renderList` appends `<span class="tags">` with `tags.join(", ")` textContent between the title link and Remove, only when the bookmark has tags; existing fixtures gained `tags: []`; new tests cover the tags text and position and the no-tags item text (`ExampleRemove`).
 
+Task 7 — added the changeset (`@sample/shared`, `@sample/api`, `@sample/web` minor, summary `Add tags to bookmarks`); `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (delta 46), so `measure/baseline.json` moved from 835 to 881. Root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
+
 ## Validation Evidence
+
+- AC-1: passed — api app.test.ts (normalise/dedupe round trip, default `[]`) and shared normalizeTags tests; `pnpm test` passes.
+- AC-2: passed — shared isValidTag tests (32 accepted, 33 rejected, inner whitespace, blank) and API tests answering 400 `{"error":"invalid tag"}` with nothing stored.
+- AC-3: passed — API tests check GET /bookmarks returns `tags` (normalised and `[]`).
+- AC-4: passed — web render.test.ts: `news, tech` after the title; no `.tags` element and item text `ExampleRemove` without tags.
+- AC-5: passed — tests added in shared (11 total), api (11 total), web (4 total).
+- AC-6: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root pass; changeset `.changeset/add-tags-to-bookmarks.md` added; `pnpm build` then `pnpm measure` printed 881 and `measure/baseline.json` holds 881.
 
 ## Quality Gate
 
@@ -156,3 +169,4 @@ Task 5 and 6 — `renderList` appends `<span class="tags">` with `tags.join(", "
 - 2026-10-29: Implemented shared tag helpers and tests (tasks 1-2).
 - 2026-10-29: Implemented API tag validation, storage, and tests (tasks 3-4).
 - 2026-10-29: Implemented web tag rendering and tests (tasks 5-6).
+- 2026-10-29: Delivery conventions done (task 7); all tasks checked; checkpoint implementation-approval.
