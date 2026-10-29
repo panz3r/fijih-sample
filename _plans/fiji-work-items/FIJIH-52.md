@@ -8,12 +8,12 @@ source:
   revision: 2026-10-29T19:10:08.049+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-52-add-tags
   base_branch: main
@@ -144,6 +144,25 @@ Task 5 — root validation: `pnpm test`, `pnpm lint`, `pnpm typecheck` all passe
 
 ## Quality Gate
 
+Gate: concerns. Every acceptance criterion is evidenced and every required validation passed; one minor finding remains.
+
+Acceptance trace:
+
+- AC-1: implementation `normalizeTags` (`packages/shared/src/index.ts`), `parseTags` and `tags` saved on the bookmark (`packages/api/src/store.ts`), `body.tags` passed through (`packages/api/src/app.ts`); verification shared test `trims, lower-cases, dedupes after normalization, and keeps first-occurrence order`, api test `stores normalized tags and returns them on create and list` (`["  Work ", "work", "READ"]` gives `["work", "read"]` in the 201 body and the list).
+- AC-2: implementation `parseTags` returns `[]` for an absent value; verification api test `defaults tags to an empty array` (201 body and list).
+- AC-3: implementation `parseTags` (non-array or non-string item, then `isValidTag` on each normalized tag) throws `ValidationError("invalid tag")` before the duplicate check and before storing; verification api tests `accepts a 32-character tag and a padded tag` and the six `rejects ... with 400 invalid tag and stores nothing` cases (33 characters, `"a b"`, `""`, `"   "`, `"work"`, `[1]`), shared `isValidTag` tests (32/33 boundary, empty, space, tab, newline).
+- AC-4: implementation `tags` stored on every new bookmark and returned by `list()`; verification api tests on the GET list (`["work", "read"]` in stored order, `[]` when none).
+- AC-5: implementation `renderList` appends `<span class="tags">` with `tags.join(", ")` between the title link and Remove only when tags exist (`packages/web/src/render.ts`); verification web tests `shows tags after the title, comma separated` (`work, read`, previous sibling is the link) and `renders no tag element or text when there are no tags` (no `.tags`, row text `ExampleRemove`).
+- AC-6: Vitest tests added in all three packages; re-run at the reviewed head from the repository root: `pnpm test` (shared 11, api 12, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Release work: changeset `.changeset/add-bookmark-tags.md` (summary `Add tags to bookmarks`), `measure/baseline.json` 835 to 881 in this change.
+
+Findings:
+
+- minor — `isValidTag` in `packages/shared/src/index.ts`: the 32-character limit uses `String.length` (UTF-16 code units), so a character outside the Basic Multilingual Plane counts as two. Reproduced: a tag of 20 emoji (20 characters, length 40) is rejected with 400 `invalid tag`, although AC 3 rejects only tags longer than 32 characters. ASCII and BMP tags, which all the criteria's examples use, are unaffected. Lower-casing that expands a character (for example `İ` to `i̇`) also lengthens the tag, which matches the plan-approval decision to count the limit on the trimmed, normalized tag. Acceptable as follow-up: count code points (`[...tag].length`) or agree the unit in the issue.
+
+Residual risks: none. Operational Requirements have no `evidence: unverified` entry, and no Validation Evidence line is `deferred` or `pending-ci`.
+
+Reviewed head: 1687c164a597907797ebb43f566e4f5a8629f5d4
+
 ## Review Record
 
 ## Change Log
@@ -156,3 +175,5 @@ Task 5 — root validation: `pnpm test`, `pnpm lint`, `pnpm typecheck` all passe
 - 2026-10-29: Task 3 (web tags) implemented and checked off.
 - 2026-10-29: Task 4 (changeset and bundle baseline 835 to 881) done and checked off.
 - 2026-10-29: Task 5 root validation passed; implementation complete, checkpoint implementation-approval.
+- 2026-10-29: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-29: Quality review recorded gate concerns at 1687c16 (one minor finding: tag length counted in UTF-16 code units).
