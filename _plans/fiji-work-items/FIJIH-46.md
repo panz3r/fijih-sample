@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: concerns
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-46-add-tags
   base_branch: main
   pull_request: https://github.com/panz3r/fijih-sample/pull/8
-  jira_context_comment_id: null
+  jira_context_comment_id: "10007"
 ---
 
 # Work Item FIJIH-46: Add tags to bookmarks
@@ -245,3 +245,5 @@ Operational: the main ruleset requires the `test` check and one approving review
 - 2026-10-29: Approved: ready-for-review — Approve; the Copilot-pass fixes are fine.
 - 2026-10-29: Ready for review: PR #8 marked ready (timeline `ready_for_review` at 11:04:37Z) and review requested from QA Engineer `duckyduff369` (timeline `review_requested` at 11:04:38Z). Owning team per TEAMS.md; author `panz3r` not requested. Commit held locally (work-item-only).
 - 2026-10-29: Jira handoff draft written (no Jira write). Human review clear: QA Engineer `duckyduff369` APPROVED on 4914d6a, Copilot threads resolved, CI green. Checkpoint jira-handoff set; commit held locally (work-item-only).
+- 2026-10-29: Approved: jira-handoff — Approve.
+- 2026-10-29: Jira handoff recorded: marked comment `FIJI-CONTEXT:FIJIH-46:fiji/orchestrate-development/v1` posted on FIJIH-46 as comment 10007 (the approved draft, unchanged) and read back. No other Jira write. Commit held locally (work-item-only).
