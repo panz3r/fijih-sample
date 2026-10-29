@@ -8,16 +8,16 @@ source:
   revision: 2026-10-29T11:46:05.481+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-46-add-tags
   base_branch: main
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/8
   jira_context_comment_id: null
 ---
 
@@ -206,3 +206,5 @@ Product decisions checked against the criteria: Q1–Q4 as approved match AC 1�
 - 2026-10-29: Approved: implementation-approval — Approve; I accept the jsdom evidence for the page check.
 - 2026-10-29: Quality gate recorded: concerns (two minor findings, one residual risk) at reviewed head 958fd92.
 - 2026-10-29: Finalize (local QA review): reconciled Implementation Record entries for Tasks 1, 2, 3, and 6 with their task commits (87f9ca0, 8365553, 14d7f6a); no other record changed. Task 4 (live check) and Task 5 (root checks and baseline) are checked but their entries were added by the work-item-only commit 958fd92 and cite no commit, so they are listed as task/evidence discrepancies; their acceptance evidence (AC-1, AC-3, AC-4, AC-6) is in Validation Evidence. Checkpoint local-qa-review set.
+- 2026-10-29: Approved: local-qa-review — Approve; keep both findings as follow-ups.
+- 2026-10-29: Delivery: changeset `.changeset/add-tags-to-bookmarks.md` pushed; draft PR #8 (https://github.com/panz3r/fijih-sample/pull/8) opened with label `enhancement`, Copilot review requested (timeline `review_requested`). Both quality-gate minor findings kept as follow-ups. No `(verify: ci)` criteria. Reviewer QA Engineer `duckyduff369` to be requested at ready-for-review.
