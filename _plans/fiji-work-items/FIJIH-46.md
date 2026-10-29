@@ -8,12 +8,12 @@ source:
   revision: 2026-10-29T11:46:05.481+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-46-add-tags
   base_branch: main
@@ -157,6 +157,37 @@ Ran `pnpm --filter @sample/web dev` (Vite, proxy to :3000). `pnpm --filter @samp
 
 ## Quality Gate
 
+Gate: **concerns**. Every criterion has evidence, the root checks pass at the reviewed head, and no finding is blocking. Two minor findings and one residual risk remain.
+
+Reviewed head: 958fd92 (full branch diff `main...FIJIH-46-add-tags`)
+
+Validations re-run at the reviewed head: `pnpm test` exit 0 (shared 10, api 11, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` exit 0, `pnpm build` exit 0, `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`.
+
+### Acceptance trace
+
+- AC-1: implemented by `normalizeTags` in `packages/shared/src/index.ts` (trims, lower-cases, de-duplicates keeping the first position, returns `[]` for `undefined`), called from `BookmarkStore.add` in `packages/api/src/store.ts`. `packages/api/src/app.ts` passes `body.tags` through unchanged. Verified by the shared `normalizeTags` tests, the api test "stores normalised tags and lists them" (`["  Work","work","News"]` gives `["work","news"]`, status 201), the api test "defaults to an empty tag list", and the live curl through the Vite proxy recorded in the Implementation Record.
+- AC-2: implemented by the `null` return of `normalizeTags` (empty, longer than `MAX_TAG_LENGTH`, `\s`, non-string element, non-array value) and `ValidationError("invalid tag")` in `store.ts`, which throws before `items.set`. Verified by the shared tests (32 accepted, 33 rejected, length checked after trimming, space and tab rejected, `""`, `"   "`, `[1]`, `"work"`, `null`, `{}` rejected) and the api `it.each` cases (33 characters, `"a b"`, `"  "`, `[1]`, `"work"`, `null`), each answering 400 `{"error":"invalid tag"}` with a following GET that shows nothing was stored. The live curl also returned 400. See finding 1 for a Unicode edge case.
+- AC-3: implemented because `tags` is stored on the `Bookmark`, and `store.list()` returns it. Verified by the api GET assertions in both tag tests (normalised order kept, `[]` when none) and the live GET.
+- AC-4: implemented in `renderList` in `packages/web/src/render.ts`: it adds `<span class="tags">` with `textContent = tags.join(", ")` between the link and Remove only when `tags.length > 0`, and it does not use `innerHTML`. Verified by the web tests (row text `Examplework, newsRemove`; no `.tags` element and row text `ExampleRemove` without tags) and by the live check: the real `renderList` ran in jsdom on the live GET response. The page was not opened in a real browser. The user accepted this evidence at implementation-approval.
+- AC-5: verified by Vitest tests in all three packages that cover AC 1–4 and the unhappy paths of AC-2. They pass at the reviewed head.
+- AC-6: verified by `pnpm test`, `pnpm lint`, and `pnpm typecheck`, which pass from the root at the reviewed head. `measure/baseline.json` holds 881, which matches `pnpm measure` (delta 0).
+
+Product decisions checked against the criteria: Q1–Q4 as approved match AC 1–4. The engineering decision to validate tags after the title, URL, and duplicate-URL checks means that a request with both a duplicate URL and an invalid tag answers `url already bookmarked`. AC-2 covers an otherwise valid request with an invalid tag, so this ordering does not contradict it.
+
+### Findings
+
+1. minor: `packages/shared/src/index.ts:53` applies the length check to the lower-cased tag, not the trimmed tag. A tag whose lower-case form has more UTF-16 code units than the original is rejected even when its trimmed length is 32 or less. Reproduced: `normalizeTags(["İ" + "a".repeat(31)])` (trimmed length 32) returns `null`, and `"İ".repeat(32)` (length 32, lower-cased length 64) returns `null`. AC-2 says "a trimmed tag of exactly 32 characters is accepted". This affects only non-ASCII input with expanding case mappings. A follow-up can check `raw.trim().length` before lower-casing.
+2. minor: `packages/shared/src/index.ts:55` de-duplicates with `out.includes`, so the cost is quadratic in the number of tags. Neither the tag count nor the request body size is capped (`readJson` in `packages/api/src/app.ts` already buffers any body size before this change). Reproduced: `normalizeTags` takes about 73 ms for 10,000 unique tags and about 466 ms for 30,000. That time blocks the API event loop during a single POST. A follow-up can use a `Set` or cap the tag count.
+
+### Residual risks
+
+- The page was not rendered in a real browser. AC-4 rests on jsdom renders, and the user accepted this ("Approve; I accept the jsdom evidence for the page check."). With `li { display: flex; justify-content: space-between }`, the tag span sits between the title and Remove, not directly next to the title. The work item specifies no visual design. To confirm the layout, open the page in a browser with one tagged bookmark and one untagged bookmark.
+
+### Notes outside this change
+
+- `pnpm --filter @sample/api start` fails with `ERR_MODULE_NOT_FOUND`. The failure predates this change: the start script and `src/server.ts` are the same as on `main`.
+- Commit 87f9ca0 leaves the web typecheck failing until 8365553. Only that intermediate commit is affected. The branch tip passes, and the pull request is squash-merged.
+
 ## Review Record
 
 ## Change Log
@@ -168,3 +199,5 @@ Ran `pnpm --filter @sample/web dev` (Vite, proxy to :3000). `pnpm --filter @samp
 - 2026-10-29: Task 3 implemented and checked off.
 - 2026-10-29: README task done.
 - 2026-10-29: Tasks 4 and 5 done; implementation complete, awaiting implementation-approval.
+- 2026-10-29: Approved: implementation-approval — Approve; I accept the jsdom evidence for the page check.
+- 2026-10-29: Quality gate recorded: concerns (two minor findings, one residual risk) at reviewed head 958fd92.
