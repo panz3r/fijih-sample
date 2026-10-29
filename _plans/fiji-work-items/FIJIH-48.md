@@ -72,13 +72,13 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 
 ## Tasks and Subtasks
 
-- [ ] Shared types and pure functions in `packages/shared/src/index.ts` (AC: 1, 2, 3)
-  - [ ] Add `tags: string[]` to `Bookmark`; widen `NewBookmark` to `Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] }`.
-  - [ ] Add `isValidTag(tag: string): boolean`: true when the trimmed tag is at most 32 characters and has no whitespace (`/\s/`), plus the blank-tag rule from open question 1.
-  - [ ] Add `normalizeTags(tags: readonly string[]): string[]`: trim, lower-case, deduplicate in first-occurrence order.
-- [ ] Shared unit tests in `packages/shared/src/index.test.ts` (AC: 5)
-  - [ ] `isValidTag`: 32 characters accepted, 33 rejected, inner space and tab rejected, surrounding whitespace accepted, blank per open question 1.
-  - [ ] `normalizeTags`: trimming, lower-casing, duplicate folding across case and whitespace, order kept, input not mutated, `[]` in gives `[]` out.
+- [x] Shared types and pure functions in `packages/shared/src/index.ts` (AC: 1, 2, 3)
+  - [x] Add `tags: string[]` to `Bookmark`; widen `NewBookmark` to `Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] }`.
+  - [x] Add `isValidTag(tag: string): boolean`: true when the trimmed tag is at most 32 characters and has no whitespace (`/\s/`), plus the blank-tag rule from open question 1.
+  - [x] Add `normalizeTags(tags: readonly string[]): string[]`: trim, lower-case, deduplicate in first-occurrence order.
+- [x] Shared unit tests in `packages/shared/src/index.test.ts` (AC: 5)
+  - [x] `isValidTag`: 32 characters accepted, 33 rejected, inner space and tab rejected, surrounding whitespace accepted, blank per open question 1.
+  - [x] `normalizeTags`: trimming, lower-casing, duplicate folding across case and whitespace, order kept, input not mutated, `[]` in gives `[]` out.
 - [ ] API store and route (AC: 1, 2, 3)
   - [ ] `packages/api/src/store.ts` `add()`: when `input.tags` is given, throw `ValidationError("invalid tag")` if any tag fails `isValidTag` (and for malformed input per open question 2), else store `normalizeTags(input.tags)`; default `[]`. Validate before inserting, so a rejected request stores nothing.
   - [ ] `packages/api/src/app.ts` POST handler: read `tags` from the body and pass it to `store.add` without coercing it, so the store can reject malformed values.
@@ -125,7 +125,12 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 and 2 — shared tag types, `isValidTag` (trimmed, non-blank, <= 32 chars, no whitespace) and `normalizeTags` (trim, lower-case, de-duplicate in first-occurrence order), with unit tests for 32/33 boundary, inner space/tab, trimming, blank, case and duplicate folding, order, immutability, and `[]`.
 
 ## Validation Evidence
 
@@ -137,3 +142,4 @@ Open product questions (asked at `plan-approval`; the proposed answer is what th
 
 - 2026-10-29: Drafted from Jira FIJIH-48 revision `2026-10-29T16:12:10.397+0100` (issue assigned to the current user before reading the revision). Six open product questions recorded in Product Context for `plan-approval`.
 - 2026-10-29: Approved: plan-approval — Approve. Answers: 1 yes, a blank tag after trimming answers 400 invalid tag; 2 yes, a non-array or non-string tags value answers 400; 3 yes, the rules apply to the trimmed tag; 4 yes, keep first-occurrence order; 5 no tags input on the add form; 6 leave README.md unchanged.
+- 2026-10-29: Implemented shared tag helpers and tests (tasks 1-2).
