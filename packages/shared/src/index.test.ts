@@ -50,6 +50,17 @@ describe("normalizeTags", () => {
     expect(normalizeTags([` ${"a".repeat(32)} `])).toEqual(["a".repeat(32)]);
   });
 
+  it("checks length before lower-casing, so expanding case mappings still fit", () => {
+    const tag = "\u0130" + "a".repeat(31);
+    expect(tag.length).toBe(32);
+    expect(normalizeTags([tag])).toEqual([tag.toLowerCase()]);
+  });
+
+  it("de-duplicates many unique tags in order without quadratic cost", () => {
+    const tags = Array.from({ length: 50000 }, (_, i) => `t${i}`);
+    expect(normalizeTags([...tags, "T0"])).toEqual(tags);
+  });
+
   it("rejects internal whitespace", () => {
     expect(normalizeTags(["a b"])).toBeNull();
     expect(normalizeTags(["a\tb"])).toBeNull();
