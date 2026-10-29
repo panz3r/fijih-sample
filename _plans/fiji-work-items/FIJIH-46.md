@@ -58,14 +58,14 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 
 ## Tasks and Subtasks
 
-- [ ] Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 3)
-  - [ ] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags?: readonly string[]`.
-  - [ ] Add a pure `normalizeTags(input: unknown): string[]` (or an equivalent validate + normalise pair) that trims, lower-cases, de-duplicates keeping first occurrence, returns `[]` for `undefined`, and signals an invalid tag (length > 32 after trimming, internal whitespace, and per Q2/Q3 non-array, non-string, empty) without depending on the api's `ValidationError`. Export a `MAX_TAG_LENGTH = 32` constant.
-  - [ ] Vitest cases in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe order, default `[]`, 32 accepted, 33 rejected, internal space/tab rejected, and the Q2/Q3 cases.
-- [ ] API accepts, validates, stores, and returns tags (AC: 1, 2, 3)
-  - [ ] `packages/api/src/app.ts`: pass `body.tags` through to `store.add` unchanged (no coercion), so the store validates it.
-  - [ ] `packages/api/src/store.ts`: normalise tags with the shared helper after the existing title and URL checks; on an invalid tag throw `ValidationError("invalid tag")` so the existing handler answers 400 `{"error":"invalid tag"}`; store `tags` on the bookmark.
-  - [ ] Vitest cases in `packages/api/src/app.test.ts`: POST with tags returns normalised tags (201); POST without tags returns `tags: []`; GET lists tags per bookmark; POST with a 33-character tag and with `"a b"` answers 400 `{"error":"invalid tag"}` and the bookmark is absent from a following GET; the Q2/Q3 cases.
+- [x] Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 3)
+  - [x] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags?: readonly string[]`.
+  - [x] Add a pure `normalizeTags(input: unknown): string[]` (or an equivalent validate + normalise pair) that trims, lower-cases, de-duplicates keeping first occurrence, returns `[]` for `undefined`, and signals an invalid tag (length > 32 after trimming, internal whitespace, and per Q2/Q3 non-array, non-string, empty) without depending on the api's `ValidationError`. Export a `MAX_TAG_LENGTH = 32` constant.
+  - [x] Vitest cases in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe order, default `[]`, 32 accepted, 33 rejected, internal space/tab rejected, and the Q2/Q3 cases.
+- [x] API accepts, validates, stores, and returns tags (AC: 1, 2, 3)
+  - [x] `packages/api/src/app.ts`: pass `body.tags` through to `store.add` unchanged (no coercion), so the store validates it.
+  - [x] `packages/api/src/store.ts`: normalise tags with the shared helper after the existing title and URL checks; on an invalid tag throw `ValidationError("invalid tag")` so the existing handler answers 400 `{"error":"invalid tag"}`; store `tags` on the bookmark.
+  - [x] Vitest cases in `packages/api/src/app.test.ts`: POST with tags returns normalised tags (201); POST without tags returns `tags: []`; GET lists tags per bookmark; POST with a 33-character tag and with `"a b"` answers 400 `{"error":"invalid tag"}` and the bookmark is absent from a following GET; the Q2/Q3 cases.
 - [ ] Web page shows tags after the title (AC: 4)
   - [ ] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing otherwise. Use `textContent`, never `innerHTML`.
   - [ ] Update fixtures in `packages/web/src/render.test.ts` for the new required `tags` field and add cases: two tags render `work, news` after the title; no tags renders no tag element and the row text is title + `Remove` only.
@@ -114,7 +114,18 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 
 ## File List
 
+- `packages/shared/src/index.ts`, `packages/shared/src/index.test.ts`
+- `packages/api/src/store.ts`, `packages/api/src/app.ts`, `packages/api/src/app.test.ts`
+
 ## Implementation Record
+
+### Task 1 — shared tag model and normalisation
+
+`Bookmark.tags: string[]`, `NewBookmark` gains optional `tags`, `MAX_TAG_LENGTH = 32`, and `normalizeTags(input: unknown): string[] | null` (null signals an invalid tag; checks run after trimming and lower-casing; empty, non-string, non-array, over-length and whitespace all invalid). Hypothesis: a pure helper returning null keeps the api free of shared-side error types; checked by the shared tests (11 passed in `pnpm --filter @sample/shared test`).
+
+### Task 2 — API accepts, validates, stores, and returns tags
+
+`app.ts` passes `body.tags` through untouched; `store.ts` normalises after the title, URL and duplicate checks and throws `ValidationError("invalid tag")`. `pnpm --filter @sample/api test`: 11 passed, including 33-character, whitespace, empty, non-string, non-array and null cases each followed by a GET proving nothing was stored.
 
 ## Validation Evidence
 
@@ -127,3 +138,4 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - 2026-10-29: Plan drafted from FIJIH-46 at revision 2026-10-29T11:46:05.481+0100; issue assigned to Mattia Panzeri.
 - 2026-10-29: Approved: plan-approval — Approve as proposed.
 - 2026-10-29: Plan approval accepts the proposed answers: Q1 form tags input out of scope (its conditional subtask removed); Q2 non-array/non-string tags answer 400 `invalid tag`; Q3 empty-after-trim tags rejected, checks run after trimming; Q4 README `packages/shared` row is updated (its task is now unconditional).
+- 2026-10-29: Tasks 1 and 2 implemented and checked off.

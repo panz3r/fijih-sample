@@ -44,3 +44,39 @@ describe("bookmarks api", () => {
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
 });
+
+describe("bookmark tags", () => {
+  const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+  const listed = async (url: string) =>
+    ((await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[]).find((b) => b.url === url);
+
+  it("stores normalised tags and lists them", async () => {
+    const res = await post({ url: "https://tags.example/a", title: "T", tags: ["  Work", "work", "News"] });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["work", "news"]);
+    expect((await listed("https://tags.example/a"))?.tags).toEqual(["work", "news"]);
+  });
+
+  it("defaults to an empty tag list", async () => {
+    const res = await post({ url: "https://tags.example/b", title: "T" });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    expect((await listed("https://tags.example/b"))?.tags).toEqual([]);
+  });
+
+  it.each([
+    ["a 33-character tag", ["a".repeat(33)]],
+    ["a tag with whitespace", ["a b"]],
+    ["an empty tag", ["  "]],
+    ["a non-string tag", [1]],
+    ["a non-array tags value", "work"],
+    ["a null tags value", null],
+  ])("rejects %s with 400 and stores nothing", async (_name, tags) => {
+    const url = `https://tags.example/bad-${_name.replaceAll(" ", "-")}`;
+    const res = await post({ url, title: "T", tags });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid tag" });
+    expect(await listed(url)).toBeUndefined();
+  });
+});
+
