@@ -8,16 +8,16 @@ source:
   revision: "2026-10-29T17:44:20.074+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-49-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/11
   jira_context_comment_id: null
 ---
 
@@ -187,6 +187,8 @@ Reviewed head: e8b500dc16846e4e14db13f5ad080da8ea5bcf7e
 - 2026-10-29 — Implementation: task 5 done (changeset and bundle baseline).
 - 2026-10-29 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-29 — Finalize: reconciled commit citations for tasks 1, 2, 3, and 5 (commits 6e24263, 4d30432, 214e575, e8b500d). Task 4 (root checks) has no committed evidence: its entry was added by e5aa329, which changes only the work item; the task stays checked and is listed as a discrepancy. Set checkpoint local-qa-review and transition qa-reviewed.
+- 2026-10-29 — Approved: local-qa-review — Approve. Keep the U+0130 finding as a recorded follow-up.
+- 2026-10-29 — Delivery: pushed branch FIJIH-49-add-bookmark-tags (9 commits, tip baa223d); opened draft PR #11 (https://github.com/panz3r/fijih-sample/pull/11) titled `[FIJIH-49] Add tags to bookmarks`, label enhancement, base main; Copilot review requested (review_requested event confirmed). Change intent `.changeset/add-bookmark-tags.md` already on the branch, reused unchanged. No (verify: ci) criterion, so no CI measurement. Transition delivery-complete; this commit is held locally.
 
 
 
