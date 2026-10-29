@@ -8,9 +8,9 @@ source:
   revision: "2026-10-29T16:12:10.397+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -203,3 +203,5 @@ Copilot pass (PR #9, draft): review 5700260343 by copilot-pull-request-reviewer[
 - 2026-10-29: Approved: local-qa-review — Approve. Keep both minor findings as recorded follow-ups.
 - 2026-10-29: Delivery: pushed `FIJIH-48-add-tags-to-bookmarks` at d6b9082; opened draft pull request #9 (base main, label enhancement, assignee panz3r) with Copilot review requested; no human reviewer requested until ready-for-review. Change intent already present (`.changeset/add-tags-to-bookmarks.md`).
 - 2026-10-29: Copilot pass: review 5700260343 raised no findings on d6b9082; transition ready-for-review, checkpoint ready-for-review.
+- 2026-10-29: Approved: ready-for-review — Approve.
+- 2026-10-29: Ready-for-review: marked pull request #9 ready for review and requested review from `duckyduff369` (QA Engineer, owning team in TEAMS.md; the only other team member, `panz3r`, is the author). Transition review-requested; held locally with the earlier work-item-only commits.
