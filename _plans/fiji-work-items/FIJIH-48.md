@@ -8,16 +8,16 @@ source:
   revision: "2026-10-29T16:12:10.397+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-48-add-tags-to-bookmarks
   base_branch: main
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/9
   jira_context_comment_id: null
 ---
 
@@ -198,3 +198,5 @@ Residual risks: none. The Operational Requirements entries carry evidence; no Va
 - 2026-10-29: Delivery conventions done (task 7); all tasks checked; checkpoint implementation-approval.
 - 2026-10-29: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-29: Finalize: every task and acceptance criterion has committed evidence on the branch; added `(commit <hash>)` lines to the four Implementation Record entries (tasks 1-2 448d349, 3-4 31f1e27, 5-6 1b4bb87, 7 6aefb64). Recorded quality gate concerns with two minor findings as follow-ups; checkpoint local-qa-review.
+- 2026-10-29: Approved: local-qa-review — Approve. Keep both minor findings as recorded follow-ups.
+- 2026-10-29: Delivery: pushed `FIJIH-48-add-tags-to-bookmarks` at d6b9082; opened draft pull request #9 (base main, label enhancement, assignee panz3r) with Copilot review requested; no human reviewer requested until ready-for-review. Change intent already present (`.changeset/add-tags-to-bookmarks.md`).
