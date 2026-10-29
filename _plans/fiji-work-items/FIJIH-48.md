@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -190,6 +190,26 @@ Residual risks: none. The Operational Requirements entries carry evidence; no Va
 
 Copilot pass (PR #9, draft): review 5700260343 by copilot-pull-request-reviewer[bot], COMMENTED at 2026-10-29T15:21:31Z on head d6b9082. No review threads, no inline comments, "Approval recommended - No open issues". No findings to classify; no fix commits, no replies, no threads to resolve, no re-review requested. The recorded minor follow-ups (null tags accepted as omitted; tag length validated before lower-casing) were not raised.
 
+Jira handoff draft:
+
+```
+FIJI-CONTEXT:FIJIH-48:fiji/orchestrate-development/v1
+
+FIJIH-48 "Add tags to bookmarks" is implemented and in review: https://github.com/panz3r/fijih-sample/pull/9 (base main, ready for review).
+
+Outcome: POST /bookmarks accepts an optional "tags" array (each tag trimmed, lower-cased, deduplicated in first-occurrence order; default []); a tag over 32 characters after trimming, or containing whitespace, a blank tag, or a non-string tag answers 400 {"error":"invalid tag"} and stores nothing. GET /bookmarks returns tags on every bookmark. The web page shows tags after the title, comma separated, and nothing when there are none. Added changeset .changeset/add-tags-to-bookmarks.md; measure/baseline.json moved from 835 to 881 (web_bundle_gzip_bytes).
+
+Validation: pnpm test, pnpm lint, and pnpm typecheck pass from the repository root; unit tests added in packages/shared, packages/api, and packages/web. CI on pull request head d6b9082 (run 40900453960): test, lint, typecheck, measure, scenarios all succeeded. Review: Copilot review raised no findings; the QA Engineer duckyduff369 APPROVED on d6b9082 ("Looks good."); no review threads open.
+
+Decisions recorded at plan approval: a blank tag after trimming answers 400; a non-array or non-string tags value answers 400; length and whitespace rules apply to the trimmed tag; tags keep first-occurrence order; no tags input on the web add form (tags are set through the API only); README.md left unchanged. Tags are not filterable and cannot be edited on an existing bookmark (out of scope per the issue).
+
+Follow-ups kept by the user (Quality Gate: concerns, two minor findings, neither fixed):
+1. POST /bookmarks with "tags": null is treated as omitted (201, tags: []) rather than 400; no test covers null.
+2. The 32-character length check runs before lower-casing, and toLowerCase() can lengthen a string, so a stored tag can exceed 32 characters (for example, 32 repetitions of "İ" is accepted and stored as 64 characters). Matches AC-2 as written; relevant to any later consumer that assumes stored tags are at most 32 characters.
+
+Operational: merging into main needs the required status check "test" and one approving review with a squash merge (repository ruleset main, id 26033321); this change adds, removes, and renames no CI check contexts.
+```
+
 ## Change Log
 
 - 2026-10-29: Drafted from Jira FIJIH-48 revision `2026-10-29T16:12:10.397+0100` (issue assigned to the current user before reading the revision). Six open product questions recorded in Product Context for `plan-approval`.
@@ -205,3 +225,4 @@ Copilot pass (PR #9, draft): review 5700260343 by copilot-pull-request-reviewer[
 - 2026-10-29: Copilot pass: review 5700260343 raised no findings on d6b9082; transition ready-for-review, checkpoint ready-for-review.
 - 2026-10-29: Approved: ready-for-review — Approve.
 - 2026-10-29: Ready-for-review: marked pull request #9 ready for review and requested review from `duckyduff369` (QA Engineer, owning team in TEAMS.md; the only other team member, `panz3r`, is the author). Transition review-requested; held locally with the earlier work-item-only commits.
+- 2026-10-29: Jira handoff draft: wrote the Jira handoff draft comment (outcome, validation, review state, plan-approval decisions, two kept follow-ups, operational notes) in the Review Record; PR #9 head d6b9082 shows approval by `duckyduff369` (review 5700305678) and no open findings. Transition handoff-drafted, checkpoint jira-handoff; held locally with the earlier work-item-only commits.
