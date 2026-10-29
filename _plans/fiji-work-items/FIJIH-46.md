@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: concerns
@@ -205,6 +205,28 @@ Copilot review 5696602764 on 39f5f1a, two threads:
 
 Re-review requested at 2026-10-29T11:00:13Z; Copilot review 5696649144 on 4914d6a: approval recommended, no open issues.
 
+Jira handoff draft:
+
+```
+FIJI-CONTEXT:FIJIH-46:fiji/orchestrate-development/v1
+
+Delivered in https://github.com/panz3r/fijih-sample/pull/8 (branch FIJIH-46-add-tags): bookmarks now carry an optional tags array. POST /bookmarks trims, lower-cases and de-duplicates tags (first occurrence kept) and answers 400 {"error":"invalid tag"} for a tag over 32 characters, containing whitespace, empty after trimming, a non-string element, or a non-array tags value. GET /bookmarks returns tags on every bookmark, and the web page shows them after the title, comma separated, with nothing for an untagged bookmark. Tests were added in packages/shared, packages/api and packages/web. Approved by QA Engineer duckyduff369; CI `test` job green on the reviewed head 4914d6a.
+
+Decisions:
+- Validation runs on the trimmed tag, so " Work " is accepted as "work". Empty and malformed tags are rejected rather than dropped. Tag validation runs after the existing title, URL and duplicate-URL checks, so a request with a duplicate URL and an invalid tag answers "url already bookmarked".
+- No tags input was added to the web add form (display only, as the issue says), so tags can only be set through the API.
+- The web bundle baseline in measure/baseline.json was updated from 835 to 881 gzipped bytes.
+- Copilot review found two issues, both fixed in 4914d6a: the length check ran after lower-casing (wrongly rejecting some non-ASCII tags of 32 characters or fewer), and de-duplication was quadratic. De-duplication now uses a Set. No cap was put on the number of tags, and the API still buffers request bodies of any size (existing behaviour), so a very large tags array is not bounded.
+
+Residual risks and limitations:
+- The page was checked by running the real renderer in jsdom on a live API response, not in a real browser; the user accepted this evidence. Because the list row is a flex row with space-between, the tag text sits between the title and the Remove button, not directly beside the title. Open the page with one tagged and one untagged bookmark to confirm the layout.
+- Out of scope per the issue: filtering or searching by tag, and editing tags of an existing bookmark.
+
+Pre-existing, not caused by this change: `pnpm --filter @sample/api start` fails with ERR_MODULE_NOT_FOUND (src/server.ts imports ./app.js, which Node cannot resolve to app.ts); the start script and server.ts are the same as on main.
+
+Operational: the main ruleset requires the `test` check and one approving review with squash merge only.
+```
+
 ## Change Log
 
 - 2026-10-29: Plan drafted from FIJIH-46 at revision 2026-10-29T11:46:05.481+0100; issue assigned to Mattia Panzeri.
@@ -222,3 +244,4 @@ Re-review requested at 2026-10-29T11:00:13Z; Copilot review 5696649144 on 4914d6
 - 2026-10-29: Copilot pass: 2 valid findings fixed in 4914d6a (the two quality-gate minor findings), threads resolved, re-review clean. Checkpoint ready-for-review set.
 - 2026-10-29: Approved: ready-for-review — Approve; the Copilot-pass fixes are fine.
 - 2026-10-29: Ready for review: PR #8 marked ready (timeline `ready_for_review` at 11:04:37Z) and review requested from QA Engineer `duckyduff369` (timeline `review_requested` at 11:04:38Z). Owning team per TEAMS.md; author `panz3r` not requested. Commit held locally (work-item-only).
+- 2026-10-29: Jira handoff draft written (no Jira write). Human review clear: QA Engineer `duckyduff369` APPROVED on 4914d6a, Copilot threads resolved, CI green. Checkpoint jira-handoff set; commit held locally (work-item-only).
