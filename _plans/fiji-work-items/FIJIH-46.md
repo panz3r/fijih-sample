@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -69,11 +69,11 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - [x] Web page shows tags after the title (AC: 4)
   - [x] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing otherwise. Use `textContent`, never `innerHTML`.
   - [x] Update fixtures in `packages/web/src/render.test.ts` for the new required `tags` field and add cases: two tags render `work, news` after the title; no tags renders no tag element and the row text is title + `Remove` only.
-- [ ] Live check of the web page against the API (AC: 1, 3, 4)
-  - [ ] Run `pnpm --filter @sample/api start` and `pnpm --filter @sample/web dev`, create one bookmark with tags (via `curl -X POST` to the api, or the form if Q1 adds it) and one without, and record in Validation Evidence that the page shows `<title> work, news` for the first and only the title for the second.
-- [ ] Root checks and bundle baseline (AC: 5, 6)
-  - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root.
-  - [ ] Run `pnpm build && pnpm measure`; if `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in its own `chore:` commit, and record before/after values in Validation Evidence.
+- [x] Live check of the web page against the API (AC: 1, 3, 4)
+  - [x] Run `pnpm --filter @sample/api start` and `pnpm --filter @sample/web dev`, create one bookmark with tags (via `curl -X POST` to the api, or the form if Q1 adds it) and one without, and record in Validation Evidence that the page shows `<title> work, news` for the first and only the title for the second.
+- [x] Root checks and bundle baseline (AC: 5, 6)
+  - [x] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root.
+  - [x] Run `pnpm build && pnpm measure`; if `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in its own `chore:` commit, and record before/after values in Validation Evidence.
 - [x] Update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
 
 ## Engineering Context
@@ -118,12 +118,13 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - `packages/api/src/store.ts`, `packages/api/src/app.ts`, `packages/api/src/app.test.ts`
 - `packages/web/src/render.ts`, `packages/web/src/render.test.ts`
 - `README.md`
+- `measure/baseline.json`
 
 ## Implementation Record
 
 ### Task 1 — shared tag model and normalisation
 
-`Bookmark.tags: string[]`, `NewBookmark` gains optional `tags`, `MAX_TAG_LENGTH = 32`, and `normalizeTags(input: unknown): string[] | null` (null signals an invalid tag; checks run after trimming and lower-casing; empty, non-string, non-array, over-length and whitespace all invalid). Hypothesis: a pure helper returning null keeps the api free of shared-side error types; checked by the shared tests (11 passed in `pnpm --filter @sample/shared test`).
+`Bookmark.tags: string[]`, `NewBookmark` gains optional `tags`, `MAX_TAG_LENGTH = 32`, and `normalizeTags(input: unknown): string[] | null` (null signals an invalid tag; checks run after trimming and lower-casing; empty, non-string, non-array, over-length and whitespace all invalid). Hypothesis: a pure helper returning null keeps the api free of shared-side error types; checked by the shared tests (10 passed in `pnpm --filter @sample/shared test`).
 
 ### Task 2 — API accepts, validates, stores, and returns tags
 
@@ -137,7 +138,22 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 
 The row now reads "URL validation and normalisation, tag normalisation, sorting" (Q4 approved).
 
+### Task 4 — live check
+
+Ran `pnpm --filter @sample/web dev` (Vite, proxy to :3000). `pnpm --filter @sample/api start` fails independently of this change (`ERR_MODULE_NOT_FOUND`: `server.ts` imports `./app.js`, which Node's strip-types cannot resolve to `app.ts`; untouched by this change), so the api was started from the same `src/server.ts` with `vite-node`. Through the Vite proxy: POST with `[" Work","news","WORK"]` returned `tags: ["work","news"]`, POST without tags returned `tags: []`, POST with `["a b"]` returned 400 `{"error":"invalid tag"}`, GET listed the tags. The page itself was not opened in a browser (browser automation permission was not granted); instead the real `renderList` was run in jsdom on the live GET response: row text `Taggedwork, newsRemove` with `<span class="tags">work, news</span>`, and `PlainRemove` with no tag element.
+
+### Task 5 — root checks and baseline
+
+`pnpm test` (10 + 11 + 4 passed), `pnpm lint`, `pnpm typecheck` pass. `pnpm build && pnpm measure` printed `web_bundle_gzip_bytes=881`, delta 46 against baseline 835; baseline set to 881 in its own `chore:` commit, re-measure delta 0.
+
 ## Validation Evidence
+
+- AC-1: passed - shared normalizeTags tests, api POST test (`["  Work","work","News"]` -> `["work","news"]`), live curl via the Vite proxy.
+- AC-2: passed - shared and api tests (33 chars, whitespace, empty, non-string, non-array, null; GET shows nothing stored); 32 chars accepted in shared test; live curl 400 `{"error":"invalid tag"}`.
+- AC-3: passed - api GET test and live GET return `tags` on every bookmark.
+- AC-4: passed - web render tests (`work, news`; no element without tags); live jsdom render of the real response. Not viewed in a real browser.
+- AC-5: passed - tests in packages/shared, api, and web.
+- AC-6: passed - root `pnpm test`, `pnpm lint`, `pnpm typecheck`; baseline 835 -> 881 matches `pnpm measure` (delta 0).
 
 ## Quality Gate
 
@@ -151,3 +167,4 @@ The row now reads "URL validation and normalisation, tag normalisation, sorting"
 - 2026-10-29: Tasks 1 and 2 implemented and checked off.
 - 2026-10-29: Task 3 implemented and checked off.
 - 2026-10-29: README task done.
+- 2026-10-29: Tasks 4 and 5 done; implementation complete, awaiting implementation-approval.
