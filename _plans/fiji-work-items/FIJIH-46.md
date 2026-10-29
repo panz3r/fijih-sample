@@ -74,7 +74,7 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - [ ] Root checks and bundle baseline (AC: 5, 6)
   - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root.
   - [ ] Run `pnpm build && pnpm measure`; if `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in its own `chore:` commit, and record before/after values in Validation Evidence.
-- [ ] Update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
+- [x] Update the `packages/shared` row in `README.md` to mention tag normalisation (AC: 6)
 
 ## Engineering Context
 
@@ -117,6 +117,7 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - `packages/shared/src/index.ts`, `packages/shared/src/index.test.ts`
 - `packages/api/src/store.ts`, `packages/api/src/app.ts`, `packages/api/src/app.test.ts`
 - `packages/web/src/render.ts`, `packages/web/src/render.test.ts`
+- `README.md`
 
 ## Implementation Record
 
@@ -132,6 +133,10 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 
 `render.ts` appends `<span class="tags">` (via `textContent` of `tags.join(", ")`) between the link and Remove only when `tags.length > 0`; the existing flex layout needs no CSS. Fixtures gained `tags: []`; new cases cover `work, news` and the no-tags row (`ExampleRemove`). `pnpm --filter @sample/web test`: 4 passed.
 
+### Task 6 — README packages/shared row
+
+The row now reads "URL validation and normalisation, tag normalisation, sorting" (Q4 approved).
+
 ## Validation Evidence
 
 ## Quality Gate
@@ -145,3 +150,4 @@ Open product questions (see Engineering Context > Open questions); the acceptanc
 - 2026-10-29: Plan approval accepts the proposed answers: Q1 form tags input out of scope (its conditional subtask removed); Q2 non-array/non-string tags answer 400 `invalid tag`; Q3 empty-after-trim tags rejected, checks run after trimming; Q4 README `packages/shared` row is updated (its task is now unconditional).
 - 2026-10-29: Tasks 1 and 2 implemented and checked off.
 - 2026-10-29: Task 3 implemented and checked off.
+- 2026-10-29: README task done.
