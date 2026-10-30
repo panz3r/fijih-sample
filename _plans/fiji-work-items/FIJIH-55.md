@@ -55,10 +55,10 @@ Product decisions (answered by the user at plan approval; no open product questi
 
 ## Tasks and Subtasks
 
-- [ ] T1. Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 5)
-  - [ ] Add `tags: string[]` to `Bookmark`; let `NewBookmark` take an optional `tags`.
-  - [ ] Add a pure, exported tag normaliser (for example `normalizeTags`) that trims, lower-cases, and deduplicates keeping first-occurrence order, and a validity check (for example `isValidTag`) for the non-empty, 32-character, and no-whitespace rules, all applied after trimming.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces with first-occurrence order kept, 32 vs 33 characters, internal whitespace, empty-after-trim tag, empty input.
+- [x] T1. Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 5)
+  - [x] Add `tags: string[]` to `Bookmark`; let `NewBookmark` take an optional `tags`.
+  - [x] Add a pure, exported tag normaliser (for example `normalizeTags`) that trims, lower-cases, and deduplicates keeping first-occurrence order, and a validity check (for example `isValidTag`) for the non-empty, 32-character, and no-whitespace rules, all applied after trimming.
+  - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces with first-occurrence order kept, 32 vs 33 characters, internal whitespace, empty-after-trim tag, empty input.
 - [ ] T2. API store and route in `packages/api` (AC: 1, 2, 3, 5)
   - [ ] `BookmarkStore.add` validates tags through the shared helpers, throws `ValidationError("invalid tag")` before storing anything when `tags` is not an array, an element is not a string, or a tag is empty after trimming, too long, or contains whitespace, and stores the normalised tags (default `[]`).
   - [ ] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store.
@@ -109,7 +109,12 @@ Product decisions (answered by the user at plan approval; no open product questi
 
 ## File List
 
+- `packages/shared/src/index.ts`
+- `packages/shared/src/index.test.ts`
+
 ## Implementation Record
+
+Task T1 — shared tag model: `Bookmark.tags`, `NewBookmark.tags?`, `isValidTag`, `normalizeTags` with unit tests. Shared test, lint, typecheck passed.
 
 ## Validation Evidence
 
