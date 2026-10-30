@@ -41,6 +41,12 @@ describe("isValidTag", () => {
     expect(isValidTag("")).toBe(false);
     expect(isValidTag("   ")).toBe(false);
   });
+  it("rejects a long run of internal whitespace quickly", () => {
+    const start = Date.now();
+    expect(isValidTag(`a${" ".repeat(100000)}b`)).toBe(false);
+    expect(isValidTag(`${" ".repeat(100000)}x`)).toBe(true);
+    expect(Date.now() - start).toBeLessThan(1000);
+  });
   it("treats Unicode NEXT LINE (U+0085) as whitespace", () => {
     expect(isValidTag("news\u0085tech")).toBe(false);
     expect(isValidTag("\u0085")).toBe(false);

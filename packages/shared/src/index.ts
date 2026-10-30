@@ -15,10 +15,14 @@ const MAX_TAG_LENGTH = 32;
 
 // `\s` and `String.prototype.trim` omit U+0085 (NEXT LINE), so it is added explicitly.
 const TAG_WHITESPACE = /[\s\u0085]/;
-const TAG_EDGE_WHITESPACE = /^[\s\u0085]+|[\s\u0085]+$/g;
 
+/** Trims whitespace (including U+0085) from both ends with linear scans. */
 function trimTag(value: string): string {
-  return value.replace(TAG_EDGE_WHITESPACE, "");
+  let start = 0;
+  let end = value.length;
+  while (start < end && TAG_WHITESPACE.test(value[start]!)) start++;
+  while (end > start && TAG_WHITESPACE.test(value[end - 1]!)) end--;
+  return value.slice(start, end);
 }
 
 /** True when the tag, after trimming, is non-empty, at most 32 characters, and has no whitespace. */
