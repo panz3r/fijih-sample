@@ -8,9 +8,9 @@ source:
   revision: "2026-10-30T21:06:55.500+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: pass
@@ -206,3 +206,5 @@ Copilot pass (automated-review), review 5718172559 on 349dc69; re-review 5718227
 - Approved: local-qa-review — Approve.
 - Delivery: existing changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` already holds the release entry (no new change intent commit); pushed `FIJIH-67-add-tags-to-bookmarks` and opened draft pull request #16 (`[FIJIH-67] Add tags to bookmarks`, label `enhancement`, base `main`), with Copilot review requested.
 - Copilot findings pass: 1 finding (duplicate frontmatter key) fixed by f531ddd and resolved; Copilot re-review clear. Set checkpoint `ready-for-review`.
+- Approved: ready-for-review — Approve.
+- Ready for review: marked pull request #16 ready and requested review from `duckyduff369` (QA Engineer, the only other member of the owning team; the author is excluded). Set phase `remote-review`, transition `review-requested`.
