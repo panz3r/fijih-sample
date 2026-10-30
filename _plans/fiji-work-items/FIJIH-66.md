@@ -56,11 +56,11 @@ so that I can group my bookmarks.
   - [x] Add a pure `normalizeTags(tags: readonly string[]): string[]` that trims, lower-cases, drops tags empty after trimming, and deduplicates keeping first-occurrence order.
   - [x] Add a pure `isValidTag(tag: string): boolean` (after trimming: length ≤ 32 and no whitespace character, per `/\s/`).
   - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, empty-after-trim tags dropped, dedupe after normalization, order preserved, 32 vs 33 characters, inner space and tab rejected.
-- [ ] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `store.ts`: `BookmarkStore.add` validates each tag (throw `ValidationError("invalid tag")` for a non-array `tags`, a non-string element, a tag over 32 characters, or a tag with whitespace; an empty-after-trim tag is not an error), stores `normalizeTags(input.tags ?? [])` on the bookmark; validation happens before any insert.
-  - [ ] `app.ts`: pass `body.tags` through from the POST body unchanged (absent stays `undefined` so the store defaults it to `[]`), so a non-array or non-string value reaches the store validation and yields 400 `{"error":"invalid tag"}` (decision 3).
-  - [ ] `store.test.ts`: default `[]`, normalization, empty-after-trim tags (`""`, `"   "`) dropped without error, invalid tag (too long, whitespace, non-string element, non-array `tags`) throws and nothing is stored.
-  - [ ] `app.test.ts`: POST with tags returns normalized tags (201); POST without tags returns `tags: []`; POST with `tags: ["", "  ", "News"]` returns `["news"]` (201); POST with a 33-character tag, a tag containing whitespace, `tags: "news"` (not an array), and `tags: [1]` (non-string element) answers 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns each bookmark's tags.
+- [x] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 5)
+  - [x] `store.ts`: `BookmarkStore.add` validates each tag (throw `ValidationError("invalid tag")` for a non-array `tags`, a non-string element, a tag over 32 characters, or a tag with whitespace; an empty-after-trim tag is not an error), stores `normalizeTags(input.tags ?? [])` on the bookmark; validation happens before any insert.
+  - [x] `app.ts`: pass `body.tags` through from the POST body unchanged (absent stays `undefined` so the store defaults it to `[]`), so a non-array or non-string value reaches the store validation and yields 400 `{"error":"invalid tag"}` (decision 3).
+  - [x] `store.test.ts`: default `[]`, normalization, empty-after-trim tags (`""`, `"   "`) dropped without error, invalid tag (too long, whitespace, non-string element, non-array `tags`) throws and nothing is stored.
+  - [x] `app.test.ts`: POST with tags returns normalized tags (201); POST without tags returns `tags: []`; POST with `tags: ["", "  ", "News"]` returns `["news"]` (201); POST with a 33-character tag, a tag containing whitespace, `tags: "news"` (not an array), and `tags: [1]` (non-string element) answers 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns each bookmark's tags.
 - [ ] Show tags in `packages/web` (AC: 4, 5)
   - [ ] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
   - [ ] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
@@ -112,10 +112,15 @@ so that I can group my bookmarks.
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/store.test.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task 1 — shared tag support: `tags` on `Bookmark`/`NewBookmark`, `normalizeTags`, `isValidTag` with tests. `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
+Task 2 — API accepts, validates, stores, and returns tags (`ValidationError("invalid tag")` from `BookmarkStore.add`, raw `body.tags` passed through in `app.ts`). `pnpm --filter @sample/api test` 17 passed; api typecheck passed.
 
 ## Validation Evidence
 
