@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -165,6 +165,8 @@ Stale-statement sweep: none found (README.md package descriptions stay true; no 
 Reviewed head: c7b95d4ab2d8b65d2edc8ddfe3ce3d90d14cdffd
 
 ## Review Record
+
+Copilot pass (PR #15, attempt 1): Copilot review 5715448252 (COMMENTED, 2026-10-30T16:34:37Z, after the 16:32:50Z request) raised no review threads and no open issues. Its overview note that the AC-4 real-browser check remains deferred repeats a user-accepted deferral (Approve at plan-approval and local-qa-review), not a finding. Dispositions: none; no fix commits; no re-review requested.
 
 ## Change Log
 
