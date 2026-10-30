@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -124,10 +124,14 @@ so that I can group my bookmarks.
 ## Implementation Record
 
 Task 1 — shared tag support: `tags` on `Bookmark`/`NewBookmark`, `normalizeTags`, `isValidTag` with tests. `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
+(commit 605b261)
 Task 2 — API accepts, validates, stores, and returns tags (`ValidationError("invalid tag")` from `BookmarkStore.add`, raw `body.tags` passed through in `app.ts`). `pnpm --filter @sample/api test` 17 passed; api typecheck passed.
+(commit 7a02f34)
 Task 3 — web renders tags after the title in `<span class="tags">`, only when non-empty. `pnpm --filter @sample/web test` 4 passed; web typecheck passed.
+(commit 9f0d4be)
 Task 5 — repository checks and bundle measurement. `pnpm test` (shared 10, api 17, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` passed; `pnpm build` then `pnpm measure` gave 881 gzipped bytes (baseline 835, delta +46), so `measure/baseline.json` was updated to 881 and `pnpm measure` then reports delta 0.
-Task 4 — manual real-browser check deferred by the user at plan-approval: "Approve. Defer the manual real-browser check task now: I will run it myself before release." Not run; the check task is checked off per the deferral. (checked at 63f790f)
+(commit 63f790f)
+Task 4 — manual real-browser check deferred by the user at plan-approval: "Approve. Defer the manual real-browser check task now: I will run it myself before release." Not run; the check task is checked off per the deferral. (checked at c7b95d4)
 
 Stale-statement sweep — tags, invalid tag, NewBookmark, POST /bookmarks, createdAt, Bookmark type (searched *.md and *.yml outside _plans)
 none found (README.md route list for packages/api remains accurate; scenarios/ notes describe the FIJIₕ run, not the code)
@@ -167,5 +171,6 @@ Reviewed head: c7b95d4ab2d8b65d2edc8ddfe3ce3d90d14cdffd
 - 2026-10-30 — Plan drafted from Jira FIJIH-66 (revision 2026-10-30T17:23:35.882+0100); issue assigned to Mattia Panzeri.
 - 2026-10-30 — Plan changes requested at plan-approval: "Request changes: add a manual real-browser check task (a person opens the page and confirms tags show after each title and nothing shows for a bookmark without tags), run by me. Answers: 1) no form input; 2) drop an empty-after-trim tag silently; 3) yes, 400 invalid tag; 4) confirmed as you read them." Applied: manual check task added (AC 4, Testing Strategy), decisions 1-4 recorded, AC 1-2 updated for the silent drop and non-array/non-string 400, defaults recorded.
 - 2026-10-30 — Approved: plan-approval — Approve. Defer the manual real-browser check task now: I will run it myself before release. (answering: whether to defer or keep the planned manual real-browser check task (AC 4, run by the user))
+- 2026-10-30 — Local QA review finalize: reconciled Implementation Record with committed evidence by adding `(commit <hash>)` lines under the Task 1, 2, 3, and 5 entries (each added by its own commit); corrected the Task 4 entry's citation to c7b95d4, the commit that checked off the manual check task. All tasks checked with evidence; no discrepancies. Residual risks: AC-4 manual real-browser check deferred by the user (run before release); minor finding in quality review: isValidTag counts UTF-16 code units (packages/shared/src/index.ts:53).
 - 2026-10-30 — Implementation complete: shared, api, and web tags with tests; web bundle baseline moved 835 to 881 bytes; manual real-browser check deferred by the user.
 - 2026-10-30 — Approved: implementation-approval — automatic (no risk triggers)
