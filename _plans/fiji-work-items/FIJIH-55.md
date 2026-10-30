@@ -63,9 +63,9 @@ Product decisions (answered by the user at plan approval; no open product questi
   - [x] `BookmarkStore.add` validates tags through the shared helpers, throws `ValidationError("invalid tag")` before storing anything when `tags` is not an array, an element is not a string, or a tag is empty after trimming, too long, or contains whitespace, and stores the normalised tags (default `[]`).
   - [x] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store.
   - [x] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `[]`; 33-character tag, tag with internal whitespace, non-array `tags`, non-string element, and empty-after-trim tag each answer `400 {"error":"invalid tag"}` and the list is unchanged; tags come back in first-occurrence order; GET returns each bookmark's tags.
-- [ ] T3. Web rendering in `packages/web/src/render.ts` (AC: 4, 5)
-  - [ ] After the title link, render the tags joined by `", "` in their own element (text content only, no `innerHTML`); render nothing extra when `tags` is empty.
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element or text when `tags` is `[]`; update the existing fixtures to the new `Bookmark` shape.
+- [x] T3. Web rendering in `packages/web/src/render.ts` (AC: 4, 5)
+  - [x] After the title link, render the tags joined by `", "` in their own element (text content only, no `innerHTML`); render nothing extra when `tags` is empty.
+  - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element or text when `tags` is `[]`; update the existing fixtures to the new `Bookmark` shape.
 - [ ] T4. Repository checks and bundle size (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
   - [ ] Run `pnpm build` then `pnpm measure`, and update `measure/baseline.json` to the new `web_bundle_gzip_bytes` in this change (AGENTS.md; the user decided the baseline is updated).
@@ -115,11 +115,14 @@ Product decisions (answered by the user at plan approval; no open product questi
 - `packages/api/src/app.ts`
 - `packages/api/src/store.test.ts`
 - `packages/api/src/app.test.ts`
+- `packages/web/src/render.ts`
+- `packages/web/src/render.test.ts`
 
 ## Implementation Record
 
 Task T1 — shared tag model: `Bookmark.tags`, `NewBookmark.tags?`, `isValidTag`, `normalizeTags` with unit tests. Shared test, lint, typecheck passed.
 Task T2 — API store validates and normalises tags before storing (invalid tag -> 400), route passes `body.tags`; store and HTTP tests added. API test, lint, typecheck passed.
+Task T3 — web renders tags in a `span.tags` (textContent only) between link and Remove, nothing when empty; fixtures updated, two tests added. Web test, lint, typecheck passed.
 
 ## Validation Evidence
 
