@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: review-remediation
+  transition: review-remediated
   attempt: 1
 quality:
   gate: concerns
@@ -167,6 +167,12 @@ Reviewed head: c7b95d4ab2d8b65d2edc8ddfe3ce3d90d14cdffd
 ## Review Record
 
 Copilot pass (PR #15, attempt 1): Copilot review 5715448252 (COMMENTED, 2026-10-30T16:34:37Z, after the 16:32:50Z request) raised no review threads and no open issues. Its overview note that the AC-4 real-browser check remains deferred repeats a user-accepted deferral (Approve at plan-approval and local-qa-review), not a finding. Dispositions: none; no fix commits; no re-review requested.
+
+Review remediation (PR #15, attempt 1, reviewer `duckyduff369`, QA Engineer):
+- PRR_kwDOVaYq_M8AAAABVKtjug (CHANGES_REQUESTED, "Tags should be sorted alphabetically in the response."): clarification-required. Alphabetical order would change AC 1 and decision 4 (dedupe keeps first occurrence in input order). Replied in a pull request conversation comment (issuecomment-6528050657) asking whether to sort; review not dismissed; re-review requested.
+- PRRT_kwDOVaYq_M6yDadn ("Please reject an empty-string tag explicitly."): clarification-required. Rejecting would change AC 1 and decision 2 (empty-after-trim tags dropped silently). Replied on the thread (discussion_r4426043756) asking whether to reject with 400 `invalid tag`; thread left unresolved.
+- PRR_kwDOVaYq_M8AAAABVKth9Q (COMMENTED, empty body): no request or question; nothing to answer.
+No fix commits.
 
 ## Change Log
 
