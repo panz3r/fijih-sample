@@ -81,8 +81,8 @@ Open product questions (also under the Plan result's `risks`; the criteria below
   - [x] `packages/web/src/render.ts`: after the title link, append an element whose text is `tags.join(", ")`, only when the bookmark has tags; set text with `textContent`.
   - [x] Keep the title and tags together on the left so the Remove button stays right-aligned (the `li` uses `justify-content: space-between` in `packages/web/index.html`).
   - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title with `", "`; no tags element or text when `tags` is empty; existing fixtures gain `tags`.
-- [ ] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 6)
-- [ ] Add the changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor bump for `@sample/shared`, `@sample/api`, `@sample/web`; summary `Add tags to bookmarks`) (AC: 7)
+- [x] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 6)
+- [x] Add the changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor bump for `@sample/shared`, `@sample/api`, `@sample/web`; summary `Add tags to bookmarks`) (AC: 7)
 - [ ] Run `pnpm build` then `pnpm measure`, and update `measure/baseline.json` `web_bundle_gzip_bytes` to the reported value (AC: 7)
 
 ## Engineering Context
@@ -123,6 +123,7 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 - packages/api/src/store.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- .changeset/fijih-67-add-tags-to-bookmarks.md
 
 ## Implementation Record
 
@@ -132,11 +133,17 @@ Task 2 — API tags: `store.add` validates tags after the URL check (before the 
 
 Task 3 — web tags: `render.ts` wraps the title link and a `span.tags` (text ` news, tech`, built with `textContent`, omitted when empty) in a `span` so the Remove button stays right-aligned; no change to `index.html` needed. Existing fixtures gained `tags`.
 
+Task 4 — root checks (checked at 0 commits after the web commit): `pnpm test`, `pnpm lint`, `pnpm typecheck` all pass from the repository root.
+
+Task 5 — changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor for shared, api, web; summary `Add tags to bookmarks`).
+
 ## Validation Evidence
 
 - AC-1: passed — API test `stores normalized tags` (`["  News","news","Tech"]` -> `["news","tech"]`) and shared tests.
 - AC-2: passed — API test `defaults tags to an empty array`.
 - AC-3: passed — API tests for 33 chars, inner whitespace, empty, non-array, non-string (400 `invalid tag`, nothing stored); 32-char accepted.
+- AC-6: passed — root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass.
+- AC-7: pending baseline update (see task 6).
 - AC-5: passed — web tests: tags after the title joined with `, `; no `.tags` element when empty.
 - AC-4: passed — API test GET returns tags.
 
