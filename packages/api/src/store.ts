@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { isValidBookmarkUrl, isValidTag, normalizeTags, normalizeUrl, sortByCreatedDesc, type Bookmark, type NewBookmark } from "@sample/shared";
+import { isValidBookmarkUrl, isValidTag, normalizeTags, normalizeUrl, sortByCreatedDesc, type Bookmark, type NewBookmarkInput } from "@sample/shared";
 
 export class ValidationError extends Error {}
 
@@ -11,7 +11,7 @@ export class BookmarkStore {
     return sortByCreatedDesc([...this.items.values()].reverse());
   }
 
-  add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
+  add(input: NewBookmarkInput, now: () => Date = () => new Date()): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
     const tags = this.parseTags(input.tags);

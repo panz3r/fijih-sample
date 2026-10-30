@@ -41,6 +41,11 @@ describe("isValidTag", () => {
     expect(isValidTag("")).toBe(false);
     expect(isValidTag("   ")).toBe(false);
   });
+  it("treats Unicode NEXT LINE (U+0085) as whitespace", () => {
+    expect(isValidTag("news\u0085tech")).toBe(false);
+    expect(isValidTag("\u0085")).toBe(false);
+    expect(isValidTag("\u0085news\u0085")).toBe(true);
+  });
 });
 
 describe("normalizeTags", () => {
@@ -49,6 +54,9 @@ describe("normalizeTags", () => {
   });
   it("deduplicates across case and spaces, keeping first-occurrence order", () => {
     expect(normalizeTags(["b", " A", "B ", "a", "c"])).toEqual(["b", "a", "c"]);
+  });
+  it("trims U+0085 at the edges", () => {
+    expect(normalizeTags(["\u0085News\u0085", "news"])).toEqual(["news"]);
   });
   it("returns an empty array for empty input", () => {
     expect(normalizeTags([])).toEqual([]);

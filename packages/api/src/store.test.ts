@@ -31,6 +31,8 @@ describe("BookmarkStore", () => {
     ["non-string element", ["ok", 5]],
     ["empty after trim", ["ok", "  "]],
     ["invalid duplicate", ["ok", "ok", ""]],
+    ["NEXT LINE inside", ["news\u0085tech"]],
+    ["NEXT LINE only", ["\u0085"]],
   ])("rejects invalid tags (%s) and stores nothing", (_name, tags) => {
     const store = new BookmarkStore();
     expect(() => store.add({ url: "https://example.com/a", title: "A", tags })).toThrow("invalid tag");

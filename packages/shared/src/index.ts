@@ -6,19 +6,30 @@ export interface Bookmark {
   tags: string[];
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: unknown };
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: string[] };
+
+/** Untrusted input at the HTTP/store boundary: `tags` is validated at runtime. */
+export type NewBookmarkInput = Pick<Bookmark, "url" | "title"> & { tags?: unknown };
 
 const MAX_TAG_LENGTH = 32;
 
+// `\s` and `String.prototype.trim` omit U+0085 (NEXT LINE), so it is added explicitly.
+const TAG_WHITESPACE = /[\s\u0085]/;
+const TAG_EDGE_WHITESPACE = /^[\s\u0085]+|[\s\u0085]+$/g;
+
+function trimTag(value: string): string {
+  return value.replace(TAG_EDGE_WHITESPACE, "");
+}
+
 /** True when the tag, after trimming, is non-empty, at most 32 characters, and has no whitespace. */
 export function isValidTag(value: string): boolean {
-  const tag = value.trim();
-  return tag.length > 0 && tag.length <= MAX_TAG_LENGTH && !/\s/.test(tag);
+  const tag = trimTag(value);
+  return tag.length > 0 && tag.length <= MAX_TAG_LENGTH && !TAG_WHITESPACE.test(tag);
 }
 
 /** Trims and lower-cases each tag and drops duplicates, keeping the first occurrence order. */
 export function normalizeTags(tags: readonly string[]): string[] {
-  return [...new Set(tags.map((tag) => tag.trim().toLowerCase()))];
+  return [...new Set(tags.map((tag) => trimTag(tag).toLowerCase()))];
 }
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
