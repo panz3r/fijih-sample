@@ -8,9 +8,9 @@ source:
   revision: "2026-10-30T17:23:35.882+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -177,3 +177,4 @@ Copilot pass (PR #15, attempt 1): Copilot review 5715448252 (COMMENTED, 2026-10-
 - 2026-10-30 — Implementation complete: shared, api, and web tags with tests; web bundle baseline moved 835 to 881 bytes; manual real-browser check deferred by the user.
 - 2026-10-30 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-30 — Approved: local-qa-review — Approve.
+- 2026-10-30 — Approved: ready-for-review — Approve.
