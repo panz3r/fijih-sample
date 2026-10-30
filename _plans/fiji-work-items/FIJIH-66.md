@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -64,10 +64,10 @@ so that I can group my bookmarks.
 - [x] Show tags in `packages/web` (AC: 4, 5)
   - [x] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
   - [x] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
-- [ ] Manual real-browser check, run by the user (AC: 4) — a person (the user; no tool or agent runs it) opens the page in a real browser and confirms tags show after each title and nothing shows for a bookmark without tags. Implementation pauses and asks the user to run it, and records the user's reported result in Validation Evidence.
-  - [ ] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
-  - [ ] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
-  - [ ] Confirm bookmark A shows `news, tech` after its title and bookmark B shows no tag text or element. The bookmarks this check creates are throwaway data in the in-memory store.
+- [x] Manual real-browser check, run by the user (AC: 4) — a person (the user; no tool or agent runs it) opens the page in a real browser and confirms tags show after each title and nothing shows for a bookmark without tags. Implementation pauses and asks the user to run it, and records the user's reported result in Validation Evidence.
+  - [x] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
+  - [x] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
+  - [x] Confirm bookmark A shows `news, tech` after its title and bookmark B shows no tag text or element. The bookmarks this check creates are throwaway data in the in-memory store.
 - [x] Run the repository checks and the bundle measurement (AC: 4, 5)
   - [x] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root and record results in Validation Evidence.
   - [x] Run `pnpm build` then `pnpm measure`; if the gzipped web bundle moves from `measure/baseline.json` (835 bytes), update the baseline in this change (AGENTS.md).
@@ -120,14 +120,24 @@ so that I can group my bookmarks.
 - packages/web/src/render.test.ts
 - measure/baseline.json
 
+
 ## Implementation Record
 
 Task 1 — shared tag support: `tags` on `Bookmark`/`NewBookmark`, `normalizeTags`, `isValidTag` with tests. `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
 Task 2 — API accepts, validates, stores, and returns tags (`ValidationError("invalid tag")` from `BookmarkStore.add`, raw `body.tags` passed through in `app.ts`). `pnpm --filter @sample/api test` 17 passed; api typecheck passed.
 Task 3 — web renders tags after the title in `<span class="tags">`, only when non-empty. `pnpm --filter @sample/web test` 4 passed; web typecheck passed.
 Task 5 — repository checks and bundle measurement. `pnpm test` (shared 10, api 17, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` passed; `pnpm build` then `pnpm measure` gave 881 gzipped bytes (baseline 835, delta +46), so `measure/baseline.json` was updated to 881 and `pnpm measure` then reports delta 0.
+Task 4 — manual real-browser check deferred by the user at plan-approval: "Approve. Defer the manual real-browser check task now: I will run it myself before release." Not run; the check task is checked off per the deferral. (checked at 63f790f)
+
+Stale-statement sweep — tags, invalid tag, NewBookmark, POST /bookmarks, createdAt, Bookmark type (searched *.md and *.yml outside _plans)
+none found (README.md route list for packages/api remains accurate; scenarios/ notes describe the FIJIₕ run, not the code)
 
 ## Validation Evidence
+AC-1: passed — shared normalizeTags tests (10 passed), store and app tests (api 17 passed): trim, lower-case, silent drop, dedupe first-occurrence, default [], 201 body.
+AC-2: passed — api app.test.ts and store.test.ts: 33 characters, whitespace, non-array, non-string element answer 400 {"error":"invalid tag"} and create nothing; 32 characters accepted.
+AC-3: passed — app.test.ts: GET /bookmarks returns normalized tags, [] when none.
+AC-4: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval); jsdom render tests (web 4 passed) cover tags after the title and no element when empty.
+AC-5: passed — pnpm test (shared 10, api 17, web 4), pnpm lint exit 0, pnpm typecheck passed from the root; pnpm build then pnpm measure 881 bytes, baseline updated from 835.
 
 ## Quality Gate
 
@@ -138,3 +148,4 @@ Task 5 — repository checks and bundle measurement. `pnpm test` (shared 10, api
 - 2026-10-30 — Plan drafted from Jira FIJIH-66 (revision 2026-10-30T17:23:35.882+0100); issue assigned to Mattia Panzeri.
 - 2026-10-30 — Plan changes requested at plan-approval: "Request changes: add a manual real-browser check task (a person opens the page and confirms tags show after each title and nothing shows for a bookmark without tags), run by me. Answers: 1) no form input; 2) drop an empty-after-trim tag silently; 3) yes, 400 invalid tag; 4) confirmed as you read them." Applied: manual check task added (AC 4, Testing Strategy), decisions 1-4 recorded, AC 1-2 updated for the silent drop and non-array/non-string 400, defaults recorded.
 - 2026-10-30 — Approved: plan-approval — Approve. Defer the manual real-browser check task now: I will run it myself before release. (answering: whether to defer or keep the planned manual real-browser check task (AC 4, run by the user))
+- 2026-10-30 — Implementation complete: shared, api, and web tags with tests; web bundle baseline moved 835 to 881 bytes; manual real-browser check deferred by the user.
