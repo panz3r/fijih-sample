@@ -8,12 +8,12 @@ source:
   revision: 2026-10-30T10:45:12.771+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-55-add-bookmark-tags
   base_branch: null
@@ -137,6 +137,25 @@ Task T3 — web renders tags in a `span.tags` (textContent only) between link an
 
 ## Quality Gate
 
+Gate: concerns. Every criterion is evidenced and no finding remains; two residual risks remain.
+
+Acceptance trace:
+
+- AC-1: implementation `normalizeTags` (`packages/shared/src/index.ts`), `BookmarkStore.parseTags` defaulting `undefined` to `[]` (`packages/api/src/store.ts`), `createApp` passing `body.tags` (`packages/api/src/app.ts`); verification `normalizeTags` tests (`packages/shared/src/index.test.ts`), "stores normalised tags in first-occurrence order and defaults to []" (`packages/api/src/store.test.ts`), "accepts tags, defaults to [], and returns them from GET" (`packages/api/src/app.test.ts`, `201` body). Re-run passed at the reviewed head.
+- AC-2: implementation `isValidTag` (trim, non-empty, at most 32, no `\s`) and `parseTags` (non-array, non-string element, invalid tag all throw `ValidationError("invalid tag")` before `items.set`); verification `isValidTag` tests (32 accepted, 33, internal whitespace, empty, blank rejected), store `it.each` (too long, whitespace, non-array, `null`, non-string, empty-after-trim, invalid duplicate; store stays empty), "accepts a 32-character tag", HTTP `it.each` (`400 {"error":"invalid tag"}`, list length unchanged). Re-run passed.
+- AC-3: implementation `tags` required on `Bookmark` and set on every stored item; verification HTTP GET test (`["tech","news"]` and `[]`). Re-run passed.
+- AC-4: implementation `renderList` appends `span.tags` with `textContent = tags.join(", ")` after the link only when `tags` is non-empty (`packages/web/src/render.ts`); verification "shows tags after the title, joined by a comma and space" (`news, tech`, next sibling of the link) and "shows no tag element or text when tags is empty" (`packages/web/src/render.test.ts`). Re-run passed.
+- AC-5: Vitest tests in shared (9), api (19), web (4); root `pnpm test`, `pnpm lint`, `pnpm typecheck` re-run and passed at the reviewed head; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against `measure/baseline.json` (881).
+
+Findings: none.
+
+Residual risks:
+
+- Suspected: the 32-character limit counts UTF-16 code units (`String.length`), not characters, and is checked before lower-casing. Reproduced at the reviewed head: `isValidTag("😀".repeat(17))` is `false` (17 characters, length 34), and `normalizeTags(["İ".repeat(32)])` stores a tag of length 64. Confirm with a product decision on how AC-2's "32 characters" counts non-ASCII tags (code units, code points, or graphemes) and whether the limit also binds the stored, lower-cased tag.
+- Suspected: on the live page the tags sit visually centred between the title and the Remove button, because `packages/web/index.html` styles `li` as `display: flex; justify-content: space-between` and the tags are a third flex child; DOM order (title, tags, Remove) satisfies AC-4, but no live-app check was planned or run. Confirm with a browser screenshot of a tagged bookmark.
+
+Reviewed head: 09ad27eb9e9e6f2eb94b904767de6916173a1d77
+
 ## Review Record
 
 ## Change Log
@@ -145,3 +164,4 @@ Task T3 — web renders tags in a `span.tags` (textContent only) between link an
 - 2026-10-30: Plan approval requested changes (conditional approval): "Approve the plan. 1: no tags input on the form. 2: a non-array tags or a non-string element answers 400 {"error":"invalid tag"}; a tag empty after trimming is rejected with that 400; tags keep first-occurrence order. 3: yes, length and whitespace rules apply after trimming, as the plan reads it. 4: fine, update the baseline." Applied: Q1 to Q4 recorded as decided; AC 1, 2, 5 and tasks T1, T2, T4 updated; three defaults recorded in Engineering Context.
 - 2026-10-30: Approved: plan-approval — conditional: "Approve the plan. 1: no tags input on the form. 2: a non-array tags or a non-string element answers 400 {"error":"invalid tag"}; a tag empty after trimming is rejected with that 400; tags keep first-occurrence order. 3: yes, length and whitespace rules apply after trimming, as the plan reads it. 4: fine, update the baseline." (verified at 1fc9398)
 - 2026-10-30: Implementation complete (T1 to T4); Jira FIJIH-55 moved To Do to In Progress.
+- 2026-10-30: Approved: implementation-approval — automatic (no risk triggers)
