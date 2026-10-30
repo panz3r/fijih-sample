@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -66,9 +66,9 @@ Product decisions (answered by the user at plan approval; no open product questi
 - [x] T3. Web rendering in `packages/web/src/render.ts` (AC: 4, 5)
   - [x] After the title link, render the tags joined by `", "` in their own element (text content only, no `innerHTML`); render nothing extra when `tags` is empty.
   - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element or text when `tags` is `[]`; update the existing fixtures to the new `Bookmark` shape.
-- [ ] T4. Repository checks and bundle size (AC: 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
-  - [ ] Run `pnpm build` then `pnpm measure`, and update `measure/baseline.json` to the new `web_bundle_gzip_bytes` in this change (AGENTS.md; the user decided the baseline is updated).
+- [x] T4. Repository checks and bundle size (AC: 5)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
+  - [x] Run `pnpm build` then `pnpm measure`, and update `measure/baseline.json` to the new `web_bundle_gzip_bytes` in this change (AGENTS.md; the user decided the baseline is updated).
 
 ## Engineering Context
 
@@ -109,6 +109,7 @@ Product decisions (answered by the user at plan approval; no open product questi
 
 ## File List
 
+- `measure/baseline.json`
 - `packages/shared/src/index.ts`
 - `packages/shared/src/index.test.ts`
 - `packages/api/src/store.ts`
@@ -120,11 +121,19 @@ Product decisions (answered by the user at plan approval; no open product questi
 
 ## Implementation Record
 
+Task T4 — root checks and bundle size: root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (was 835); `measure/baseline.json` updated to 881 (user decision Q4).
+
 Task T1 — shared tag model: `Bookmark.tags`, `NewBookmark.tags?`, `isValidTag`, `normalizeTags` with unit tests. Shared test, lint, typecheck passed.
 Task T2 — API store validates and normalises tags before storing (invalid tag -> 400), route passes `body.tags`; store and HTTP tests added. API test, lint, typecheck passed.
 Task T3 — web renders tags in a `span.tags` (textContent only) between link and Remove, nothing when empty; fixtures updated, two tests added. Web test, lint, typecheck passed.
 
 ## Validation Evidence
+
+- AC-1: passed — shared `normalizeTags` tests and API store/HTTP tests (trim, lower-case, first-occurrence dedup, `[]` default, `201` body includes tags).
+- AC-2: passed — store and HTTP tests answer `400 {"error":"invalid tag"}` with nothing stored for 33 chars, internal whitespace, non-array, non-string element, empty-after-trim; 32 chars accepted.
+- AC-3: passed — `app.test.ts` GET returns `tags` on every bookmark.
+- AC-4: passed — `render.test.ts` shows `news, tech` after the title and no tag element when empty.
+- AC-5: passed — Vitest tests in shared, api, web; root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed; baseline updated to 881 after `pnpm build` + `pnpm measure`.
 
 ## Quality Gate
 
@@ -135,3 +144,4 @@ Task T3 — web renders tags in a `span.tags` (textContent only) between link an
 - 2026-10-30: Drafted from Jira FIJIH-55 (revision 2026-10-30T10:45:12.771+0100); issue assigned to the current user.
 - 2026-10-30: Plan approval requested changes (conditional approval): "Approve the plan. 1: no tags input on the form. 2: a non-array tags or a non-string element answers 400 {"error":"invalid tag"}; a tag empty after trimming is rejected with that 400; tags keep first-occurrence order. 3: yes, length and whitespace rules apply after trimming, as the plan reads it. 4: fine, update the baseline." Applied: Q1 to Q4 recorded as decided; AC 1, 2, 5 and tasks T1, T2, T4 updated; three defaults recorded in Engineering Context.
 - 2026-10-30: Approved: plan-approval — conditional: "Approve the plan. 1: no tags input on the form. 2: a non-array tags or a non-string element answers 400 {"error":"invalid tag"}; a tag empty after trimming is rejected with that 400; tags keep first-occurrence order. 3: yes, length and whitespace rules apply after trimming, as the plan reads it. 4: fine, update the baseline." (verified at 1fc9398)
+- 2026-10-30: Implementation complete (T1 to T4); Jira FIJIH-55 moved To Do to In Progress.
