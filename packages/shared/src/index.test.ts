@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, isValidTag, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,32 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("trims, lower-cases, and drops tags that are empty after trimming", () => {
+    expect(normalizeTags(["  News ", "TECH", "", "   "])).toEqual(["news", "tech"]);
+  });
+  it("deduplicates after normalization keeping first occurrence order", () => {
+    expect(normalizeTags(["b", "A", " B ", "a", "c"])).toEqual(["b", "a", "c"]);
+  });
+  it("returns an empty array for no tags", () => {
+    expect(normalizeTags([])).toEqual([]);
+  });
+});
+
+describe("isValidTag", () => {
+  it("accepts 32 characters and rejects 33", () => {
+    expect(isValidTag("a".repeat(32))).toBe(true);
+    expect(isValidTag("a".repeat(33))).toBe(false);
+  });
+  it("checks length after trimming", () => {
+    expect(isValidTag(`  ${"a".repeat(32)}  `)).toBe(true);
+  });
+  it("rejects inner space and tab but allows padding", () => {
+    expect(isValidTag("two words")).toBe(false);
+    expect(isValidTag("two\twords")).toBe(false);
+    expect(isValidTag("  padded  ")).toBe(true);
   });
 });
