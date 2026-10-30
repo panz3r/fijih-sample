@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 quality:
   gate: pass
@@ -193,6 +193,18 @@ Copilot pass (automated-review), review 5718172559 on 349dc69; re-review 5718227
 - Thread PRRT_kwDOVaYq_M6yISKY (`_plans/fiji-work-items/FIJIH-67.md`, duplicate `checkpoint` key in frontmatter): `valid` at 349dc69; already fixed by f531ddd (single `checkpoint` key), pushed. Reply https://github.com/panz3r/fijih-sample/pull/16#discussion_r4428124501; resolved. No new fix commit, no code change.
 - CI: `ci` run 41121686683 on 349dc69 and run 41122548611 on f531ddd (only the work-item file differs) both succeeded.
 
+Jira handoff draft:
+
+FIJI-CONTEXT:FIJIH-67:fiji/orchestrate-development/v1
+
+Implementation outcome: optional bookmark tags are implemented across `packages/shared`, `packages/api`, and `packages/web` in pull request #16 (https://github.com/panz3r/fijih-sample/pull/16), approved by the QA Engineer duckyduff369 at f531ddd. `POST /bookmarks` accepts an optional `tags` array (trimmed, lower-cased, deduplicated, default `[]`), `GET /bookmarks` returns each bookmark's tags, and the web page shows them after the title joined with ", ". The change adds the changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor for the three packages) and updates `measure/baseline.json` `web_bundle_gzip_bytes` from 835 to 895.
+
+Validation: root `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass; the `ci` workflow's `test` job and its other jobs succeeded on f531ddd (run 41122548611).
+
+Decisions and constraints (approved answers to the plan's open questions): tags can be set only through the API, because the web add form has no tags input; an empty-after-trim tag, a non-array `tags`, or a non-string element answers 400 `{"error":"invalid tag"}`; stored order is input order, keeping the first occurrence of a duplicate; the 32-character limit and the whitespace rule apply to the trimmed, lower-cased tag and count Unicode code points (32 is valid); validation order in `store.add` is title, URL, tags, duplicate URL, so an invalid URL keeps answering the URL error. Zero-width characters such as U+200B are not `\s` and are accepted.
+
+Follow-ups and residual risks: none filed or found. Out of scope per the Jira issue and not done: filtering or searching by tag, and editing the tags of an existing bookmark. No operational or documentation steps remain beyond the repository ruleset's required `test` check and one approving review.
+
 ## Change Log
 
 - Drafted from Jira FIJIH-67 at revision 2026-10-30T21:06:55.500+0100 (after assigning the issue to Mattia Panzeri), base `main` at c9c9454.
@@ -208,3 +220,4 @@ Copilot pass (automated-review), review 5718172559 on 349dc69; re-review 5718227
 - Copilot findings pass: 1 finding (duplicate frontmatter key) fixed by f531ddd and resolved; Copilot re-review clear. Set checkpoint `ready-for-review`.
 - Approved: ready-for-review — Approve.
 - Ready for review: marked pull request #16 ready and requested review from `duckyduff369` (QA Engineer, the only other member of the owning team; the author is excluded). Set phase `remote-review`, transition `review-requested`.
+- Jira handoff draft written; set checkpoint `jira-handoff`, transition `handoff-drafted`.
