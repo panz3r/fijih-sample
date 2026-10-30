@@ -8,10 +8,10 @@ source:
   revision: "2026-10-30T17:23:35.882+0100"
 lifecycle:
   status: active
-  phase: remote-review
-  checkpoint: review-remediation
+  phase: implementation
+  checkpoint: null
   transition: review-remediated
-  attempt: 1
+  attempt: 2
 quality:
   gate: concerns
 artifacts:
@@ -37,14 +37,14 @@ so that I can group my bookmarks.
 - Out of scope (from the issue): filtering or searching by tag; editing tags of an existing bookmark.
 - Decisions (from the user at plan approval):
   1. The web add form (`packages/web/index.html`, `packages/web/src/main.ts`) gets no tags input; the form is unchanged and tags can be set only through the API.
-  2. A tag that is empty after trimming (`""` or `"   "`) is dropped silently; it does not make the request fail.
+  2. A tag that is empty after trimming (`""` or `"   "`) is rejected with 400 `{"error":"invalid tag"}` (changed by the Scope change in the Change Log).
   3. A `tags` value that is not an array, or an element that is not a string, makes `POST /bookmarks` answer 400 `{"error":"invalid tag"}`.
-  4. Confirmed as recorded in AC 1-2: the 32-character limit and the whitespace rule are checked after trimming, whitespace means any `/\s/` character, and dedupe keeps the first occurrence in input order.
+  4. Confirmed as recorded in AC 1-2: the 32-character limit and the whitespace rule are checked after trimming, whitespace means any `/\s/` character, duplicates are removed after trimming and lower-casing, and the resulting tags are sorted alphabetically in ascending code-unit order (changed by the Scope change in the Change Log).
 
 ## Acceptance Criteria
 
-1. `POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed and lower-cased, tags that are empty after trimming are dropped silently, and duplicates (after trimming and lower-casing) are removed, keeping the first occurrence in input order. When `tags` is omitted, the created bookmark has `tags: []`. The 201 response body includes the normalized `tags`.
-2. A tag that, after trimming, is longer than 32 characters or contains any whitespace character makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created. A tag of exactly 32 characters is accepted. A `tags` value that is not an array, or an array element that is not a string, also makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created.
+1. `POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed and lower-cased, and duplicates (after trimming and lower-casing) are removed. The resulting tags are sorted alphabetically, in ascending code-unit order (the default `Array.prototype.sort` order). When `tags` is omitted, the created bookmark has `tags: []`. The 201 response body includes the normalized, sorted `tags`.
+2. A tag that, after trimming, is empty, is longer than 32 characters, or contains any whitespace character makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created. A tag of exactly 32 characters is accepted. A `tags` value that is not an array, or an array element that is not a string, also makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created.
 3. `GET /bookmarks` returns a `tags` array on every bookmark, holding the normalized tags it was created with (`[]` when none).
 4. The web page shows each bookmark's tags after its title, joined by `", "` (for example `news, tech`). When a bookmark has no tags, no tag text or tag element is rendered for it. A person confirms this in a real browser (manual check task below).
 5. Vitest unit tests in `packages/shared`, `packages/api`, and `packages/web` cover the new behaviour in AC 1–4, and `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
@@ -64,6 +64,11 @@ so that I can group my bookmarks.
 - [x] Show tags in `packages/web` (AC: 4, 5)
   - [x] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
   - [x] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
+- [ ] Scope change: sort tags and reject empty tags in `packages/shared` and `packages/api` (AC: 1, 2, 3, 5; Scope change in Change Log)
+  - [ ] `packages/shared`: `normalizeTags` sorts its result (default `Array.prototype.sort`) and no longer drops empty tags; `isValidTag` returns false for an empty-after-trim tag; update the shared tests (sorted order, `""` and `"   "` invalid).
+  - [ ] `packages/api` `store.ts`: `BookmarkStore.add` rejects an empty-after-trim tag with `ValidationError("invalid tag")`; update `store.test.ts` (sorted order, `""` and `"   "` throw and store nothing).
+  - [ ] `packages/api` `app.test.ts`: POST with `["b","a"]` returns `["a","b"]`; POST with `[""]` and `["   "]` answer 400 `{"error":"invalid tag"}` and the list is unchanged; replace the old `["", "  ", "News"]` silent-drop test.
+  - [ ] Re-run `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm measure`; update `measure/baseline.json` if the bundle moves.
 - [x] Manual real-browser check, run by the user (AC: 4) — a person (the user; no tool or agent runs it) opens the page in a real browser and confirms tags show after each title and nothing shows for a bookmark without tags. Implementation pauses and asks the user to run it, and records the user's reported result in Validation Evidence.
   - [x] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
   - [x] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
@@ -184,3 +189,6 @@ No fix commits.
 - 2026-10-30 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-30 — Approved: local-qa-review — Approve.
 - 2026-10-30 — Approved: ready-for-review — Approve.
+- 2026-10-30 — Re-entry 2: user-request — review-remediation presented at 611cfa4, with the user's decision: "Sort: yes, sort tags alphabetically in the response. Reject: yes, reject an empty-after-trim tag with 400 {\"error\":\"invalid tag\"}. AC 1 and AC 2 change accordingly."
+- 2026-10-30 — Scope change: "Sort: yes, sort tags alphabetically in the response. Reject: yes, reject an empty-after-trim tag with 400 {\"error\":\"invalid tag\"}. AC 1 and AC 2 change accordingly." — review-remediation checkpoint at 611cfa4. AC 1 and AC 2 reworded; Product Context decisions 2 and 4 rewritten; AC 3 keeps its wording; task "Scope change: sort tags and reject empty tags" appended; AC-4 manual check stays deferred.
+- 2026-10-30 — Approved: scope change — "Confirmed: approve AC 1 and AC 2 with exactly that wording."
