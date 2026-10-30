@@ -7,7 +7,8 @@ export class BookmarkStore {
   private readonly items = new Map<string, Bookmark>();
 
   list(): Bookmark[] {
-    return sortByCreatedDesc([...this.items.values()]);
+    // Newest insertion first before the stable sort, so bookmarks created in the same millisecond list newest first too.
+    return sortByCreatedDesc([...this.items.values()].reverse());
   }
 
   add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
