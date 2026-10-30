@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: review-remediated
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 quality:
   gate: concerns
@@ -143,6 +143,9 @@ Task 6 — Scope change (sorted tags, empty tag rejected): `normalizeTags` now s
 Stale-statement sweep — tags, invalid tag, NewBookmark, POST /bookmarks, createdAt, Bookmark type (searched *.md and *.yml outside _plans)
 none found (README.md route list for packages/api remains accurate; scenarios/ notes describe the FIJIₕ run, not the code)
 
+Stale-statement sweep — silently, first occurrence, normalizeTags, isValidTag, invalid tag, empty after trimming, sorted (searched *.md, *.yml outside _plans, and code comments)
+none found (scenarios/S1.md line 13 restates the original Jira story's tag rule as scenario input, not code behaviour, and is left as written; no comment or doc says empty tags are dropped or that input order is kept)
+
 ## Validation Evidence
 AC-1: passed — shared normalizeTags tests (12 passed), store and app tests (api 22 passed): trim, lower-case, dedupe, ascending code-unit sort, default [], sorted 201 body.
 AC-2: passed — shared isValidTag tests and api app.test.ts and store.test.ts: empty string, empty after trim, 33 characters, whitespace, non-array, non-string element answer 400 {"error":"invalid tag"} and create nothing; 32 characters accepted.
@@ -194,3 +197,4 @@ No fix commits.
 - 2026-10-30 — Re-entry 2: user-request — review-remediation presented at 611cfa4, with the user's decision: "Sort: yes, sort tags alphabetically in the response. Reject: yes, reject an empty-after-trim tag with 400 {\"error\":\"invalid tag\"}. AC 1 and AC 2 change accordingly."
 - 2026-10-30 — Scope change: "Sort: yes, sort tags alphabetically in the response. Reject: yes, reject an empty-after-trim tag with 400 {\"error\":\"invalid tag\"}. AC 1 and AC 2 change accordingly." — review-remediation checkpoint at 611cfa4. AC 1 and AC 2 reworded; Product Context decisions 2 and 4 rewritten; AC 3 keeps its wording; task "Scope change: sort tags and reject empty tags" appended; AC-4 manual check stays deferred.
 - 2026-10-30 — Approved: scope change — "Confirmed: approve AC 1 and AC 2 with exactly that wording."
+- 2026-10-30 — Implementation complete (re-entry 2): tags sorted in ascending code-unit order and empty-after-trim tags rejected with 400 invalid tag, with tests in shared and api; checks pass; web bundle unchanged at 881 bytes; manual real-browser check stays deferred by the user.
