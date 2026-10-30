@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: pass
@@ -188,6 +188,11 @@ Reviewed head: a7e6813d7d9d04e2b9db7bbc6e7c9c8db1571093
 
 ## Review Record
 
+Copilot pass (automated-review), review 5718172559 on 349dc69; re-review 5718227842 at f531ddd: approval recommended, no open issues.
+
+- Thread PRRT_kwDOVaYq_M6yISKY (`_plans/fiji-work-items/FIJIH-67.md`, duplicate `checkpoint` key in frontmatter): `valid` at 349dc69; already fixed by f531ddd (single `checkpoint` key), pushed. Reply https://github.com/panz3r/fijih-sample/pull/16#discussion_r4428124501; resolved. No new fix commit, no code change.
+- CI: `ci` run 41121686683 on 349dc69 and run 41122548611 on f531ddd (only the work-item file differs) both succeeded.
+
 ## Change Log
 
 - Drafted from Jira FIJIH-67 at revision 2026-10-30T21:06:55.500+0100 (after assigning the issue to Mattia Panzeri), base `main` at c9c9454.
@@ -200,3 +205,4 @@ Reviewed head: a7e6813d7d9d04e2b9db7bbc6e7c9c8db1571093
 - Finalize (Local QA review): added `(commit <hash>)` citations to the Implementation Record entries for Tasks 1, 2, 3, 5, and 6, each matched to the commit that added it; Task 4 keeps its existing `(checked at ba6c619)` citation. All seven acceptance criteria have Validation Evidence lines and committed evidence; no task or evidence discrepancies. Set checkpoint `local-qa-review`.
 - Approved: local-qa-review — Approve.
 - Delivery: existing changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` already holds the release entry (no new change intent commit); pushed `FIJIH-67-add-tags-to-bookmarks` and opened draft pull request #16 (`[FIJIH-67] Add tags to bookmarks`, label `enhancement`, base `main`), with Copilot review requested.
+- Copilot findings pass: 1 finding (duplicate frontmatter key) fixed by f531ddd and resolved; Copilot re-review clear. Set checkpoint `ready-for-review`.
