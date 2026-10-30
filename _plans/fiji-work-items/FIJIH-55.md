@@ -38,36 +38,37 @@ Source: Jira Story FIJIH-55 "Add tags to bookmarks" (no comments, no attachments
 - Out of scope (from the issue): "Filtering or searching by tag." and "Editing tags of an existing bookmark."
 - The issue's acceptance criteria are restated, made measurable, as Acceptance Criteria 1 to 5 below.
 
-Open product questions (also listed as plan risks; none blocks drafting):
+Product decisions (answered by the user at plan approval; no open product questions remain):
 
-- Q1. Tag input on the page: the issue says the page *shows* tags, but does not say whether the add form in `packages/web/index.html` / `packages/web/src/main.ts` gets a tags input. This plan assumes it does **not** (tags are set through the API only) until the user says otherwise.
-- Q2. Input edge cases the issue does not settle: the answer for a `tags` value that is not an array or holds a non-string element; whether a tag that is empty after trimming is dropped or rejected; and whether the stored order is the first-occurrence order of the input. The plan does not decide these; it awaits the user's answers.
-- Q3. Interpretation to confirm: the 32-character limit and the whitespace check apply to the tag *after* trimming (so `"  news  "` is valid and becomes `"news"`, a 32-character tag is valid, a 33-character one is not, and `"breaking news"` is invalid).
+- Q1 (decided). The add form in `packages/web/index.html` / `packages/web/src/main.ts` gets **no** tags input; tags are set through the API only.
+- Q2 (decided). A `tags` value that is not an array, or an array with a non-string element, answers `400 {"error":"invalid tag"}`; a tag that is empty after trimming is rejected with the same `400` (not dropped); the stored tags keep the first-occurrence order of the input.
+- Q3 (decided). The 32-character limit and the whitespace check apply to the tag *after* trimming (so `"  news  "` is valid and becomes `"news"`, a 32-character tag is valid, a 33-character one is not, and `"breaking news"` is invalid).
+- Q4 (decided). The change updates `measure/baseline.json` to the new gzipped web bundle size.
 
 ## Acceptance Criteria
 
-1. `POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed and lower-cased, and duplicates (compared after trimming and lower-casing) are removed. The `201` response body includes the resulting `tags`. When `tags` is omitted, the bookmark's `tags` is `[]`.
-2. When any tag, after trimming, is longer than 32 characters or contains whitespace, `POST /bookmarks` answers `400` with body `{"error":"invalid tag"}` and stores nothing. A tag of exactly 32 characters is accepted.
+1. `POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed and lower-cased, and duplicates (compared after trimming and lower-casing) are removed, keeping the first occurrence so the resulting tags are in first-occurrence order of the input. The `201` response body includes the resulting `tags`. When `tags` is omitted, the bookmark's `tags` is `[]`.
+2. `POST /bookmarks` answers `400` with body `{"error":"invalid tag"}` and stores nothing when `tags` is present but not an array, when any element is not a string, when any tag is empty after trimming, or when any tag, after trimming, is longer than 32 characters or contains whitespace. A tag of exactly 32 characters is accepted.
 3. `GET /bookmarks` returns a `tags` array on every bookmark (`[]` for a bookmark created without tags).
 4. The web page shows each bookmark's tags after its title, joined by `", "` (for example `news, tech`), and shows no tag text or tag element for a bookmark whose `tags` is empty.
-5. Vitest tests in `packages/shared`, `packages/api`, and `packages/web` cover criteria 1 to 4, and `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
+5. Vitest tests in `packages/shared`, `packages/api`, and `packages/web` cover criteria 1 to 4, and `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root. After `pnpm build`, `measure/baseline.json` holds the gzipped web bundle size `pnpm measure` prints.
 
 ## Tasks and Subtasks
 
 - [ ] T1. Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 5)
   - [ ] Add `tags: string[]` to `Bookmark`; let `NewBookmark` take an optional `tags`.
-  - [ ] Add a pure, exported tag normaliser (for example `normalizeTags`) that trims, lower-cases, and deduplicates, and a validity check (for example `isValidTag`) for the 32-character and no-whitespace rules, both applied after trimming.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces, 32 vs 33 characters, internal whitespace, empty input.
+  - [ ] Add a pure, exported tag normaliser (for example `normalizeTags`) that trims, lower-cases, and deduplicates keeping first-occurrence order, and a validity check (for example `isValidTag`) for the non-empty, 32-character, and no-whitespace rules, all applied after trimming.
+  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces with first-occurrence order kept, 32 vs 33 characters, internal whitespace, empty-after-trim tag, empty input.
 - [ ] T2. API store and route in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `BookmarkStore.add` validates tags through the shared helpers, throws `ValidationError("invalid tag")` before storing anything when a tag is invalid, and stores the normalised tags (default `[]`).
+  - [ ] `BookmarkStore.add` validates tags through the shared helpers, throws `ValidationError("invalid tag")` before storing anything when `tags` is not an array, an element is not a string, or a tag is empty after trimming, too long, or contains whitespace, and stores the normalised tags (default `[]`).
   - [ ] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store.
-  - [ ] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `[]`; 33-character tag and tag with internal whitespace answer `400 {"error":"invalid tag"}` and the list is unchanged; GET returns each bookmark's tags.
+  - [ ] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `[]`; 33-character tag, tag with internal whitespace, non-array `tags`, non-string element, and empty-after-trim tag each answer `400 {"error":"invalid tag"}` and the list is unchanged; tags come back in first-occurrence order; GET returns each bookmark's tags.
 - [ ] T3. Web rendering in `packages/web/src/render.ts` (AC: 4, 5)
   - [ ] After the title link, render the tags joined by `", "` in their own element (text content only, no `innerHTML`); render nothing extra when `tags` is empty.
   - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element or text when `tags` is `[]`; update the existing fixtures to the new `Bookmark` shape.
 - [ ] T4. Repository checks and bundle size (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the root.
-  - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, update `measure/baseline.json` to the new `web_bundle_gzip_bytes` in this change (AGENTS.md).
+  - [ ] Run `pnpm build` then `pnpm measure`, and update `measure/baseline.json` to the new `web_bundle_gzip_bytes` in this change (AGENTS.md; the user decided the baseline is updated).
 
 ## Engineering Context
 
@@ -80,8 +81,14 @@ Open product questions (also listed as plan risks; none blocks drafting):
 - Typing impact: adding the required `tags` field to `Bookmark` breaks the existing `render.test.ts` fixture and any other literal `Bookmark` value; T3 updates them.
 - No persistence or migration: the store is in memory, so there are no existing records to backfill.
 - Security: render tags with `textContent` only (user-supplied strings).
-- Not changed (adjacent, see Q1): the add form in `packages/web/index.html` and its submit handler in `packages/web/src/main.ts`.
+- Not changed (decided, Q1): the add form in `packages/web/index.html` and its submit handler in `packages/web/src/main.ts`.
 - Delivery (owned by `fiji-deliver-change`, not an Implementation task): the pull request changes packages, so it needs a changeset in `.changeset/` whose summary is "Add tags to bookmarks"; label `enhancement` (Story); reviewers from TEAMS.md (QA Engineer `duckyduff369`).
+
+### Defaults taken at plan approval
+
+- `tags: null` in the request body — treated as a non-array and answered `400 {"error":"invalid tag"}`; only an omitted `tags` (or `undefined`) defaults to `[]`.
+- An explicit empty array `tags: []` — valid, stored as `[]`.
+- Order of checks — type and empty-after-trim checks run on every element before deduplication, so one invalid element rejects the whole request even if it would have been a duplicate.
 
 ## Testing Strategy
 
@@ -89,7 +96,7 @@ Open product questions (also listed as plan risks; none blocks drafting):
 - Unit (api store): `BookmarkStore.add` with and without tags, invalid-tag rejection leaving the store unchanged.
 - Integration (api HTTP): `app.test.ts` exercises `POST /bookmarks` and `GET /bookmarks` over a real `node:http` server on an ephemeral port, as the existing tests do: happy path with tags, default `[]`, `400 {"error":"invalid tag"}` for each invalid kind.
 - Unit (web, jsdom): `renderList` output with tags and without tags.
-- Unhappy paths beyond the issue (non-array `tags`, non-string element, empty-after-trim tag) get tests once Q2 is answered.
+- Unhappy paths beyond the issue (non-array `tags`, non-string element, empty-after-trim tag) are tested in shared, store, and HTTP, per Q2.
 - No manual, live-app, or end-to-end check is required by the issue; none is planned.
 - Repository checks: `pnpm test`, `pnpm lint`, `pnpm typecheck`; `pnpm build` + `pnpm measure` for the bundle baseline.
 
@@ -113,3 +120,4 @@ Open product questions (also listed as plan risks; none blocks drafting):
 ## Change Log
 
 - 2026-10-30: Drafted from Jira FIJIH-55 (revision 2026-10-30T10:45:12.771+0100); issue assigned to the current user.
+- 2026-10-30: Plan approval requested changes (conditional approval): "Approve the plan. 1: no tags input on the form. 2: a non-array tags or a non-string element answers 400 {"error":"invalid tag"}; a tag empty after trimming is rejected with that 400; tags keep first-occurrence order. 3: yes, length and whitespace rules apply after trimming, as the plan reads it. 4: fine, update the baseline." Applied: Q1 to Q4 recorded as decided; AC 1, 2, 5 and tasks T1, T2, T4 updated; three defaults recorded in Engineering Context.
