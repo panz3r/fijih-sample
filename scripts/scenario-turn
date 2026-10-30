@@ -12,7 +12,7 @@
 # Script secrets (QA_GH_TOKEN, JIRA_*) are loaded from $FIJIH_SAMPLE_ENV (default: ~/.config/fijih-sample.env)
 # when that file exists. The session may use the shell, subagents, file tools inside this repository, the run
 # directory, and the temporary directories (where phase agents write their result files), and the MCP servers
-# named in $FIJIH_ALLOWED_MCP (default: atlassian-mcp-server github).
+# named in $FIJIH_ALLOWED_MCP (default: atlassian-mcp-server-sample github-mcp-server).
 set -euo pipefail
 
 die() { printf 'scenario-turn: %s\n' "$*" >&2; exit 1; }
@@ -54,7 +54,7 @@ ALLOW=(Bash Read Glob Grep Agent ToolSearch Skill TaskStop SendMessage)
 # Phase agents write their result files outside the worktree, usually under a temporary directory.
 TMP_REAL=$(CDPATH='' cd -- "${TMPDIR:-/tmp}" && pwd -P)
 for path in "$ROOT" "$DIR" /tmp /private/tmp "$TMP_REAL"; do ALLOW+=("Edit(/${path%/}/**)" "Write(/${path%/}/**)"); done
-for server in ${FIJIH_ALLOWED_MCP:-atlassian-mcp-server github}; do ALLOW+=("mcp__$server"); done
+for server in ${FIJIH_ALLOWED_MCP:-atlassian-mcp-server-sample github-mcp-server}; do ALLOW+=("mcp__$server"); done
 
 cd "$ROOT"
 claude -p ${MODEL[@]+"${MODEL[@]}"} ${RESUME[@]+"${RESUME[@]}"} "$MESSAGE" --output-format stream-json --verbose \
