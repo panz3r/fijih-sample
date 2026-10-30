@@ -69,10 +69,10 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 
 ## Tasks and Subtasks
 
-- [ ] Shared: add tag support to `packages/shared/src/index.ts` (AC: 1, 2, 3, 4)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags` to `NewBookmark`.
-  - [ ] Add a pure tag normalizer and validator (trim, lower-case, reject empty, whitespace, and over-32-code-point tags, deduplicate keeping first occurrences), with an exported 32-character limit constant.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts` for normalization, deduplication order, the 32/33 boundary, inner whitespace, empty after trim, and the empty default.
+- [x] Shared: add tag support to `packages/shared/src/index.ts` (AC: 1, 2, 3, 4)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags` to `NewBookmark`.
+  - [x] Add a pure tag normalizer and validator (trim, lower-case, reject empty, whitespace, and over-32-code-point tags, deduplicate keeping first occurrences), with an exported 32-character limit constant.
+  - [x] Unit tests in `packages/shared/src/index.test.ts` for normalization, deduplication order, the 32/33 boundary, inner whitespace, empty after trim, and the empty default.
 - [ ] API: accept, validate, store, and return tags (AC: 1, 2, 3, 4)
   - [ ] `packages/api/src/store.ts`: `add` normalizes `input.tags` (default `[]`), throws `ValidationError("invalid tag")` on an invalid tag or a non-array or non-string value, and stores `tags` on the bookmark.
   - [ ] `packages/api/src/app.ts`: pass `body.tags` from the POST body to `store.add`.
@@ -115,9 +115,16 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
 
+Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags` (typed `unknown` so the store can reject non-arrays), `MAX_TAG_LENGTH`, and `normalizeTags` (returns null on invalid input).
+
 ## Validation Evidence
+
+- AC-1: passed — shared `normalizeTags` tests (trim, lower-case, dedupe order); API level pending.
 
 ## Quality Gate
 
@@ -127,3 +134,4 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 
 - Drafted from Jira FIJIH-67 at revision 2026-10-30T21:06:55.500+0100 (after assigning the issue to Mattia Panzeri), base `main` at c9c9454.
 - Approved: plan-approval — Approve with the proposed answers to questions 1-6 (no tags input on the form; empty or non-string tags get 400 invalid tag; keep input order, first duplicate wins; limits on the trimmed lower-cased tag in code points, 32 valid; join with ", "). Noted item 7, no action.
+- Task 1 (shared) done: `pnpm --filter @sample/shared test` 8 passed; shared typecheck and lint pass.
