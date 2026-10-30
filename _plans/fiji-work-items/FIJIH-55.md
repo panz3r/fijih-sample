@@ -8,16 +8,16 @@ source:
   revision: 2026-10-30T10:45:12.771+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-55-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/14
   jira_context_comment_id: null
 ---
 
@@ -170,3 +170,5 @@ Reviewed head: 09ad27eb9e9e6f2eb94b904767de6916173a1d77
 - 2026-10-30: Implementation complete (T1 to T4); Jira FIJIH-55 moved To Do to In Progress.
 - 2026-10-30: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-10-30: Finalize (local QA review): all tasks T1 to T4 and acceptance criteria AC-1 to AC-5 have committed evidence on FIJIH-55-add-bookmark-tags since main; no discrepancies. Added `(commit <short hash>)` citations under the T1 to T4 Implementation Record entries (routine reconciliation). File List matches the committed changes. Quality gate `concerns` unchanged; checkpoint set to local-qa-review, transition qa-reviewed.
+- 2026-10-30: Approved: local-qa-review — Approve. Keep both residual risks as follow-ups, not for this change: the non-ASCII tag length counting rule (risk 1) and the tags layout in the browser (risk 2).
+- 2026-10-30: Delivery: changeset `.changeset/fijih-55-add-bookmark-tags.md` added (commit 6ce5c8e) and branch pushed; draft pull request #14 opened with label `enhancement` and Copilot review requested (Copilot's `review_requested` event confirmed on the timeline); no reviewers requested beyond Copilot.
