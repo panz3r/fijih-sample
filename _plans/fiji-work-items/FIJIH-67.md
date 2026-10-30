@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -140,6 +140,10 @@ Task 5 — changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor for s
 
 Task 6 — `pnpm build` then `pnpm measure` reported `web_bundle_gzip_bytes=895` (delta 60 from 835); `measure/baseline.json` updated to 895.
 
+Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `invalid tag`, `web_bundle_gzip_bytes`, list item markup
+
+none found (README.md, AGENTS.md, scenarios/ and code comments checked with `git grep`; scenario notes are historical records).
+
 ## Validation Evidence
 
 - AC-1: passed — API test `stores normalized tags` (`["  News","news","Tech"]` -> `["news","tech"]`) and shared tests.
@@ -161,3 +165,4 @@ Task 6 — `pnpm build` then `pnpm measure` reported `web_bundle_gzip_bytes=895`
 - Task 1 (shared) done: `pnpm --filter @sample/shared test` 8 passed; shared typecheck and lint pass.
 - Task 2 (API) done: `pnpm --filter @sample/api test` 14 passed; API typecheck and lint pass.
 - Task 3 (web) done: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint pass.
+- Stale-statement sweep: none found. Implementation complete; Jira FIJIH-67 moved To Do -> In Progress.
