@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
-import { createApp } from "./app.js";
+import { createApp } from "./app.ts";
 
 const server = createApp();
 let base = "";

@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import { BookmarkStore, ValidationError } from "./store.js";
+import { BookmarkStore, ValidationError } from "./store.ts";
 
 function send(res: ServerResponse, status: number, body?: unknown): void {
   res.writeHead(status, { "content-type": "application/json" });
