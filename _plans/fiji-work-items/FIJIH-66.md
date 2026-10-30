@@ -8,12 +8,12 @@ source:
   revision: "2026-10-30T17:23:35.882+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-66-add-tags-to-bookmarks
   base_branch: null
@@ -141,6 +141,25 @@ AC-5: passed — pnpm test (shared 10, api 17, web 4), pnpm lint exit 0, pnpm ty
 
 ## Quality Gate
 
+Gate: concerns
+
+Acceptance trace:
+- AC-1: implementation `normalizeTags` (packages/shared/src/index.ts), `validateTags`/`BookmarkStore.add` (packages/api/src/store.ts), raw `body.tags` pass-through (packages/api/src/app.ts); verification shared `normalizeTags` tests, store.test.ts default `[]` and normalization, app.test.ts 201 body with `["news","tech"]`, `[]` when omitted, `["", "  ", "News"]` → `["news"]`. Evidenced.
+- AC-2: implementation `isValidTag` (shared) and `validateTags` before any insert (store.ts); verification shared 32/33 and space/tab tests, store.test.ts 32 accepted and four rejection cases storing nothing, app.test.ts 400 `{"error":"invalid tag"}` with unchanged list for too long, whitespace, non-array, non-string element. Evidenced.
+- AC-3: implementation tags stored on `Bookmark` and returned by `store.list()`; verification app.test.ts GET returns `["news","tech"]` and `[]`. Evidenced.
+- AC-4: implementation `renderList` appends `<span class="tags">` after the link only when tags are non-empty (packages/web/src/render.ts); verification render.test.ts `news, tech` as the link's next sibling and no `.tags`/text for `[]`. Manual real-browser check: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval). Residual risk below.
+- AC-5: tests added in all three packages; re-run at the reviewed head: `pnpm test` (shared 10, api 17, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Bundle baseline 835 → 881 recorded in Implementation Record; CI `measure` job runs on `pull_request`. Evidenced.
+
+Findings:
+- minor — packages/shared/src/index.ts:53-56: `isValidTag` measures length in UTF-16 code units (`trimmed.length`), not characters, so a tag of 20 emoji (`"😀".repeat(20)`, length 40) is rejected with 400 `{"error":"invalid tag"}` although AC-2 rejects only tags longer than 32 characters. Reproduced with `isValidTag("\u{1F600}".repeat(20)) === false`. Count code points (`[...trimmed].length`) or record "characters = UTF-16 code units" as a decision.
+
+Residual risks:
+- AC-4: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval). Not yet run; the user's real-browser check before release would confirm it (tags `news, tech` after bookmark A's title, nothing for bookmark B).
+
+Stale-statement sweep: none found (README.md package descriptions stay true; no docs describe the bookmark shape or POST body).
+
+Reviewed head: c7b95d4ab2d8b65d2edc8ddfe3ce3d90d14cdffd
+
 ## Review Record
 
 ## Change Log
@@ -149,3 +168,4 @@ AC-5: passed — pnpm test (shared 10, api 17, web 4), pnpm lint exit 0, pnpm ty
 - 2026-10-30 — Plan changes requested at plan-approval: "Request changes: add a manual real-browser check task (a person opens the page and confirms tags show after each title and nothing shows for a bookmark without tags), run by me. Answers: 1) no form input; 2) drop an empty-after-trim tag silently; 3) yes, 400 invalid tag; 4) confirmed as you read them." Applied: manual check task added (AC 4, Testing Strategy), decisions 1-4 recorded, AC 1-2 updated for the silent drop and non-array/non-string 400, defaults recorded.
 - 2026-10-30 — Approved: plan-approval — Approve. Defer the manual real-browser check task now: I will run it myself before release. (answering: whether to defer or keep the planned manual real-browser check task (AC 4, run by the user))
 - 2026-10-30 — Implementation complete: shared, api, and web tags with tests; web bundle baseline moved 835 to 881 bytes; manual real-browser check deferred by the user.
+- 2026-10-30 — Approved: implementation-approval — automatic (no risk triggers)
