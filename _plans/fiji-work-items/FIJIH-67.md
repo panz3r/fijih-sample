@@ -8,12 +8,12 @@ source:
   revision: "2026-10-30T21:06:55.500+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: pass
 artifacts:
   branch: FIJIH-67-add-tags-to-bookmarks
   base_branch: null
@@ -156,6 +156,31 @@ none found (README.md, AGENTS.md, scenarios/ and code comments checked with `git
 
 ## Quality Gate
 
+Gate: pass
+
+Scope: full review of the branch diff `main` (c9c9454)..a7e6813 (implementation commits 35aa496..a7e6813; product changes in 9cccebe, 70f1b4d, ba6c619, 8860c4e changeset, abc61e2 baseline).
+
+Acceptance trace:
+- AC-1: implementation `normalizeTags` trims, lower-cases, and dedupes through an insertion-ordered `Set` (packages/shared/src/index.ts:48-59); `store.add` stores the normalized tags (packages/api/src/store.ts:17-23); `app.ts` passes `body.tags` (packages/api/src/app.ts:23-24). Verification: shared index.test.ts (`["  News","news","Tech"]` -> `["news","tech"]`, `["b","a","B"]` -> `["b","a"]`); store.test.ts (`[" X ","x"]` -> `["x"]`); app.test.ts 201 body `["news","tech"]`. Probe at the reviewed head: `["NEWS","news","News"]` -> `["news"]`, `[" news "]` -> `["news"]`. Evidenced.
+- AC-2: implementation `normalizeTags(undefined)` -> `[]` (index.ts:49). Verification: shared `defaults to an empty array`; app.test.ts `defaults tags to an empty array` (201, `tags: []`). Evidenced.
+- AC-3: implementation `normalizeTags` returns null for a non-array, a non-string element, an empty normalized tag, a `\s` match, or more than `MAX_TAG_LENGTH` (32) code points (index.ts:50-56); `store.add` throws `ValidationError("invalid tag")` after the title and URL checks and before the duplicate check and insert (store.ts:17-18), mapped to 400 by app.ts:30. Verification: shared boundary tests (32/33 ASCII and emoji, space, tab, `""`, `"   "`, `["ok",1]`, `"news"`, `null`); app.test.ts 400 `{"error":"invalid tag"}` with the bookmark absent from GET for too long, inner whitespace, empty after trim, empty, not an array, non-string element; 32-character tag 201; store.test.ts invalid tag stores nothing. Probe: `{}` -> null, `["a b"]` -> null. Evidenced.
+- AC-4: implementation tags live on the stored `Bookmark` returned by `store.list()`. Verification: app.test.ts `stores normalized tags and returns them from GET` (GET entry `TagsOk` has `["news","tech"]`). Evidenced.
+- AC-5: implementation `renderList` wraps the link and, only when `tags.length > 0`, a `span.tags` whose `textContent` is ` ${tags.join(", ")}` (packages/web/src/render.ts:18-25), keeping title and tags in one flex child so Remove stays right-aligned. Verification: render.test.ts `li` text `Example news, techRemove`, `.tags` text `news, tech`; no `.tags` and text `ExampleRemove` when empty. Evidenced.
+- AC-6: Vitest tests added in all three packages covering AC 1-5. Re-run at the reviewed head: `pnpm test` (shared 8, api 14, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Evidenced.
+- AC-7: `.changeset/fijih-67-add-tags-to-bookmarks.md` bumps `@sample/shared`, `@sample/api`, `@sample/web` minor with summary `Add tags to bookmarks`; re-run `pnpm build` exit 0 then `pnpm measure` `web_bundle_gzip_bytes=895`, delta 0 against `measure/baseline.json` (895). Evidenced.
+
+Findings: none.
+
+Residual risks: none. No Operational Requirements entry is `evidence: unverified`; no Validation Evidence line is `deferred` or `pending-ci`.
+
+Product decisions vs. acceptance criteria: the approved answers to questions 1-6 (no form input; empty or non-string tags 400; input order, first duplicate wins; limits on the trimmed, lower-cased tag in code points, 32 valid; `", "` separator) match AC 1, 3, and 5. No contradiction. Out-of-scope items (filtering, editing tags) untouched.
+
+Adversarial notes (no finding): tags are rendered with `textContent` (no HTML injection); limits apply to the lower-cased tag per decision 5, so `"İ".repeat(17)` (34 code points after lower-casing) is rejected and `"İ".repeat(16)` accepted; zero-width characters such as U+200B are not `\s` and are accepted, consistent with the Engineering Context definition of whitespace; validation order keeps the URL error ahead of the tag error as planned; no new dependencies.
+
+Stale-statement sweep (names and behaviours changed: `Bookmark`/`NewBookmark` shape, `normalizeTags`, `MAX_TAG_LENGTH`, `POST /bookmarks` and `GET /bookmarks` bodies, `invalid tag`, list item markup, `web_bundle_gzip_bytes`; searched README.md, AGENTS.md, `*.md` outside `_plans/`, `scripts/`, `.github/workflows/`, and code comments and test descriptions under `packages/`): none found. README.md's `packages/shared` row lists its functions in parentheses without tags; it remains true. Scenario notes describe Jira seed text and are not made untrue.
+
+Reviewed head: a7e6813d7d9d04e2b9db7bbc6e7c9c8db1571093
+
 ## Review Record
 
 ## Change Log
@@ -166,3 +191,4 @@ none found (README.md, AGENTS.md, scenarios/ and code comments checked with `git
 - Task 2 (API) done: `pnpm --filter @sample/api test` 14 passed; API typecheck and lint pass.
 - Task 3 (web) done: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint pass.
 - Stale-statement sweep: none found. Implementation complete; Jira FIJIH-67 moved To Do -> In Progress.
+- Approved: implementation-approval — automatic (no risk triggers)
