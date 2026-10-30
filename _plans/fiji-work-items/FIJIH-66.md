@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 quality:
   gate: concerns
@@ -124,6 +124,7 @@ so that I can group my bookmarks.
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - measure/baseline.json
+- .changeset/fijih-66-add-tags-to-bookmarks.md
 
 
 ## Implementation Record
@@ -139,6 +140,7 @@ Task 5 — repository checks and bundle measurement. `pnpm test` (shared 10, api
 Task 4 — manual real-browser check deferred by the user at plan-approval: "Approve. Defer the manual real-browser check task now: I will run it myself before release." Not run; the check task is checked off per the deferral. (checked at c7b95d4)
 
 Task 6 — Scope change (sorted tags, empty tag rejected): `normalizeTags` now sorts with the default `Array.prototype.sort` and no longer drops empty tags; `isValidTag` rejects an empty-after-trim tag, so `BookmarkStore.add` throws `ValidationError("invalid tag")` for `""` and `"   "`. Tests updated in shared (12 passed), store, and app (api 22 passed). `pnpm test`, `pnpm lint` (exit 0), `pnpm typecheck` pass from the root; `pnpm build` then `pnpm measure` gives 881 bytes, delta 0, so `measure/baseline.json` is unchanged.
+(commit 5c7c028)
 
 Stale-statement sweep — tags, invalid tag, NewBookmark, POST /bookmarks, createdAt, Bookmark type (searched *.md and *.yml outside _plans)
 none found (README.md route list for packages/api remains accurate; scenarios/ notes describe the FIJIₕ run, not the code)
@@ -205,3 +207,4 @@ No fix commits.
 - 2026-10-30 — Approved: scope change — "Confirmed: approve AC 1 and AC 2 with exactly that wording."
 - 2026-10-30 — Implementation complete (re-entry 2): tags sorted in ascending code-unit order and empty-after-trim tags rejected with 400 invalid tag, with tests in shared and api; checks pass; web bundle unchanged at 881 bytes; manual real-browser check stays deferred by the user.
 - 2026-10-30 — Approved: implementation-approval — Approve. Leave scenarios/S1.md as it is.
+- 2026-10-30 — Local QA review finalize (attempt 2): all tasks and acceptance criteria have committed evidence; no task/evidence discrepancies. Reconciled File List by adding `.changeset/fijih-66-add-tags-to-bookmarks.md` (changed by 4c77f61) and added `(commit 5c7c028)` to the Scope change task's Implementation Record entry. AC-4 remains deferred by the user (run before release). Residual risks: AC-4 manual real-browser check; minor quality finding that isValidTag counts UTF-16 code units (packages/shared/src/index.ts:53), accepted by the user as a known limitation. Set checkpoint local-qa-review, transition qa-reviewed.
