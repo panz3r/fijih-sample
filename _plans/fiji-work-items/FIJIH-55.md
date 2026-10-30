@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -122,10 +122,14 @@ Product decisions (answered by the user at plan approval; no open product questi
 ## Implementation Record
 
 Task T4 — root checks and bundle size: root `pnpm test`, `pnpm lint`, `pnpm typecheck` passed; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (was 835); `measure/baseline.json` updated to 881 (user decision Q4).
+(commit 09ad27e)
 
 Task T1 — shared tag model: `Bookmark.tags`, `NewBookmark.tags?`, `isValidTag`, `normalizeTags` with unit tests. Shared test, lint, typecheck passed.
+(commit c42027a)
 Task T2 — API store validates and normalises tags before storing (invalid tag -> 400), route passes `body.tags`; store and HTTP tests added. API test, lint, typecheck passed.
+(commit 42c59b2)
 Task T3 — web renders tags in a `span.tags` (textContent only) between link and Remove, nothing when empty; fixtures updated, two tests added. Web test, lint, typecheck passed.
+(commit b0fa69b)
 
 ## Validation Evidence
 
@@ -165,3 +169,4 @@ Reviewed head: 09ad27eb9e9e6f2eb94b904767de6916173a1d77
 - 2026-10-30: Approved: plan-approval — conditional: "Approve the plan. 1: no tags input on the form. 2: a non-array tags or a non-string element answers 400 {"error":"invalid tag"}; a tag empty after trimming is rejected with that 400; tags keep first-occurrence order. 3: yes, length and whitespace rules apply after trimming, as the plan reads it. 4: fine, update the baseline." (verified at 1fc9398)
 - 2026-10-30: Implementation complete (T1 to T4); Jira FIJIH-55 moved To Do to In Progress.
 - 2026-10-30: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-10-30: Finalize (local QA review): all tasks T1 to T4 and acceptance criteria AC-1 to AC-5 have committed evidence on FIJIH-55-add-bookmark-tags since main; no discrepancies. Added `(commit <short hash>)` citations under the T1 to T4 Implementation Record entries (routine reconciliation). File List matches the committed changes. Quality gate `concerns` unchanged; checkpoint set to local-qa-review, transition qa-reviewed.
