@@ -59,10 +59,10 @@ Product decisions (answered by the user at plan approval; no open product questi
   - [x] Add `tags: string[]` to `Bookmark`; let `NewBookmark` take an optional `tags`.
   - [x] Add a pure, exported tag normaliser (for example `normalizeTags`) that trims, lower-cases, and deduplicates keeping first-occurrence order, and a validity check (for example `isValidTag`) for the non-empty, 32-character, and no-whitespace rules, all applied after trimming.
   - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces with first-occurrence order kept, 32 vs 33 characters, internal whitespace, empty-after-trim tag, empty input.
-- [ ] T2. API store and route in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `BookmarkStore.add` validates tags through the shared helpers, throws `ValidationError("invalid tag")` before storing anything when `tags` is not an array, an element is not a string, or a tag is empty after trimming, too long, or contains whitespace, and stores the normalised tags (default `[]`).
-  - [ ] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store.
-  - [ ] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `[]`; 33-character tag, tag with internal whitespace, non-array `tags`, non-string element, and empty-after-trim tag each answer `400 {"error":"invalid tag"}` and the list is unchanged; tags come back in first-occurrence order; GET returns each bookmark's tags.
+- [x] T2. API store and route in `packages/api` (AC: 1, 2, 3, 5)
+  - [x] `BookmarkStore.add` validates tags through the shared helpers, throws `ValidationError("invalid tag")` before storing anything when `tags` is not an array, an element is not a string, or a tag is empty after trimming, too long, or contains whitespace, and stores the normalised tags (default `[]`).
+  - [x] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store.
+  - [x] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `[]`; 33-character tag, tag with internal whitespace, non-array `tags`, non-string element, and empty-after-trim tag each answer `400 {"error":"invalid tag"}` and the list is unchanged; tags come back in first-occurrence order; GET returns each bookmark's tags.
 - [ ] T3. Web rendering in `packages/web/src/render.ts` (AC: 4, 5)
   - [ ] After the title link, render the tags joined by `", "` in their own element (text content only, no `innerHTML`); render nothing extra when `tags` is empty.
   - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element or text when `tags` is `[]`; update the existing fixtures to the new `Bookmark` shape.
@@ -111,10 +111,15 @@ Product decisions (answered by the user at plan approval; no open product questi
 
 - `packages/shared/src/index.ts`
 - `packages/shared/src/index.test.ts`
+- `packages/api/src/store.ts`
+- `packages/api/src/app.ts`
+- `packages/api/src/store.test.ts`
+- `packages/api/src/app.test.ts`
 
 ## Implementation Record
 
 Task T1 — shared tag model: `Bookmark.tags`, `NewBookmark.tags?`, `isValidTag`, `normalizeTags` with unit tests. Shared test, lint, typecheck passed.
+Task T2 — API store validates and normalises tags before storing (invalid tag -> 400), route passes `body.tags`; store and HTTP tests added. API test, lint, typecheck passed.
 
 ## Validation Evidence
 
