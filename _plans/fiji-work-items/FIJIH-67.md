@@ -73,10 +73,10 @@ Open product questions (also under the Plan result's `risks`; the criteria below
   - [x] Add `tags: string[]` to `Bookmark` and an optional `tags` to `NewBookmark`.
   - [x] Add a pure tag normalizer and validator (trim, lower-case, reject empty, whitespace, and over-32-code-point tags, deduplicate keeping first occurrences), with an exported 32-character limit constant.
   - [x] Unit tests in `packages/shared/src/index.test.ts` for normalization, deduplication order, the 32/33 boundary, inner whitespace, empty after trim, and the empty default.
-- [ ] API: accept, validate, store, and return tags (AC: 1, 2, 3, 4)
-  - [ ] `packages/api/src/store.ts`: `add` normalizes `input.tags` (default `[]`), throws `ValidationError("invalid tag")` on an invalid tag or a non-array or non-string value, and stores `tags` on the bookmark.
-  - [ ] `packages/api/src/app.ts`: pass `body.tags` from the POST body to `store.add`.
-  - [ ] Tests in `packages/api/src/app.test.ts` (POST with tags, POST without tags, each 400 case, GET returns tags) and `packages/api/src/store.test.ts` (an invalid tag stores nothing).
+- [x] API: accept, validate, store, and return tags (AC: 1, 2, 3, 4)
+  - [x] `packages/api/src/store.ts`: `add` normalizes `input.tags` (default `[]`), throws `ValidationError("invalid tag")` on an invalid tag or a non-array or non-string value, and stores `tags` on the bookmark.
+  - [x] `packages/api/src/app.ts`: pass `body.tags` from the POST body to `store.add`.
+  - [x] Tests in `packages/api/src/app.test.ts` (POST with tags, POST without tags, each 400 case, GET returns tags) and `packages/api/src/store.test.ts` (an invalid tag stores nothing).
 - [ ] Web: render tags after the title (AC: 5)
   - [ ] `packages/web/src/render.ts`: after the title link, append an element whose text is `tags.join(", ")`, only when the bookmark has tags; set text with `textContent`.
   - [ ] Keep the title and tags together on the left so the Remove button stays right-aligned (the `li` uses `justify-content: space-between` in `packages/web/index.html`).
@@ -117,14 +117,23 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
+- packages/api/src/store.test.ts
 
 ## Implementation Record
 
 Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags` (typed `unknown` so the store can reject non-arrays), `MAX_TAG_LENGTH`, and `normalizeTags` (returns null on invalid input).
 
+Task 2 — API tags: `store.add` validates tags after the URL check (before the duplicate check) via `normalizeTags`, throwing `ValidationError("invalid tag")`; `app.ts` passes `body.tags`; HTTP and store tests added.
+
 ## Validation Evidence
 
-- AC-1: passed — shared `normalizeTags` tests (trim, lower-case, dedupe order); API level pending.
+- AC-1: passed — API test `stores normalized tags` (`["  News","news","Tech"]` -> `["news","tech"]`) and shared tests.
+- AC-2: passed — API test `defaults tags to an empty array`.
+- AC-3: passed — API tests for 33 chars, inner whitespace, empty, non-array, non-string (400 `invalid tag`, nothing stored); 32-char accepted.
+- AC-4: passed — API test GET returns tags.
 
 ## Quality Gate
 
@@ -135,3 +144,4 @@ Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags` (typ
 - Drafted from Jira FIJIH-67 at revision 2026-10-30T21:06:55.500+0100 (after assigning the issue to Mattia Panzeri), base `main` at c9c9454.
 - Approved: plan-approval — Approve with the proposed answers to questions 1-6 (no tags input on the form; empty or non-string tags get 400 invalid tag; keep input order, first duplicate wins; limits on the trimmed lower-cased tag in code points, 32 valid; join with ", "). Noted item 7, no action.
 - Task 1 (shared) done: `pnpm --filter @sample/shared test` 8 passed; shared typecheck and lint pass.
+- Task 2 (API) done: `pnpm --filter @sample/api test` 14 passed; API typecheck and lint pass.

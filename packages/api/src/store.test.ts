@@ -9,4 +9,11 @@ describe("BookmarkStore", () => {
     store.add({ url: "https://example.com/b", title: "B" }, now);
     expect(store.list().map((b) => b.title)).toEqual(["B", "A"]);
   });
+
+  it("stores normalized tags and nothing when a tag is invalid", () => {
+    const store = new BookmarkStore();
+    expect(store.add({ url: "https://example.com/a", title: "A", tags: [" X ", "x"] }).tags).toEqual(["x"]);
+    expect(() => store.add({ url: "https://example.com/b", title: "B", tags: ["a b"] })).toThrow("invalid tag");
+    expect(store.list().map((b) => b.title)).toEqual(["A"]);
+  });
 });

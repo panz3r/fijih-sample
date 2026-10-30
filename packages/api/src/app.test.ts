@@ -43,4 +43,43 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  describe("tags", () => {
+    const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+    const listTitles = async () =>
+      ((await (await fetch(`${base}/bookmarks`)).json()) as { title: string }[]).map((b) => b.title);
+
+    it("stores normalized tags and returns them from GET", async () => {
+      const res = await post({ url: "https://example.com/tags-ok", title: "TagsOk", tags: ["  News", "news", "Tech"] });
+      expect(res.status).toBe(201);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { title: string; tags: string[] }[];
+      expect(list.find((b) => b.title === "TagsOk")?.tags).toEqual(["news", "tech"]);
+    });
+
+    it("accepts a 32-character tag", async () => {
+      const res = await post({ url: "https://example.com/tags-32", title: "Tags32", tags: ["a".repeat(32)] });
+      expect(res.status).toBe(201);
+    });
+
+    it("defaults tags to an empty array", async () => {
+      const res = await post({ url: "https://example.com/no-tags", title: "NoTags" });
+      expect(res.status).toBe(201);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    });
+
+    it.each([
+      ["too long", ["a".repeat(33)]],
+      ["inner whitespace", ["two words"]],
+      ["empty after trim", ["   "]],
+      ["empty", [""]],
+      ["not an array", "news"],
+      ["non-string element", ["ok", 1]],
+    ])("rejects a tag that is %s and stores nothing", async (_name, tags) => {
+      const res = await post({ url: "https://example.com/bad-tags", title: "BadTags", tags });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+      expect(await listTitles()).not.toContain("BadTags");
+    });
+  });
 });
