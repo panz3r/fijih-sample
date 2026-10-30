@@ -8,9 +8,9 @@ source:
   revision: "2026-10-30T17:23:35.882+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 2
 quality:
   gate: concerns
@@ -157,22 +157,28 @@ AC-5: passed — pnpm test (shared 12, api 22, web 4), pnpm lint exit 0, pnpm ty
 
 Gate: concerns
 
+Scope: `user-request` re-entry 2, scoped to the commits since the previous Reviewed head c7b95d4 (27680d8..8f696cc; product changes in 5c7c028 `feat: sort bookmark tags and reject empty tags` and 4c77f61 changeset) and to AC 1, 2, 3, 5 (the Scope change task's `(AC: 1, 2, 3, 5)` mapping, their changed Validation Evidence lines, and the Scope change entry that changed AC 1 and AC 2). AC 4 is out of scope and carried forward from its Validation Evidence line.
+
 Acceptance trace:
-- AC-1: implementation `normalizeTags` (packages/shared/src/index.ts), `validateTags`/`BookmarkStore.add` (packages/api/src/store.ts), raw `body.tags` pass-through (packages/api/src/app.ts); verification shared `normalizeTags` tests, store.test.ts default `[]` and normalization, app.test.ts 201 body with `["news","tech"]`, `[]` when omitted, `["", "  ", "News"]` → `["news"]`. Evidenced.
-- AC-2: implementation `isValidTag` (shared) and `validateTags` before any insert (store.ts); verification shared 32/33 and space/tab tests, store.test.ts 32 accepted and four rejection cases storing nothing, app.test.ts 400 `{"error":"invalid tag"}` with unchanged list for too long, whitespace, non-array, non-string element. Evidenced.
-- AC-3: implementation tags stored on `Bookmark` and returned by `store.list()`; verification app.test.ts GET returns `["news","tech"]` and `[]`. Evidenced.
-- AC-4: implementation `renderList` appends `<span class="tags">` after the link only when tags are non-empty (packages/web/src/render.ts); verification render.test.ts `news, tech` as the link's next sibling and no `.tags`/text for `[]`. Manual real-browser check: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval). Residual risk below.
-- AC-5: tests added in all three packages; re-run at the reviewed head: `pnpm test` (shared 10, api 17, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Bundle baseline 835 → 881 recorded in Implementation Record; CI `measure` job runs on `pull_request`. Evidenced.
+- AC-1: implementation `normalizeTags` trims, lower-cases, dedupes via `Set`, and returns `[...out].sort()` (packages/shared/src/index.ts:43-49); `validateTags` returns `normalizeTags(tags)` after validating every element, `undefined` → `[]` (packages/api/src/store.ts:6-13); raw `body.tags` pass-through (packages/api/src/app.ts:24). Verification: shared index.test.ts trim/lower-case, dedupe-and-sort (`["b","A"," B ","a","c"]` → `["a","b","c"]`), code-unit order (`["2d","art","news","tech"]`); store.test.ts default `[]` and `["tech"," News ","NEWS","art"]` → `["art","news","tech"]`; app.test.ts 201 body `["news","tech"]` from `[" TECH ","News","news"]`, `["b","A","c"]` → `["a","b","c"]`, `[]` when omitted. Probe at the reviewed head: `normalizeTags(["b","A"," B ","a","c","Z","10","9","_x","é","e"])` → `["10","9","_x","a","b","c","e","z","é"]` (default code-unit order, as AC 1 specifies). Evidenced.
+- AC-2: implementation `isValidTag` requires `trimmed.length > 0`, `<= 32`, no `/\s/` (packages/shared/src/index.ts:52-55); `validateTags` rejects non-array and non-string elements and runs before URL normalization and insert (store.ts:8-10, 26). Verification: shared `isValidTag("")`/`("   ")` false, 32 accepted / 33 rejected, space and tab rejected; store.test.ts 32 accepted and seven rejection cases (too long, whitespace, `""`, `"   "`, `["news","  "]`, non-string, non-array) each throwing `ValidationError("invalid tag")` with an empty store; app.test.ts 400 `{"error":"invalid tag"}` with the list length unchanged for too long, whitespace, `[""]`, `["   "]`, `"news"`, `[1]`. Evidenced.
+- AC-3: implementation tags stored on the `Bookmark` and returned by `store.list()` (store.ts:31, 18-21). Verification: app.test.ts GET returns `["news","tech"]` (sorted from input `[" TECH ","News","news"]`) and `[]`. Evidenced.
+- AC-4 (carried forward, out of scope): implementation `renderList` appends `<span class="tags">` with `tags.join(", ")` after the link only when tags are non-empty (packages/web/src/render.ts:21-27, unchanged since c7b95d4); render.test.ts (web 4 passed). AC-4: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval). Residual risk below.
+- AC-5: tests changed in shared and api for the new behaviour, web tests unchanged and passing; re-run at the reviewed head 8f696cc: `pnpm test` (shared 12, api 22, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` exit 0, `pnpm build` exit 0 then `pnpm measure` `web_bundle_gzip_bytes=881`, delta 0 against `measure/baseline.json`. Evidenced.
 
 Findings:
-- minor — packages/shared/src/index.ts:53-56: `isValidTag` measures length in UTF-16 code units (`trimmed.length`), not characters, so a tag of 20 emoji (`"😀".repeat(20)`, length 40) is rejected with 400 `{"error":"invalid tag"}` although AC-2 rejects only tags longer than 32 characters. Reproduced with `isValidTag("\u{1F600}".repeat(20)) === false`. Count code points (`[...trimmed].length`) or record "characters = UTF-16 code units" as a decision.
+- minor (carried forward, still present) — packages/shared/src/index.ts:52-55: `isValidTag` measures length in UTF-16 code units (`trimmed.length`), not characters, so a tag of 20 emoji (`"\u{1F600}".repeat(20)`, length 40) is rejected with 400 `{"error":"invalid tag"}` although AC-2 rejects only tags longer than 32 characters. Re-reproduced at 8f696cc: `isValidTag("\u{1F600}".repeat(20)) === false`. Accepted by the user as a known limitation at the first local-qa-review ("Approve."); not recorded as a product decision. Count code points (`[...trimmed].length`) or record "characters = UTF-16 code units" as a decision.
 
 Residual risks:
-- AC-4: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval). Not yet run; the user's real-browser check before release would confirm it (tags `news, tech` after bookmark A's title, nothing for bookmark B).
+- AC-4: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval). Carried forward; not yet run. The user's real-browser check before release would confirm it (tags `news, tech` after bookmark A's title, nothing for bookmark B).
 
-Stale-statement sweep: none found (README.md package descriptions stay true; no docs describe the bookmark shape or POST body).
+Product decisions vs. acceptance criteria: decisions 2 and 4 (rewritten by the approved Scope change) match AC 1 and AC 2; decisions 1 and 3 unchanged and consistent. No contradiction.
 
-Reviewed head: c7b95d4ab2d8b65d2edc8ddfe3ce3d90d14cdffd
+Stale-statement sweep (names and behaviours changed since c7b95d4: `normalizeTags`, `isValidTag`, empty-after-trim handling, tag order, `invalid tag`; searched `*.md`, `*.yml`, `*.json` outside `_plans/` and `node_modules`, and code comments and test descriptions under `packages/`): none found. The `normalizeTags`/`isValidTag` doc comments and the shared, store, and app test descriptions were updated in 5c7c028; README.md says nothing about tags. scenarios/S1.md:12-13 (Jira seed text for the scenario) lists the 400 conditions without the empty-tag rule and does not mention order; it states no behaviour the change makes untrue and is a non-product file the user said to leave as it is ("Approve. Leave scenarios/S1.md as it is.").
+
+Changeset: `.changeset/fijih-66-add-tags-to-bookmarks.md` (4c77f61) bumps `@sample/shared`, `@sample/api`, `@sample/web` minor with summary "Add tags to bookmarks", matching the pull request title without the Jira key (AGENTS.md).
+
+Reviewed head: 8f696cc8431032efff2c012268493f923bc786a4
 
 ## Review Record
 
@@ -198,3 +204,4 @@ No fix commits.
 - 2026-10-30 — Scope change: "Sort: yes, sort tags alphabetically in the response. Reject: yes, reject an empty-after-trim tag with 400 {\"error\":\"invalid tag\"}. AC 1 and AC 2 change accordingly." — review-remediation checkpoint at 611cfa4. AC 1 and AC 2 reworded; Product Context decisions 2 and 4 rewritten; AC 3 keeps its wording; task "Scope change: sort tags and reject empty tags" appended; AC-4 manual check stays deferred.
 - 2026-10-30 — Approved: scope change — "Confirmed: approve AC 1 and AC 2 with exactly that wording."
 - 2026-10-30 — Implementation complete (re-entry 2): tags sorted in ascending code-unit order and empty-after-trim tags rejected with 400 invalid tag, with tests in shared and api; checks pass; web bundle unchanged at 881 bytes; manual real-browser check stays deferred by the user.
+- 2026-10-30 — Approved: implementation-approval — Approve. Leave scenarios/S1.md as it is.
