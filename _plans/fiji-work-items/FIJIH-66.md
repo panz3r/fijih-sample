@@ -35,34 +35,39 @@ so that I can group my bookmarks.
 - Issue context: "A bookmark gets an optional list of tags; the API accepts and returns them, and the page shows them next to the title."
 - Decision (from the issue): tags are not filterable yet.
 - Out of scope (from the issue): filtering or searching by tag; editing tags of an existing bookmark.
-- Open product questions (asked under the Plan result's risks; not decided here):
-  1. Whether the web add form (`packages/web/index.html`, `packages/web/src/main.ts`) gets a tags input. The issue only asks the page to show tags, so this plan does not change the form; without such an input, tags can be set only through the API.
-  2. How to handle a tag that is empty after trimming (`""` or `"   "`): reject with 400 `{"error":"invalid tag"}`, or drop it silently.
-  3. How to handle a `tags` value that is not an array, or an element that is not a string: this plan proposes 400 `{"error":"invalid tag"}`.
+- Decisions (from the user at plan approval):
+  1. The web add form (`packages/web/index.html`, `packages/web/src/main.ts`) gets no tags input; the form is unchanged and tags can be set only through the API.
+  2. A tag that is empty after trimming (`""` or `"   "`) is dropped silently; it does not make the request fail.
+  3. A `tags` value that is not an array, or an element that is not a string, makes `POST /bookmarks` answer 400 `{"error":"invalid tag"}`.
+  4. Confirmed as recorded in AC 1-2: the 32-character limit and the whitespace rule are checked after trimming, whitespace means any `/\s/` character, and dedupe keeps the first occurrence in input order.
 
 ## Acceptance Criteria
 
-1. `POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed and lower-cased, and duplicates (after trimming and lower-casing) are removed, keeping the first occurrence in input order. When `tags` is omitted, the created bookmark has `tags: []`. The 201 response body includes the normalized `tags`.
-2. A tag that, after trimming, is longer than 32 characters or contains any whitespace character makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created. A tag of exactly 32 characters is accepted.
+1. `POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed and lower-cased, tags that are empty after trimming are dropped silently, and duplicates (after trimming and lower-casing) are removed, keeping the first occurrence in input order. When `tags` is omitted, the created bookmark has `tags: []`. The 201 response body includes the normalized `tags`.
+2. A tag that, after trimming, is longer than 32 characters or contains any whitespace character makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created. A tag of exactly 32 characters is accepted. A `tags` value that is not an array, or an array element that is not a string, also makes `POST /bookmarks` answer 400 with body `{"error":"invalid tag"}`, and no bookmark is created.
 3. `GET /bookmarks` returns a `tags` array on every bookmark, holding the normalized tags it was created with (`[]` when none).
-4. The web page shows each bookmark's tags after its title, joined by `", "` (for example `news, tech`). When a bookmark has no tags, no tag text or tag element is rendered for it.
+4. The web page shows each bookmark's tags after its title, joined by `", "` (for example `news, tech`). When a bookmark has no tags, no tag text or tag element is rendered for it. A person confirms this in a real browser (manual check task below).
 5. Vitest unit tests in `packages/shared`, `packages/api`, and `packages/web` cover the new behaviour in AC 1–4, and `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
 
 ## Tasks and Subtasks
 
 - [ ] Add tag support to `packages/shared` (AC: 1, 2, 3, 5)
   - [ ] Add `tags: string[]` to `Bookmark`, and an optional `tags?: string[]` to `NewBookmark`.
-  - [ ] Add a pure `normalizeTags(tags: readonly string[]): string[]` that trims, lower-cases, and deduplicates keeping first-occurrence order.
+  - [ ] Add a pure `normalizeTags(tags: readonly string[]): string[]` that trims, lower-cases, drops tags empty after trimming, and deduplicates keeping first-occurrence order.
   - [ ] Add a pure `isValidTag(tag: string): boolean` (after trimming: length ≤ 32 and no whitespace character, per `/\s/`).
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, dedupe after normalization, order preserved, 32 vs 33 characters, inner space and tab rejected.
+  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, empty-after-trim tags dropped, dedupe after normalization, order preserved, 32 vs 33 characters, inner space and tab rejected.
 - [ ] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `store.ts`: `BookmarkStore.add` validates each tag (throw `ValidationError("invalid tag")`), stores `normalizeTags(input.tags ?? [])` on the bookmark; validation happens before any insert.
-  - [ ] `app.ts`: pass `body.tags` through from the POST body (default `[]` when absent); apply the answer to Product Context question 3 for non-array or non-string values.
-  - [ ] `store.test.ts`: default `[]`, normalization, invalid tag throws and nothing is stored.
-  - [ ] `app.test.ts`: POST with tags returns normalized tags (201); POST without tags returns `tags: []`; POST with a 33-character tag and with a tag containing whitespace answers 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns each bookmark's tags.
+  - [ ] `store.ts`: `BookmarkStore.add` validates each tag (throw `ValidationError("invalid tag")` for a non-array `tags`, a non-string element, a tag over 32 characters, or a tag with whitespace; an empty-after-trim tag is not an error), stores `normalizeTags(input.tags ?? [])` on the bookmark; validation happens before any insert.
+  - [ ] `app.ts`: pass `body.tags` through from the POST body unchanged (absent stays `undefined` so the store defaults it to `[]`), so a non-array or non-string value reaches the store validation and yields 400 `{"error":"invalid tag"}` (decision 3).
+  - [ ] `store.test.ts`: default `[]`, normalization, empty-after-trim tags (`""`, `"   "`) dropped without error, invalid tag (too long, whitespace, non-string element, non-array `tags`) throws and nothing is stored.
+  - [ ] `app.test.ts`: POST with tags returns normalized tags (201); POST without tags returns `tags: []`; POST with `tags: ["", "  ", "News"]` returns `["news"]` (201); POST with a 33-character tag, a tag containing whitespace, `tags: "news"` (not an array), and `tags: [1]` (non-string element) answers 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns each bookmark's tags.
 - [ ] Show tags in `packages/web` (AC: 4, 5)
   - [ ] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
   - [ ] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
+- [ ] Manual real-browser check, run by the user (AC: 4) — a person (the user; no tool or agent runs it) opens the page in a real browser and confirms tags show after each title and nothing shows for a bookmark without tags. Implementation pauses and asks the user to run it, and records the user's reported result in Validation Evidence.
+  - [ ] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
+  - [ ] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
+  - [ ] Confirm bookmark A shows `news, tech` after its title and bookmark B shows no tag text or element. The bookmarks this check creates are throwaway data in the in-memory store.
 - [ ] Run the repository checks and the bundle measurement (AC: 4, 5)
   - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root and record results in Validation Evidence.
   - [ ] Run `pnpm build` then `pnpm measure`; if the gzipped web bundle moves from `measure/baseline.json` (835 bytes), update the baseline in this change (AGENTS.md).
@@ -81,6 +86,11 @@ so that I can group my bookmarks.
 - Conventions (AGENTS.md): branch `FIJIH-66-add-tags-to-bookmarks`; Conventional Commits (`feat:` for the change, `test:` where a commit only adds tests), one logical change per commit; a changeset in `.changeset/` with summary `Add tags to bookmarks` is added at Delivery.
 - No new dependencies.
 
+### Defaults taken at plan approval
+
+- How the manual check gets its data — bookmarks are created with `curl` against the local API, since the form has no tags input (decision 1).
+- Where the 400 for a non-array or non-string `tags` is raised — in `BookmarkStore.add` via `ValidationError("invalid tag")`, with `app.ts` passing the raw value through, so the existing error mapping yields the body.
+
 ## Testing Strategy
 
 - Unit (shared): table-style tests for `normalizeTags` and `isValidTag` — happy path (mixed case, padding, duplicates), boundary (32 accepted, 33 rejected), unhappy (inner space, tab).
@@ -88,13 +98,14 @@ so that I can group my bookmarks.
 - Integration (api, HTTP via `createApp` on an ephemeral port, as in `app.test.ts`): POST with and without tags, 400 responses with exact body `{"error":"invalid tag"}` for too-long and whitespace tags, GET returns tags.
 - Unit (web, jsdom): tags rendered after the title as `news, tech`; nothing rendered for `[]`; existing Remove wiring still works.
 - Regression: existing tests in all three packages keep passing.
-- No manual, live-app, or end-to-end checks are planned; jsdom rendering tests cover AC 4.
+- Manual real-browser check (AC 4), run by the user: open the page and confirm tags show after each title (`news, tech`) and nothing shows for a bookmark without tags. It is a task above; jsdom rendering tests complement it. No other manual or end-to-end checks are planned.
 - Root checks: `pnpm test`, `pnpm lint`, `pnpm typecheck`; bundle size via `pnpm build` and `pnpm measure`.
 
 ## Operational Requirements
 
 - The `test` status check (GitHub Actions, integration 15368) must pass before merge — where: repository ruleset `main` (id 26033321, enforcement active) on `panz3r/fijih-sample`; evidence: `gh api repos/panz3r/fijih-sample/rules/branches/main` returned `required_status_checks` with context `test`, plus `pull_request` with `required_approving_review_count: 1` and `allowed_merge_methods: ["squash"]`; `gh api repos/panz3r/fijih-sample/branches/main/protection` returned 404 "Branch not protected" (no classic protection); owner: repository admins (`panz3r`).
 - One approving review is required before merge — where: same ruleset; evidence: as above; owner: repository admins (`panz3r`). Per TEAMS.md the approval comes from the QA Engineer `duckyduff369`.
+- Manual real-browser check — no outside-repository writes are planned; it runs locally by the user and its data lives only in the local in-memory API store.
 - The change adds, removes, or renames no CI check contexts.
 
 ## File List
@@ -110,3 +121,4 @@ so that I can group my bookmarks.
 ## Change Log
 
 - 2026-10-30 — Plan drafted from Jira FIJIH-66 (revision 2026-10-30T17:23:35.882+0100); issue assigned to Mattia Panzeri.
+- 2026-10-30 — Plan changes requested at plan-approval: "Request changes: add a manual real-browser check task (a person opens the page and confirms tags show after each title and nothing shows for a bookmark without tags), run by me. Answers: 1) no form input; 2) drop an empty-after-trim tag silently; 3) yes, 400 invalid tag; 4) confirmed as you read them." Applied: manual check task added (AC 4, Testing Strategy), decisions 1-4 recorded, AC 1-2 updated for the silent drop and non-array/non-string 400, defaults recorded.
