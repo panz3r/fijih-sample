@@ -7,9 +7,9 @@ source:
   key: FIJIH-66
   revision: "2026-10-30T17:23:35.882+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -122,3 +122,4 @@ so that I can group my bookmarks.
 
 - 2026-10-30 — Plan drafted from Jira FIJIH-66 (revision 2026-10-30T17:23:35.882+0100); issue assigned to Mattia Panzeri.
 - 2026-10-30 — Plan changes requested at plan-approval: "Request changes: add a manual real-browser check task (a person opens the page and confirms tags show after each title and nothing shows for a bookmark without tags), run by me. Answers: 1) no form input; 2) drop an empty-after-trim tag silently; 3) yes, 400 invalid tag; 4) confirmed as you read them." Applied: manual check task added (AC 4, Testing Strategy), decisions 1-4 recorded, AC 1-2 updated for the silent drop and non-array/non-string 400, defaults recorded.
+- 2026-10-30 — Approved: plan-approval — Approve. Defer the manual real-browser check task now: I will run it myself before release. (answering: whether to defer or keep the planned manual real-browser check task (AC 4, run by the user))
