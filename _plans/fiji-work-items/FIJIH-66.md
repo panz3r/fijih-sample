@@ -68,9 +68,9 @@ so that I can group my bookmarks.
   - [ ] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
   - [ ] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
   - [ ] Confirm bookmark A shows `news, tech` after its title and bookmark B shows no tag text or element. The bookmarks this check creates are throwaway data in the in-memory store.
-- [ ] Run the repository checks and the bundle measurement (AC: 4, 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root and record results in Validation Evidence.
-  - [ ] Run `pnpm build` then `pnpm measure`; if the gzipped web bundle moves from `measure/baseline.json` (835 bytes), update the baseline in this change (AGENTS.md).
+- [x] Run the repository checks and the bundle measurement (AC: 4, 5)
+  - [x] Run `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root and record results in Validation Evidence.
+  - [x] Run `pnpm build` then `pnpm measure`; if the gzipped web bundle moves from `measure/baseline.json` (835 bytes), update the baseline in this change (AGENTS.md).
 
 ## Engineering Context
 
@@ -118,12 +118,14 @@ so that I can group my bookmarks.
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
 Task 1 — shared tag support: `tags` on `Bookmark`/`NewBookmark`, `normalizeTags`, `isValidTag` with tests. `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
 Task 2 — API accepts, validates, stores, and returns tags (`ValidationError("invalid tag")` from `BookmarkStore.add`, raw `body.tags` passed through in `app.ts`). `pnpm --filter @sample/api test` 17 passed; api typecheck passed.
 Task 3 — web renders tags after the title in `<span class="tags">`, only when non-empty. `pnpm --filter @sample/web test` 4 passed; web typecheck passed.
+Task 5 — repository checks and bundle measurement. `pnpm test` (shared 10, api 17, web 4 passed), `pnpm lint` exit 0, `pnpm typecheck` passed; `pnpm build` then `pnpm measure` gave 881 gzipped bytes (baseline 835, delta +46), so `measure/baseline.json` was updated to 881 and `pnpm measure` then reports delta 0.
 
 ## Validation Evidence
 
