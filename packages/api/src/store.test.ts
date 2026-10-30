@@ -14,11 +14,11 @@ describe("BookmarkStore", () => {
     expect(new BookmarkStore().add({ url: "https://example.com/a", title: "A" }).tags).toEqual([]);
   });
 
-  it("stores normalized tags and drops empty-after-trim tags without error", () => {
+  it("stores normalized, sorted tags", () => {
     const store = new BookmarkStore();
-    const added = store.add({ url: "https://example.com/a", title: "A", tags: [" News ", "", "   ", "NEWS", "tech"] });
-    expect(added.tags).toEqual(["news", "tech"]);
-    expect(store.list()[0].tags).toEqual(["news", "tech"]);
+    const added = store.add({ url: "https://example.com/a", title: "A", tags: ["tech", " News ", "NEWS", "art"] });
+    expect(added.tags).toEqual(["art", "news", "tech"]);
+    expect(store.list()[0].tags).toEqual(["art", "news", "tech"]);
   });
 
   it("accepts a 32-character tag", () => {
@@ -28,6 +28,9 @@ describe("BookmarkStore", () => {
   it.each([
     ["too long", ["a".repeat(33)]],
     ["whitespace", ["two words"]],
+    ["empty string", [""]],
+    ["empty after trim", ["   "]],
+    ["empty among valid tags", ["news", "  "]],
     ["non-string element", [1]],
     ["non-array tags", "news"],
   ])("rejects an invalid tag (%s) and stores nothing", (_name, tags) => {

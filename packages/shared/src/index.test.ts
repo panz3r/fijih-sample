@@ -31,11 +31,14 @@ describe("sortByCreatedDesc", () => {
 });
 
 describe("normalizeTags", () => {
-  it("trims, lower-cases, and drops tags that are empty after trimming", () => {
-    expect(normalizeTags(["  News ", "TECH", "", "   "])).toEqual(["news", "tech"]);
+  it("trims and lower-cases", () => {
+    expect(normalizeTags(["  News ", "TECH"])).toEqual(["news", "tech"]);
   });
-  it("deduplicates after normalization keeping first occurrence order", () => {
-    expect(normalizeTags(["b", "A", " B ", "a", "c"])).toEqual(["b", "a", "c"]);
+  it("deduplicates after normalization and sorts alphabetically", () => {
+    expect(normalizeTags(["b", "A", " B ", "a", "c"])).toEqual(["a", "b", "c"]);
+  });
+  it("sorts in ascending code-unit order", () => {
+    expect(normalizeTags(["tech", "News", "art", "2d"])).toEqual(["2d", "art", "news", "tech"]);
   });
   it("returns an empty array for no tags", () => {
     expect(normalizeTags([])).toEqual([]);
@@ -49,6 +52,10 @@ describe("isValidTag", () => {
   });
   it("checks length after trimming", () => {
     expect(isValidTag(`  ${"a".repeat(32)}  `)).toBe(true);
+  });
+  it("rejects an empty-after-trim tag", () => {
+    expect(isValidTag("")).toBe(false);
+    expect(isValidTag("   ")).toBe(false);
   });
   it("rejects inner space and tab but allows padding", () => {
     expect(isValidTag("two words")).toBe(false);

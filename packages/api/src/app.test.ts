@@ -49,7 +49,7 @@ describe("bookmarks api", () => {
     const list = async () => (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
 
     it("returns normalized tags on create and list, and [] when omitted", async () => {
-      const withTags = await post({ url: "https://example.com/t1", title: "T1", tags: [" News ", "TECH", "news"] });
+      const withTags = await post({ url: "https://example.com/t1", title: "T1", tags: [" TECH ", "News", "news"] });
       expect(withTags.status).toBe(201);
       expect(((await withTags.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
       const without = await post({ url: "https://example.com/t2", title: "T2" });
@@ -59,15 +59,17 @@ describe("bookmarks api", () => {
       expect(all.find((b) => b.url === "https://example.com/t2")?.tags).toEqual([]);
     });
 
-    it("drops empty-after-trim tags silently", async () => {
-      const res = await post({ url: "https://example.com/t3", title: "T3", tags: ["", "  ", "News"] });
+    it("returns tags sorted alphabetically", async () => {
+      const res = await post({ url: "https://example.com/t3", title: "T3", tags: ["b", "A", "c"] });
       expect(res.status).toBe(201);
-      expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news"]);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual(["a", "b", "c"]);
     });
 
     it.each([
       ["too long", { tags: ["a".repeat(33)] }],
       ["whitespace", { tags: ["two words"] }],
+      ["empty string", { tags: [""] }],
+      ["empty after trim", { tags: ["   "] }],
       ["not an array", { tags: "news" }],
       ["non-string element", { tags: [1] }],
     ])("answers 400 invalid tag for %s and creates nothing", async (_name, extra) => {

@@ -64,11 +64,11 @@ so that I can group my bookmarks.
 - [x] Show tags in `packages/web` (AC: 4, 5)
   - [x] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
   - [x] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
-- [ ] Scope change: sort tags and reject empty tags in `packages/shared` and `packages/api` (AC: 1, 2, 3, 5; Scope change in Change Log)
-  - [ ] `packages/shared`: `normalizeTags` sorts its result (default `Array.prototype.sort`) and no longer drops empty tags; `isValidTag` returns false for an empty-after-trim tag; update the shared tests (sorted order, `""` and `"   "` invalid).
-  - [ ] `packages/api` `store.ts`: `BookmarkStore.add` rejects an empty-after-trim tag with `ValidationError("invalid tag")`; update `store.test.ts` (sorted order, `""` and `"   "` throw and store nothing).
-  - [ ] `packages/api` `app.test.ts`: POST with `["b","a"]` returns `["a","b"]`; POST with `[""]` and `["   "]` answer 400 `{"error":"invalid tag"}` and the list is unchanged; replace the old `["", "  ", "News"]` silent-drop test.
-  - [ ] Re-run `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm measure`; update `measure/baseline.json` if the bundle moves.
+- [x] Scope change: sort tags and reject empty tags in `packages/shared` and `packages/api` (AC: 1, 2, 3, 5; Scope change in Change Log)
+  - [x] `packages/shared`: `normalizeTags` sorts its result (default `Array.prototype.sort`) and no longer drops empty tags; `isValidTag` returns false for an empty-after-trim tag; update the shared tests (sorted order, `""` and `"   "` invalid).
+  - [x] `packages/api` `store.ts`: `BookmarkStore.add` rejects an empty-after-trim tag with `ValidationError("invalid tag")`; update `store.test.ts` (sorted order, `""` and `"   "` throw and store nothing).
+  - [x] `packages/api` `app.test.ts`: POST with `["b","a"]` returns `["a","b"]`; POST with `[""]` and `["   "]` answer 400 `{"error":"invalid tag"}` and the list is unchanged; replace the old `["", "  ", "News"]` silent-drop test.
+  - [x] Re-run `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm measure`; update `measure/baseline.json` if the bundle moves.
 - [x] Manual real-browser check, run by the user (AC: 4) — a person (the user; no tool or agent runs it) opens the page in a real browser and confirms tags show after each title and nothing shows for a bookmark without tags. Implementation pauses and asks the user to run it, and records the user's reported result in Validation Evidence.
   - [x] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
   - [x] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
@@ -138,15 +138,17 @@ Task 5 — repository checks and bundle measurement. `pnpm test` (shared 10, api
 (commit 63f790f)
 Task 4 — manual real-browser check deferred by the user at plan-approval: "Approve. Defer the manual real-browser check task now: I will run it myself before release." Not run; the check task is checked off per the deferral. (checked at c7b95d4)
 
+Task 6 — Scope change (sorted tags, empty tag rejected): `normalizeTags` now sorts with the default `Array.prototype.sort` and no longer drops empty tags; `isValidTag` rejects an empty-after-trim tag, so `BookmarkStore.add` throws `ValidationError("invalid tag")` for `""` and `"   "`. Tests updated in shared (12 passed), store, and app (api 22 passed). `pnpm test`, `pnpm lint` (exit 0), `pnpm typecheck` pass from the root; `pnpm build` then `pnpm measure` gives 881 bytes, delta 0, so `measure/baseline.json` is unchanged.
+
 Stale-statement sweep — tags, invalid tag, NewBookmark, POST /bookmarks, createdAt, Bookmark type (searched *.md and *.yml outside _plans)
 none found (README.md route list for packages/api remains accurate; scenarios/ notes describe the FIJIₕ run, not the code)
 
 ## Validation Evidence
-AC-1: passed — shared normalizeTags tests (10 passed), store and app tests (api 17 passed): trim, lower-case, silent drop, dedupe first-occurrence, default [], 201 body.
-AC-2: passed — api app.test.ts and store.test.ts: 33 characters, whitespace, non-array, non-string element answer 400 {"error":"invalid tag"} and create nothing; 32 characters accepted.
-AC-3: passed — app.test.ts: GET /bookmarks returns normalized tags, [] when none.
+AC-1: passed — shared normalizeTags tests (12 passed), store and app tests (api 22 passed): trim, lower-case, dedupe, ascending code-unit sort, default [], sorted 201 body.
+AC-2: passed — shared isValidTag tests and api app.test.ts and store.test.ts: empty string, empty after trim, 33 characters, whitespace, non-array, non-string element answer 400 {"error":"invalid tag"} and create nothing; 32 characters accepted.
+AC-3: passed — app.test.ts: GET /bookmarks returns normalized, sorted tags, [] when none.
 AC-4: deferred — Approve. Defer the manual real-browser check task now: I will run it myself before release. (plan-approval); jsdom render tests (web 4 passed) cover tags after the title and no element when empty.
-AC-5: passed — pnpm test (shared 10, api 17, web 4), pnpm lint exit 0, pnpm typecheck passed from the root; pnpm build then pnpm measure 881 bytes, baseline updated from 835.
+AC-5: passed — pnpm test (shared 12, api 22, web 4), pnpm lint exit 0, pnpm typecheck passed from the root; pnpm build then pnpm measure 881 bytes, baseline updated from 835.
 
 ## Quality Gate
 

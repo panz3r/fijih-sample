@@ -39,18 +39,17 @@ export function sortByCreatedDesc<T extends { createdAt: string }>(items: readon
   return [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-/** Trims and lower-cases each tag, drops tags that are empty after trimming, and removes duplicates keeping the first occurrence. */
+/** Trims and lower-cases each tag, removes duplicates, and sorts the result in ascending code-unit order. */
 export function normalizeTags(tags: readonly string[]): string[] {
   const out = new Set<string>();
   for (const tag of tags) {
-    const normalized = tag.trim().toLowerCase();
-    if (normalized) out.add(normalized);
+    out.add(tag.trim().toLowerCase());
   }
-  return [...out];
+  return [...out].sort();
 }
 
-/** After trimming, a tag is valid when it is at most 32 characters and holds no whitespace. */
+/** After trimming, a tag is valid when it is not empty, is at most 32 characters, and holds no whitespace. */
 export function isValidTag(tag: string): boolean {
   const trimmed = tag.trim();
-  return trimmed.length <= MAX_TAG_LENGTH && !/\s/.test(trimmed);
+  return trimmed.length > 0 && trimmed.length <= MAX_TAG_LENGTH && !/\s/.test(trimmed);
 }
