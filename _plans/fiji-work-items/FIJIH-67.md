@@ -7,9 +7,9 @@ source:
   key: FIJIH-67
   revision: "2026-10-30T21:06:55.500+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -126,3 +126,4 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 ## Change Log
 
 - Drafted from Jira FIJIH-67 at revision 2026-10-30T21:06:55.500+0100 (after assigning the issue to Mattia Panzeri), base `main` at c9c9454.
+- Approved: plan-approval — Approve with the proposed answers to questions 1-6 (no tags input on the form; empty or non-string tags get 400 invalid tag; keep input order, first duplicate wins; limits on the trimmed lower-cased tag in code points, 32 valid; join with ", "). Noted item 7, no action.
