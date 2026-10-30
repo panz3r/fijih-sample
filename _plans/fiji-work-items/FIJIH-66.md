@@ -61,9 +61,9 @@ so that I can group my bookmarks.
   - [x] `app.ts`: pass `body.tags` through from the POST body unchanged (absent stays `undefined` so the store defaults it to `[]`), so a non-array or non-string value reaches the store validation and yields 400 `{"error":"invalid tag"}` (decision 3).
   - [x] `store.test.ts`: default `[]`, normalization, empty-after-trim tags (`""`, `"   "`) dropped without error, invalid tag (too long, whitespace, non-string element, non-array `tags`) throws and nothing is stored.
   - [x] `app.test.ts`: POST with tags returns normalized tags (201); POST without tags returns `tags: []`; POST with `tags: ["", "  ", "News"]` returns `["news"]` (201); POST with a 33-character tag, a tag containing whitespace, `tags: "news"` (not an array), and `tags: [1]` (non-string element) answers 400 `{"error":"invalid tag"}` and the list is unchanged; GET returns each bookmark's tags.
-- [ ] Show tags in `packages/web` (AC: 4, 5)
-  - [ ] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
-  - [ ] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
+- [x] Show tags in `packages/web` (AC: 4, 5)
+  - [x] `render.ts`: after the title link, append an element (for example `<span class="tags">`) whose text is `tags.join(", ")`, only when the bookmark has at least one tag.
+  - [x] `render.test.ts`: update existing fixtures with `tags`; add a test that a bookmark with `["news","tech"]` shows `news, tech` after the title, and one with `[]` renders no tag element or text.
 - [ ] Manual real-browser check, run by the user (AC: 4) — a person (the user; no tool or agent runs it) opens the page in a real browser and confirms tags show after each title and nothing shows for a bookmark without tags. Implementation pauses and asks the user to run it, and records the user's reported result in Validation Evidence.
   - [ ] Start the API (`pnpm --filter @sample/api start`, port 3000) and the web page (`pnpm --filter @sample/web dev`, Vite proxies `/bookmarks` to the API); open the page Vite prints.
   - [ ] Because the form has no tags input, create the bookmarks through the API, for example `curl -X POST localhost:3000/bookmarks -H 'content-type: application/json' -d '{"url":"https://example.com/a","title":"A","tags":["news","tech"]}'`, and one with no `tags` (`https://example.com/b`, title `B`); reload the page.
@@ -116,11 +116,14 @@ so that I can group my bookmarks.
 - packages/api/src/app.ts
 - packages/api/src/store.test.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
 Task 1 — shared tag support: `tags` on `Bookmark`/`NewBookmark`, `normalizeTags`, `isValidTag` with tests. `pnpm --filter @sample/shared test` 10 passed; shared typecheck passed.
 Task 2 — API accepts, validates, stores, and returns tags (`ValidationError("invalid tag")` from `BookmarkStore.add`, raw `body.tags` passed through in `app.ts`). `pnpm --filter @sample/api test` 17 passed; api typecheck passed.
+Task 3 — web renders tags after the title in `<span class="tags">`, only when non-empty. `pnpm --filter @sample/web test` 4 passed; web typecheck passed.
 
 ## Validation Evidence
 
