@@ -77,10 +77,10 @@ Open product questions (also under the Plan result's `risks`; the criteria below
   - [x] `packages/api/src/store.ts`: `add` normalizes `input.tags` (default `[]`), throws `ValidationError("invalid tag")` on an invalid tag or a non-array or non-string value, and stores `tags` on the bookmark.
   - [x] `packages/api/src/app.ts`: pass `body.tags` from the POST body to `store.add`.
   - [x] Tests in `packages/api/src/app.test.ts` (POST with tags, POST without tags, each 400 case, GET returns tags) and `packages/api/src/store.test.ts` (an invalid tag stores nothing).
-- [ ] Web: render tags after the title (AC: 5)
-  - [ ] `packages/web/src/render.ts`: after the title link, append an element whose text is `tags.join(", ")`, only when the bookmark has tags; set text with `textContent`.
-  - [ ] Keep the title and tags together on the left so the Remove button stays right-aligned (the `li` uses `justify-content: space-between` in `packages/web/index.html`).
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title with `", "`; no tags element or text when `tags` is empty; existing fixtures gain `tags`.
+- [x] Web: render tags after the title (AC: 5)
+  - [x] `packages/web/src/render.ts`: after the title link, append an element whose text is `tags.join(", ")`, only when the bookmark has tags; set text with `textContent`.
+  - [x] Keep the title and tags together on the left so the Remove button stays right-aligned (the `li` uses `justify-content: space-between` in `packages/web/index.html`).
+  - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title with `", "`; no tags element or text when `tags` is empty; existing fixtures gain `tags`.
 - [ ] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 6)
 - [ ] Add the changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor bump for `@sample/shared`, `@sample/api`, `@sample/web`; summary `Add tags to bookmarks`) (AC: 7)
 - [ ] Run `pnpm build` then `pnpm measure`, and update `measure/baseline.json` `web_bundle_gzip_bytes` to the reported value (AC: 7)
@@ -121,6 +121,8 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
 - packages/api/src/store.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
@@ -128,11 +130,14 @@ Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags` (typ
 
 Task 2 — API tags: `store.add` validates tags after the URL check (before the duplicate check) via `normalizeTags`, throwing `ValidationError("invalid tag")`; `app.ts` passes `body.tags`; HTTP and store tests added.
 
+Task 3 — web tags: `render.ts` wraps the title link and a `span.tags` (text ` news, tech`, built with `textContent`, omitted when empty) in a `span` so the Remove button stays right-aligned; no change to `index.html` needed. Existing fixtures gained `tags`.
+
 ## Validation Evidence
 
 - AC-1: passed — API test `stores normalized tags` (`["  News","news","Tech"]` -> `["news","tech"]`) and shared tests.
 - AC-2: passed — API test `defaults tags to an empty array`.
 - AC-3: passed — API tests for 33 chars, inner whitespace, empty, non-array, non-string (400 `invalid tag`, nothing stored); 32-char accepted.
+- AC-5: passed — web tests: tags after the title joined with `, `; no `.tags` element when empty.
 - AC-4: passed — API test GET returns tags.
 
 ## Quality Gate
@@ -145,3 +150,4 @@ Task 2 — API tags: `store.add` validates tags after the URL check (before the 
 - Approved: plan-approval — Approve with the proposed answers to questions 1-6 (no tags input on the form; empty or non-string tags get 400 invalid tag; keep input order, first duplicate wins; limits on the trimmed lower-cased tag in code points, 32 valid; join with ", "). Noted item 7, no action.
 - Task 1 (shared) done: `pnpm --filter @sample/shared test` 8 passed; shared typecheck and lint pass.
 - Task 2 (API) done: `pnpm --filter @sample/api test` 14 passed; API typecheck and lint pass.
+- Task 3 (web) done: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint pass.
