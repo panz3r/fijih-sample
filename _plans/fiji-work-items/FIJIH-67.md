@@ -10,7 +10,8 @@ lifecycle:
   status: active
   phase: qa-review
   checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: pass
@@ -129,16 +130,21 @@ Open product questions (also under the Plan result's `risks`; the criteria below
 ## Implementation Record
 
 Task 1 — shared tag support: `Bookmark.tags`, optional `NewBookmark.tags` (typed `unknown` so the store can reject non-arrays), `MAX_TAG_LENGTH`, and `normalizeTags` (returns null on invalid input).
+(commit 9cccebe)
 
 Task 2 — API tags: `store.add` validates tags after the URL check (before the duplicate check) via `normalizeTags`, throwing `ValidationError("invalid tag")`; `app.ts` passes `body.tags`; HTTP and store tests added.
+(commit 70f1b4d)
 
 Task 3 — web tags: `render.ts` wraps the title link and a `span.tags` (text ` news, tech`, built with `textContent`, omitted when empty) in a `span` so the Remove button stays right-aligned; no change to `index.html` needed. Existing fixtures gained `tags`.
+(commit ba6c619)
 
 Task 4 — root checks (checked at ba6c619): `pnpm test`, `pnpm lint`, `pnpm typecheck` all pass from the repository root.
 
 Task 5 — changeset `.changeset/fijih-67-add-tags-to-bookmarks.md` (minor for shared, api, web; summary `Add tags to bookmarks`).
+(commit 8860c4e)
 
 Task 6 — `pnpm build` then `pnpm measure` reported `web_bundle_gzip_bytes=895` (delta 60 from 835); `measure/baseline.json` updated to 895.
+(commit abc61e2)
 
 Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `invalid tag`, `web_bundle_gzip_bytes`, list item markup
 
@@ -192,3 +198,4 @@ Reviewed head: a7e6813d7d9d04e2b9db7bbc6e7c9c8db1571093
 - Task 3 (web) done: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint pass.
 - Stale-statement sweep: none found. Implementation complete; Jira FIJIH-67 moved To Do -> In Progress.
 - Approved: implementation-approval — automatic (no risk triggers)
+- Finalize (Local QA review): added `(commit <hash>)` citations to the Implementation Record entries for Tasks 1, 2, 3, 5, and 6, each matched to the commit that added it; Task 4 keeps its existing `(checked at ba6c619)` citation. All seven acceptance criteria have Validation Evidence lines and committed evidence; no task or evidence discrepancies. Set checkpoint `local-qa-review`.
