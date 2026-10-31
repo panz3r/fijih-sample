@@ -20,7 +20,7 @@ export class BookmarkStore {
     for (const existing of this.items.values()) {
       if (existing.url === url) throw new ValidationError("url already bookmarked");
     }
-    const bookmark: Bookmark = { id: randomUUID(), url, title: input.title.trim(), createdAt: now().toISOString(), tags };
+    const bookmark: Bookmark = { id: randomUUID(), url, title: input.title.trim().replace(/\s+/g, " "), createdAt: now().toISOString(), tags };
     this.items.set(bookmark.id, bookmark);
     return bookmark;
   }
