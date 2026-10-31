@@ -48,6 +48,9 @@ if [ "$KEEP_PRS" = false ]; then
   done
 fi
 
+# Closing a pull request with --delete-branch removes its branch on GitHub only; prune the local refs to it.
+git fetch --prune origin
+
 git for-each-ref --format='%(refname:strip=3)' 'refs/remotes/origin/FIJIH-*' | while read -r branch; do
   git push origin --delete "$branch" || true
 done
