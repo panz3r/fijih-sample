@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 quality:
   gate: pass
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-67-add-tags-to-bookmarks
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/16
-  jira_context_comment_id: null
+  jira_context_comment_id: "10010"
 ---
 
 # Work Item FIJIH-67: Add tags to bookmarks
@@ -221,3 +221,5 @@ Follow-ups and residual risks: none filed or found. Out of scope per the Jira is
 - Approved: ready-for-review — Approve.
 - Ready for review: marked pull request #16 ready and requested review from `duckyduff369` (QA Engineer, the only other member of the owning team; the author is excluded). Set phase `remote-review`, transition `review-requested`.
 - Jira handoff draft written; set checkpoint `jira-handoff`, transition `handoff-drafted`.
+- Approved: jira-handoff — Approve.
+- Jira context handoff: posted the drafted comment on FIJIH-67 as comment 10010 (marker `FIJI-CONTEXT:FIJIH-67:fiji/orchestrate-development/v1`), unchanged from the draft, and read it back. Set checkpoint `null`, transition `handoff-recorded`.
