@@ -45,6 +45,11 @@ describe("normalizeTags", () => {
     expect(normalizeTags(["😀".repeat(32)])).toHaveLength(1);
     expect(normalizeTags(["😀".repeat(33)])).toBeNull();
   });
+  it("rejects an oversized tag without spreading it", () => {
+    expect(normalizeTags(["a".repeat(1_000_000)])).toBeNull();
+    expect(normalizeTags(["a".repeat(65)])).toBeNull();
+    expect(normalizeTags(["😀".repeat(32)])).toHaveLength(1);
+  });
   it("rejects inner whitespace and empty tags", () => {
     expect(normalizeTags(["a b"])).toBeNull();
     expect(normalizeTags(["a\tb"])).toBeNull();
