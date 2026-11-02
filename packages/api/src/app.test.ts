@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { createApp } from "./app.ts";
+import { BookmarkStore } from "./store.ts";
 
 const server = createApp();
 let base = "";
@@ -42,5 +43,34 @@ describe("bookmarks api", () => {
     });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
+  });
+});
+
+describe("bookmarks csv export", () => {
+  const csvStore = new BookmarkStore();
+  const csvServer = createApp(csvStore);
+  let csvBase = "";
+
+  beforeAll(async () => {
+    await new Promise<void>((resolve) => csvServer.listen(0, resolve));
+    csvBase = `http://localhost:${(csvServer.address() as AddressInfo).port}`;
+  });
+  afterAll(() => new Promise<void>((resolve) => csvServer.close(() => resolve())));
+
+  it("answers header only with csv headers when empty", async () => {
+    const res = await fetch(`${csvBase}/bookmarks.csv`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("text/csv; charset=utf-8");
+    expect(res.headers.get("content-disposition")).toBe('attachment; filename="bookmarks.csv"');
+    expect(await res.text()).toBe("title,url,createdAt\r\n");
+  });
+
+  it("lists bookmarks newest first", async () => {
+    csvStore.add({ url: "https://example.com/a", title: "A" }, () => new Date("2026-01-01T00:00:00.000Z"));
+    csvStore.add({ url: "https://example.com/b", title: "B, two" }, () => new Date("2026-01-02T00:00:00.000Z"));
+    const res = await fetch(`${csvBase}/bookmarks.csv`);
+    expect(await res.text()).toBe(
+      'title,url,createdAt\r\n"B, two",https://example.com/b,2026-01-02T00:00:00.000Z\r\nA,https://example.com/a,2026-01-01T00:00:00.000Z\r\n',
+    );
   });
 });

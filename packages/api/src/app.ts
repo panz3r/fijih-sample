@@ -1,9 +1,18 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import { bookmarksToCsv } from "./csv.ts";
 import { BookmarkStore, ValidationError } from "./store.ts";
 
 function send(res: ServerResponse, status: number, body?: unknown): void {
   res.writeHead(status, { "content-type": "application/json" });
   res.end(body === undefined ? undefined : JSON.stringify(body));
+}
+
+function sendCsv(res: ServerResponse, body: string): void {
+  res.writeHead(200, {
+    "content-type": "text/csv; charset=utf-8",
+    "content-disposition": 'attachment; filename="bookmarks.csv"',
+  });
+  res.end(body);
 }
 
 async function readJson(req: IncomingMessage): Promise<unknown> {
@@ -19,6 +28,7 @@ export function createApp(store = new BookmarkStore()): Server {
     try {
       if (req.method === "GET" && url.pathname === "/health") return send(res, 200, { ok: true });
       if (req.method === "GET" && url.pathname === "/bookmarks") return send(res, 200, store.list());
+      if (req.method === "GET" && url.pathname === "/bookmarks.csv") return sendCsv(res, bookmarksToCsv(store.list()));
       if (req.method === "POST" && url.pathname === "/bookmarks") {
         const body = (await readJson(req)) as { url?: string; title?: string };
         return send(res, 201, store.add({ url: body.url ?? "", title: body.title ?? "" }));

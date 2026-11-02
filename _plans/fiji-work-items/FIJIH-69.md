@@ -51,8 +51,8 @@ so that I can export my list and use it outside the app.
 
 - [x] Add a pure CSV serializer in `packages/api/src/csv.ts` (for example `bookmarksToCsv(bookmarks: readonly Bookmark[]): string`) that writes the header and one CRLF-terminated record per bookmark with RFC 4180 field escaping (AC: 2, 3, 4)
   - [x] Unit tests in `packages/api/src/csv.test.ts`: header only for an empty list; column order and CRLF terminators; a title containing a comma, a double quote, and a line break round-trips as one quoted field; plain fields stay unquoted (AC: 2, 3, 4, 6)
-- [ ] Add the `GET /bookmarks.csv` route in `packages/api/src/app.ts`, serializing `store.list()` and answering `200` with `content-type: text/csv; charset=utf-8` and `content-disposition: attachment; filename="bookmarks.csv"` (the existing `send` helper writes JSON only, so add a text writer or extend it) (AC: 1, 2, 5)
-  - [ ] Integration tests in `packages/api/src/app.test.ts` against a fresh store: status, content type, and content disposition; header-only body when empty; after adding two bookmarks, rows newest first with the right values; existing tests left unchanged (AC: 1, 2, 3, 5, 6)
+- [x] Add the `GET /bookmarks.csv` route in `packages/api/src/app.ts`, serializing `store.list()` and answering `200` with `content-type: text/csv; charset=utf-8` and `content-disposition: attachment; filename="bookmarks.csv"` (the existing `send` helper writes JSON only, so add a text writer or extend it) (AC: 1, 2, 5)
+  - [x] Integration tests in `packages/api/src/app.test.ts` against a fresh store: status, content type, and content disposition; header-only body when empty; after adding two bookmarks, rows newest first with the right values; existing tests left unchanged (AC: 1, 2, 3, 5, 6)
 - [ ] Add `GET /bookmarks.csv` to the `packages/api` row of the package table in `README.md` (AC: 7)
 
 ## Engineering Context
@@ -94,10 +94,13 @@ so that I can export my list and use it outside the app.
 
 - packages/api/src/csv.ts
 - packages/api/src/csv.test.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task 1 — Added `bookmarksToCsv` (RFC 4180 quoting, CRLF-terminated records) in `packages/api/src/csv.ts` with unit tests in `csv.test.ts`.
+Task 2 — Added `GET /bookmarks.csv` route with a `sendCsv` writer (`text/csv; charset=utf-8`, `content-disposition: attachment; filename="bookmarks.csv"`) serializing `store.list()`; integration tests use their own isolated store and server.
 
 ## Validation Evidence
 
