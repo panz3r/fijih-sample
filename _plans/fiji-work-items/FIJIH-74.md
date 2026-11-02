@@ -7,9 +7,9 @@ source:
   key: FIJIH-74
   revision: "2026-11-03T00:42:54.074+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -116,3 +116,4 @@ Asked under the Plan result's risks; Implementation follows the answers.
 ## Change Log
 
 - 2026-11-03: Plan drafted from FIJIH-74 at revision 2026-11-03T00:42:54.074+0100; issue assigned to Mattia Panzeri.
+- 2026-11-03: Approved: plan-approval — Approve with the proposed defaults. Publish: yes. Notify: yes.
