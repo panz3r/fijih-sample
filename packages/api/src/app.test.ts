@@ -43,4 +43,44 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  it("accepts tags, normalises them, and lists them", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/tagged", title: "T", tags: [" Work ", "work", "Read"] }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["work", "read"]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://example.com/tagged")?.tags).toEqual(["work", "read"]);
+  });
+
+  it("defaults tags to an empty array", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/untagged", title: "U" }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://example.com/untagged")?.tags).toEqual([]);
+  });
+
+  it.each([
+    ["too long", ["x".repeat(33)]],
+    ["inner whitespace", ["a b"]],
+    ["empty", ["  "]],
+    ["non-string element", ["a", 1]],
+    ["non-array", "a"],
+    ["null", null],
+  ])("rejects an invalid tags value (%s) and stores nothing", async (_name, tags) => {
+    const before = ((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length;
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/bad", title: "Bad", tags }),
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid tag" });
+    expect(((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length).toBe(before);
+  });
 });
