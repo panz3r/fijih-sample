@@ -42,16 +42,16 @@ export function sortByCreatedDesc<T extends { createdAt: string }>(items: readon
 /**
  * Trims, lower-cases, and deduplicates tags (first occurrence kept, input order).
  * Returns null when the input is not an array of strings, or a trimmed tag is empty,
- * longer than MAX_TAG_LENGTH, or contains whitespace.
+ * longer than MAX_TAG_LENGTH (measured before lower-casing), or contains whitespace.
  */
 export function normalizeTags(input: unknown): string[] | null {
   if (!Array.isArray(input)) return null;
   const tags = new Set<string>();
   for (const value of input) {
     if (typeof value !== "string") return null;
-    const tag = value.trim().toLowerCase();
-    if (tag === "" || tag.length > MAX_TAG_LENGTH || /\s/.test(tag)) return null;
-    tags.add(tag);
+    const trimmed = value.trim();
+    if (trimmed === "" || trimmed.length > MAX_TAG_LENGTH || /\s/.test(trimmed)) return null;
+    tags.add(trimmed.toLowerCase());
   }
   return [...tags];
 }

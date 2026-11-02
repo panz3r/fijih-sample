@@ -44,6 +44,12 @@ describe("normalizeTags", () => {
     expect(normalizeTags([])).toEqual([]);
   });
 
+  it("measures the length after trimming and before lower-casing", () => {
+    const tag = "İ".repeat(32);
+    expect(normalizeTags([`  ${tag}  `])).toEqual([tag.toLowerCase()]);
+    expect(normalizeTags(["İ".repeat(33)])).toBeNull();
+  });
+
   it("accepts 32 characters and rejects 33", () => {
     expect(MAX_TAG_LENGTH).toBe(32);
     expect(normalizeTags(["x".repeat(32)])).toEqual(["x".repeat(32)]);
