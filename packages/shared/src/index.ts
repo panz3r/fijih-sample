@@ -39,12 +39,21 @@ export function sortByCreatedDesc<T extends { createdAt: string }>(items: readon
 
 export const MAX_TAG_LENGTH = 32;
 
-/** `trim()` plus U+0085 (NEXT LINE), which `trim()` keeps although it is Unicode whitespace; linear time. */
+/** True for the code units `\s` matches plus U+0085 (NEXT LINE), which `trim()` keeps although it is whitespace. */
+function isTagSpace(code: number): boolean {
+  return (
+    (code >= 9 && code <= 13) || code === 32 || code === 133 || code === 160 || code === 5760 ||
+    (code >= 8192 && code <= 8202) || code === 8232 || code === 8233 || code === 8239 || code === 8287 ||
+    code === 12288 || code === 65279
+  );
+}
+
+/** Trims `isTagSpace` code units from both ends in linear time, with no per-character allocation. */
 function trimTag(tag: string): string {
   let start = 0;
   let end = tag.length;
-  while (start < end && (tag[start] === "\u0085" || tag[start]!.trim() === "")) start++;
-  while (end > start && (tag[end - 1] === "\u0085" || tag[end - 1]!.trim() === "")) end--;
+  while (start < end && isTagSpace(tag.charCodeAt(start))) start++;
+  while (end > start && isTagSpace(tag.charCodeAt(end - 1))) end--;
   return tag.slice(start, end);
 }
 
@@ -61,7 +70,6 @@ export function normalizeTags(value: unknown): string[] | null {
     const trimmed = trimTag(tag);
     // A code point is at most 2 UTF-16 units, so a longer string is over the limit; this avoids spreading it.
     if (!trimmed || trimmed.length > MAX_TAG_LENGTH * 2 || [...trimmed].length > MAX_TAG_LENGTH) return null;
-    // `\s` omits U+0085 (NEXT LINE), which is still Unicode whitespace.
     if (/[\s\u0085]/u.test(trimmed)) return null;
     out.add(trimmed.toLowerCase());
   }

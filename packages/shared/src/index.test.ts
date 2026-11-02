@@ -55,6 +55,21 @@ describe("normalizeTags", () => {
     expect(normalizeTags(["\u0085"])).toBeNull();
     expect(normalizeTags(["\u0085a\u0085b\u0085"])).toBeNull();
   });
+  it("trims every whitespace code unit that validation rejects, and nothing else", () => {
+    for (let code = 0; code < 0x10000; code++) {
+      if (code >= 0xd800 && code <= 0xdfff) continue;
+      const ch = String.fromCharCode(code);
+      const isSpace = /[\s\u0085]/u.test(ch);
+      const padded = `${ch}a${ch}`;
+      expect(normalizeTags([padded])).toEqual(isSpace ? ["a"] : [padded.toLowerCase()]);
+      expect(normalizeTags([`a${ch}b`]) === null).toBe(isSpace);
+    }
+  });
+  it("trims a heavily padded tag quickly", () => {
+    const start = performance.now();
+    expect(normalizeTags([" \u0085".repeat(500_000) + "a" + "\u0085 ".repeat(500_000)])).toEqual(["a"]);
+    expect(performance.now() - start).toBeLessThan(1000);
+  });
   it("rejects inner whitespace and empty tags", () => {
     expect(normalizeTags(["a b"])).toBeNull();
     expect(normalizeTags(["a\tb"])).toBeNull();
