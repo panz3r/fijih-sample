@@ -8,10 +8,10 @@ source:
   revision: 2026-11-02T19:31:03.625+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
+  phase: implementation
+  checkpoint: null
   transition: qa-reviewed
-  attempt: 1
+  attempt: 2
 quality:
   gate: concerns
 artifacts:
@@ -64,6 +64,10 @@ so that I can group related bookmarks.
   - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in its own `chore:` commit.
 - [x] Run the repository checks (AC: 5)
   - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their results in Validation Evidence.
+- [ ] Validate tags after the duplicate-URL check (AC: 2, 5; Re-entry 2)
+  - [ ] In `packages/api/src/store.ts`, move tag validation after the duplicate-URL check so existing error responses keep their order.
+  - [ ] Add a test in `packages/api/src/store.test.ts` (and one in `app.test.ts` over HTTP) for a duplicate URL plus an invalid tag answering `url already bookmarked`.
+  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
 
 ## Engineering Context
 
@@ -173,3 +177,4 @@ Unmet required validations: none.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality gate recorded: concerns (one minor finding) at 3948357.
 - Finalize (Local QA review): added `(commit <hash>)` lines under the Implementation Record entries for Tasks 1-5 (routine reconciliation); all tasks and acceptance criteria have committed evidence on the branch; File List matches the 10 non-work-item files in the branch diff; no discrepancies. Checkpoint local-qa-review set.
+- Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip 358ed86, user decision: "Request more work: move tag validation after the duplicate-URL check, so existing error responses keep their order, with a test for a duplicate URL plus an invalid tag. Keep Publish as granted."
