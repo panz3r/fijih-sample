@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 quality:
   gate: pass
@@ -185,3 +185,4 @@ Residual risks: none.
 - 2026-11-03: Finalize: added commit citations (085ce64, b3d36b2, ff5a75d, 8bce3ff) to the four task entries in Implementation Record (routine reconciliation); each task's entry was added by its own commit; no task or evidence discrepancies; File List matches the branch diff; checkpoint set to local-qa-review.
 - 2026-11-03: Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip dd5f2f9: "Request the fix first: measure the tag length after trimming and before lower-casing, with a test for it. Keep Publish and Notify as granted."
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03: Finalize (re-entry 2): checked every task and criterion against commits 085ce64..a0d0cb7; all have evidence, no discrepancies, no bookkeeping slips; File List matches the branch diff; checkpoint set to local-qa-review.
