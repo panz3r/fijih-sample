@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: pass
@@ -101,8 +101,11 @@ so that I can export my list and use it outside the app.
 ## Implementation Record
 
 Task 1 — Added `bookmarksToCsv` (RFC 4180 quoting, CRLF-terminated records) in `packages/api/src/csv.ts` with unit tests in `csv.test.ts`.
+(commit bd15f37)
 Task 2 — Added `GET /bookmarks.csv` route with a `sendCsv` writer (`text/csv; charset=utf-8`, `content-disposition: attachment; filename="bookmarks.csv"`) serializing `store.list()`; integration tests use their own isolated store and server.
+(commit dbf8ffb)
 Task 3 — Added `GET /bookmarks.csv` to the `packages/api` row of the README package table.
+(commit 9a88913)
 Stale-statement sweep — `/bookmarks.csv`, `GET /bookmarks`, `content-type`, `GET /health`, route lists
 none found
 
@@ -148,3 +151,4 @@ Stale statements: none. Searched for route lists and `/bookmarks` references in 
 - Approved: plan-approval — conditional: Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename="bookmarks.csv". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan. (verified at 0416a16bc1fb96258197ddff49ce56b00948e62d) (answering: Task 3 is the live smoke check ... Do you want to defer this check now, or keep it?)
 - Implementation complete: tasks 1-3 done; `pnpm test`, `pnpm lint`, `pnpm typecheck` pass; Jira FIJIH-69 moved to In Progress.
 - Approved: implementation-approval — automatic (no risk triggers)
+- Finalize reconciliation (qa-review): added `(commit <hash>)` citations to the Implementation Record entries for tasks 1-3; all tasks and acceptance criteria have committed evidence on the branch, File List matches the branch diff, Validation Evidence has one line per criterion; no task/evidence discrepancies. Checkpoint set to local-qa-review.
