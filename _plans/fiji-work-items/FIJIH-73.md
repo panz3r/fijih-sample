@@ -7,9 +7,9 @@ source:
   key: FIJIH-73
   revision: 2026-11-02T19:31:03.625+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -109,3 +109,6 @@ so that I can group related bookmarks.
 ## Review Record
 
 ## Change Log
+
+- Approved: plan-approval — Approve, taking your recommendations for all seven questions. Publish: yes.
+- Defaults taken at plan approval (recommendations accepted): (1) the 32-character limit counts Unicode code points of the trimmed tag, measured before lower-casing; (2) a tag empty after trimming is rejected with `400 {"error":"invalid tag"}`; (3) a non-array `tags` or a non-string element answers `400 {"error":"invalid tag"}`; (4) deduplicated tags keep the order of first appearance in the request; (5) the page separates tags with ", " in one element right after the title link; (6) the web add form gets no tags input (out of scope); (7) no limit on the number of tags per bookmark.
