@@ -60,8 +60,8 @@ so that I can group related bookmarks.
 - [x] Show tags on the web page (AC: 4, 5)
   - [x] In `packages/web/src/render.ts`, render the tags after the title link, joined with the agreed separator, and render no tag element when the list is empty; adjust `packages/web/index.html` styles only if the extra element breaks the row layout.
   - [x] Update the existing fixture in `packages/web/src/render.test.ts` with `tags`, and add tests for a bookmark with several tags (text and position after the title) and for a bookmark with no tags (no tag element, no separator).
-- [ ] Update the bundle-size baseline (AC: 4)
-  - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in its own `chore:` commit.
+- [x] Update the bundle-size baseline (AC: 4)
+  - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in its own `chore:` commit.
 - [ ] Run the repository checks (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their results in Validation Evidence.
 
@@ -109,6 +109,7 @@ so that I can group related bookmarks.
 - packages/web/src/render.ts
 - packages/web/index.html
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -116,6 +117,7 @@ Task 1 — shared model: added `tags` to `Bookmark`/`NewBookmark` and `normalize
 Task 2 — API store: `BookmarkStore.add` normalises `input.tags` (default `[]`), throws `ValidationError("invalid tag")` before storing; tests for default, normalised listing, rejection without storing. `pnpm --filter @sample/api test`: 6 passed; typecheck passed.
 Task 3 — HTTP: `POST /bookmarks` passes `tags` to the store; invalid values (too long, inner whitespace, empty, non-string element, non-array, null) answer `400 {"error":"invalid tag"}`; tests cover POST with/without tags, 400 cases, and GET. `pnpm --filter @sample/api test`: 14 passed; typecheck passed.
 Task 4 — web: `renderList` renders a `span.tags` (tags joined with ", ") right after the title link and nothing for no tags; added a `.tags` style so the row layout holds; fixture and tests updated. `pnpm --filter @sample/web test`: 4 passed; typecheck passed.
+Task 5 — baseline: `pnpm build` then `pnpm measure` gave `web_bundle_gzip_bytes=881`, delta 46 from 835; set `measure/baseline.json` to 881. Re-measured after the edit: delta 0.
 
 ## Validation Evidence
 
@@ -131,3 +133,4 @@ Task 4 — web: `renderList` renders a `span.tags` (tags joined with ", ") right
 - Task 2 implemented: store tags.
 - Task 3 implemented: tags over HTTP.
 - Task 4 implemented: tags on the page.
+- Task 5 implemented: baseline updated.
