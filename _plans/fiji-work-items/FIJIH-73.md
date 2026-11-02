@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -62,8 +62,8 @@ so that I can group related bookmarks.
   - [x] Update the existing fixture in `packages/web/src/render.test.ts` with `tags`, and add tests for a bookmark with several tags (text and position after the title) and for a bookmark with no tags (no tag element, no separator).
 - [x] Update the bundle-size baseline (AC: 4)
   - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in its own `chore:` commit.
-- [ ] Run the repository checks (AC: 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their results in Validation Evidence.
+- [x] Run the repository checks (AC: 5)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their results in Validation Evidence.
 
 ## Engineering Context
 
@@ -112,21 +112,29 @@ so that I can group related bookmarks.
 - measure/baseline.json
 
 ## Implementation Record
-
 Task 1 — shared model: added `tags` to `Bookmark`/`NewBookmark` and `normalizeTags` (trim, lower-case, dedupe in first-appearance order; null for non-array, non-string, empty, over 32 code points, or inner whitespace) with tests. `pnpm --filter @sample/shared test`: 10 passed; typecheck passed.
 Task 2 — API store: `BookmarkStore.add` normalises `input.tags` (default `[]`), throws `ValidationError("invalid tag")` before storing; tests for default, normalised listing, rejection without storing. `pnpm --filter @sample/api test`: 6 passed; typecheck passed.
 Task 3 — HTTP: `POST /bookmarks` passes `tags` to the store; invalid values (too long, inner whitespace, empty, non-string element, non-array, null) answer `400 {"error":"invalid tag"}`; tests cover POST with/without tags, 400 cases, and GET. `pnpm --filter @sample/api test`: 14 passed; typecheck passed.
 Task 4 — web: `renderList` renders a `span.tags` (tags joined with ", ") right after the title link and nothing for no tags; added a `.tags` style so the row layout holds; fixture and tests updated. `pnpm --filter @sample/web test`: 4 passed; typecheck passed.
 Task 5 — baseline: `pnpm build` then `pnpm measure` gave `web_bundle_gzip_bytes=881`, delta 46 from 835; set `measure/baseline.json` to 881. Re-measured after the edit: delta 0.
+Task 6 — repository checks: from the repository root `pnpm test` (shared 10, api 14, web 4 passed), `pnpm lint` and `pnpm typecheck` passed. (checked at c21d140)
+
+Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `renderList`, `invalid tag`, title/url body fields
+none found (README.md line 10 describes the endpoints only and stays true).
 
 ## Validation Evidence
+
+AC-1: passed — shared normalizeTags tests and api store/app tests (`pnpm test`).
+AC-2: passed — 400 `{"error":"invalid tag"}` for too long, inner whitespace, empty, non-string, non-array, null; nothing stored (api app and store tests).
+AC-3: passed — `GET /bookmarks` returns tags (api app test).
+AC-4: passed — web render tests: `span.tags` after the title with ", "; none for no tags.
+AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root; `pnpm measure` delta 0 after baseline update to 881.
 
 ## Quality Gate
 
 ## Review Record
 
 ## Change Log
-
 - Approved: plan-approval — Approve, taking your recommendations for all seven questions. Publish: yes.
 - Defaults taken at plan approval (recommendations accepted): (1) the 32-character limit counts Unicode code points of the trimmed tag, measured before lower-casing; (2) a tag empty after trimming is rejected with `400 {"error":"invalid tag"}`; (3) a non-array `tags` or a non-string element answers `400 {"error":"invalid tag"}`; (4) deduplicated tags keep the order of first appearance in the request; (5) the page separates tags with ", " in one element right after the title link; (6) the web add form gets no tags input (out of scope); (7) no limit on the number of tags per bookmark.
 - Task 1 implemented: shared tag model and normaliser.
@@ -134,3 +142,4 @@ Task 5 — baseline: `pnpm build` then `pnpm measure` gave `web_bundle_gzip_byte
 - Task 3 implemented: tags over HTTP.
 - Task 4 implemented: tags on the page.
 - Task 5 implemented: baseline updated.
+- Task 6 checks run; stale-statement sweep found nothing; implementation complete.
