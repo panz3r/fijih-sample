@@ -42,4 +42,10 @@ describe("page styles", () => {
     expect(rule).toMatch(/min-width:\s*0/);
     expect(rule).toMatch(/overflow-wrap:\s*anywhere/);
   });
+  it("lets the title link shrink and break when tags share its row", () => {
+    const html = readFileSync("index.html", "utf8");
+    const rule = /li a\s*\{([^}]*)\}/.exec(html)?.[1] ?? "";
+    expect(rule).toMatch(/min-width:\s*0/);
+    expect(rule).toMatch(/overflow-wrap:\s*anywhere/);
+  });
 });
