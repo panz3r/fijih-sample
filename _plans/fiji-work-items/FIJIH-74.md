@@ -60,9 +60,9 @@ so that I can group my bookmarks.
 - [x] Web: show tags after the title (AC: 4, 5)
   - [x] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the title link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing when there are none. Use `textContent`, never `innerHTML`.
   - [x] `packages/web/src/render.test.ts`: update the existing fixture to carry `tags: []`; add tests that a bookmark with `["work", "reading"]` shows `work, reading` after the title and that a bookmark with no tags renders no tags element.
-- [ ] Update the bundle-size baseline and run the project checks (AC: 6)
-  - [ ] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` to `measure/baseline.json`.
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
+- [x] Update the bundle-size baseline and run the project checks (AC: 6)
+  - [x] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` to `measure/baseline.json`.
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
 
 ## Engineering Context
 
@@ -113,6 +113,7 @@ Asked under the Plan result's risks; Implementation follows the answers.
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -122,6 +123,8 @@ Task 2 — API: `BookmarkStore.add` normalises `tags ?? []` and throws `Validati
 api: `pnpm --filter @sample/api test` 16 passed.
 Task 3 — Web: `renderList` appends `<span class="tags">` with `tags.join(", ")` (textContent) after the title link when a bookmark has tags, nothing otherwise; fixture updated and two tests added.
 web: `pnpm --filter @sample/web test` 4 passed.
+Task 4 — Baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (was 835); `measure/baseline.json` updated to 881; re-running `pnpm measure` reports delta 0.
+Root `pnpm test`, `pnpm lint`, `pnpm typecheck` all exit 0.
 
 ## Validation Evidence
 
