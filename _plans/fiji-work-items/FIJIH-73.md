@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -113,10 +113,15 @@ so that I can group related bookmarks.
 
 ## Implementation Record
 Task 1 — shared model: added `tags` to `Bookmark`/`NewBookmark` and `normalizeTags` (trim, lower-case, dedupe in first-appearance order; null for non-array, non-string, empty, over 32 code points, or inner whitespace) with tests. `pnpm --filter @sample/shared test`: 10 passed; typecheck passed.
+(commit 6147464)
 Task 2 — API store: `BookmarkStore.add` normalises `input.tags` (default `[]`), throws `ValidationError("invalid tag")` before storing; tests for default, normalised listing, rejection without storing. `pnpm --filter @sample/api test`: 6 passed; typecheck passed.
+(commit 8727de0)
 Task 3 — HTTP: `POST /bookmarks` passes `tags` to the store; invalid values (too long, inner whitespace, empty, non-string element, non-array, null) answer `400 {"error":"invalid tag"}`; tests cover POST with/without tags, 400 cases, and GET. `pnpm --filter @sample/api test`: 14 passed; typecheck passed.
+(commit 78678d2)
 Task 4 — web: `renderList` renders a `span.tags` (tags joined with ", ") right after the title link and nothing for no tags; added a `.tags` style so the row layout holds; fixture and tests updated. `pnpm --filter @sample/web test`: 4 passed; typecheck passed.
+(commit f80806a)
 Task 5 — baseline: `pnpm build` then `pnpm measure` gave `web_bundle_gzip_bytes=881`, delta 46 from 835; set `measure/baseline.json` to 881. Re-measured after the edit: delta 0.
+(commit c21d140)
 Task 6 — repository checks: from the repository root `pnpm test` (shared 10, api 14, web 4 passed), `pnpm lint` and `pnpm typecheck` passed. (checked at c21d140)
 
 Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `renderList`, `invalid tag`, title/url body fields
@@ -167,3 +172,4 @@ Unmet required validations: none.
 - Task 6 checks run; stale-statement sweep found nothing; implementation complete.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality gate recorded: concerns (one minor finding) at 3948357.
+- Finalize (Local QA review): added `(commit <hash>)` lines under the Implementation Record entries for Tasks 1-5 (routine reconciliation); all tasks and acceptance criteria have committed evidence on the branch; File List matches the 10 non-work-item files in the branch diff; no discrepancies. Checkpoint local-qa-review set.
