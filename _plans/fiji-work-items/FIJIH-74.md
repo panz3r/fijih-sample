@@ -8,10 +8,10 @@ source:
   revision: "2026-11-03T00:42:54.074+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
+  phase: implementation
+  checkpoint: null
   transition: qa-reviewed
-  attempt: 1
+  attempt: 2
 quality:
   gate: concerns
 artifacts:
@@ -63,6 +63,9 @@ so that I can group my bookmarks.
 - [x] Update the bundle-size baseline and run the project checks (AC: 6)
   - [x] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` to `measure/baseline.json`.
   - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
+- [ ] Re-entry 2: measure the tag length before lower-casing (AC: 1, 2, 5)
+  - [ ] `packages/shared/src/index.ts`: in `normalizeTags`, check `MAX_TAG_LENGTH` on the trimmed tag before lower-casing (a 32-character trimmed tag is valid even when its lower-case form is longer); keep the empty and whitespace checks.
+  - [ ] `packages/shared/src/index.test.ts`: test that `normalizeTags(["İ".repeat(32)])` is accepted and that 33 trimmed characters are still rejected.
 
 ## Engineering Context
 
@@ -175,3 +178,4 @@ Residual risks: none.
 - 2026-11-03: Implementation complete; Jira FIJIH-74 moved to In Progress.
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Finalize: added commit citations (085ce64, b3d36b2, ff5a75d, 8bce3ff) to the four task entries in Implementation Record (routine reconciliation); each task's entry was added by its own commit; no task or evidence discrepancies; File List matches the branch diff; checkpoint set to local-qa-review.
+- 2026-11-03: Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip dd5f2f9: "Request the fix first: measure the tag length after trimming and before lower-casing, with a test for it. Keep Publish and Notify as granted."
