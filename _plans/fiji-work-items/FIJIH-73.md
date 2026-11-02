@@ -51,9 +51,9 @@ so that I can group related bookmarks.
   - [x] In `packages/shared/src/index.ts`, add `tags: string[]` to `Bookmark` and an optional `tags?: string[]` to `NewBookmark`.
   - [x] Add a pure tag normaliser (for example `normalizeTags`) that trims, lower-cases, and deduplicates tags and reports an invalid tag (longer than 32 characters or containing whitespace after trimming).
   - [x] Add tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication (including duplicates that differ only by case or surrounding spaces), empty input, a 32-character tag accepted, a 33-character tag rejected, an inner space or tab rejected.
-- [ ] Store normalised tags in the API store (AC: 1, 2, 3, 5)
-  - [ ] In `packages/api/src/store.ts`, normalise `input.tags` (default `[]`) in `add`, throw `ValidationError("invalid tag")` for an invalid tag before anything is stored, and keep the tags on the stored bookmark.
-  - [ ] Add tests in `packages/api/src/store.test.ts`: default `[]`, normalised tags stored and listed, an invalid tag rejected with no bookmark added.
+- [x] Store normalised tags in the API store (AC: 1, 2, 3, 5)
+  - [x] In `packages/api/src/store.ts`, normalise `input.tags` (default `[]`) in `add`, throw `ValidationError("invalid tag")` for an invalid tag before anything is stored, and keep the tags on the stored bookmark.
+  - [x] Add tests in `packages/api/src/store.test.ts`: default `[]`, normalised tags stored and listed, an invalid tag rejected with no bookmark added.
 - [ ] Accept and return tags over HTTP (AC: 1, 2, 3, 5)
   - [ ] In `packages/api/src/app.ts`, pass the request body's `tags` to `store.add`, and answer `400 {"error":"invalid tag"}` for an invalid tags value per the answer to the open shape question.
   - [ ] Add tests in `packages/api/src/app.test.ts`: `POST` with tags returns `201` and normalised tags; `POST` without tags returns `tags: []`; a too-long tag and a tag with inner whitespace return `400 {"error":"invalid tag"}`; `GET /bookmarks` returns each bookmark's tags.
@@ -102,10 +102,13 @@ so that I can group related bookmarks.
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/store.test.ts
 
 ## Implementation Record
 
 Task 1 — shared model: added `tags` to `Bookmark`/`NewBookmark` and `normalizeTags` (trim, lower-case, dedupe in first-appearance order; null for non-array, non-string, empty, over 32 code points, or inner whitespace) with tests. `pnpm --filter @sample/shared test`: 10 passed; typecheck passed.
+Task 2 — API store: `BookmarkStore.add` normalises `input.tags` (default `[]`), throws `ValidationError("invalid tag")` before storing; tests for default, normalised listing, rejection without storing. `pnpm --filter @sample/api test`: 6 passed; typecheck passed.
 
 ## Validation Evidence
 
@@ -118,3 +121,4 @@ Task 1 — shared model: added `tags` to `Bookmark`/`NewBookmark` and `normalize
 - Approved: plan-approval — Approve, taking your recommendations for all seven questions. Publish: yes.
 - Defaults taken at plan approval (recommendations accepted): (1) the 32-character limit counts Unicode code points of the trimmed tag, measured before lower-casing; (2) a tag empty after trimming is rejected with `400 {"error":"invalid tag"}`; (3) a non-array `tags` or a non-string element answers `400 {"error":"invalid tag"}`; (4) deduplicated tags keep the order of first appearance in the request; (5) the page separates tags with ", " in one element right after the title link; (6) the web add form gets no tags input (out of scope); (7) no limit on the number of tags per bookmark.
 - Task 1 implemented: shared tag model and normaliser.
+- Task 2 implemented: store tags.
