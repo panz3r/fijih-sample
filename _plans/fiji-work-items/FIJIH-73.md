@@ -57,9 +57,9 @@ so that I can group related bookmarks.
 - [x] Accept and return tags over HTTP (AC: 1, 2, 3, 5)
   - [x] In `packages/api/src/app.ts`, pass the request body's `tags` to `store.add`, and answer `400 {"error":"invalid tag"}` for an invalid tags value per the answer to the open shape question.
   - [x] Add tests in `packages/api/src/app.test.ts`: `POST` with tags returns `201` and normalised tags; `POST` without tags returns `tags: []`; a too-long tag and a tag with inner whitespace return `400 {"error":"invalid tag"}`; `GET /bookmarks` returns each bookmark's tags.
-- [ ] Show tags on the web page (AC: 4, 5)
-  - [ ] In `packages/web/src/render.ts`, render the tags after the title link, joined with the agreed separator, and render no tag element when the list is empty; adjust `packages/web/index.html` styles only if the extra element breaks the row layout.
-  - [ ] Update the existing fixture in `packages/web/src/render.test.ts` with `tags`, and add tests for a bookmark with several tags (text and position after the title) and for a bookmark with no tags (no tag element, no separator).
+- [x] Show tags on the web page (AC: 4, 5)
+  - [x] In `packages/web/src/render.ts`, render the tags after the title link, joined with the agreed separator, and render no tag element when the list is empty; adjust `packages/web/index.html` styles only if the extra element breaks the row layout.
+  - [x] Update the existing fixture in `packages/web/src/render.test.ts` with `tags`, and add tests for a bookmark with several tags (text and position after the title) and for a bookmark with no tags (no tag element, no separator).
 - [ ] Update the bundle-size baseline (AC: 4)
   - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in its own `chore:` commit.
 - [ ] Run the repository checks (AC: 5)
@@ -106,12 +106,16 @@ so that I can group related bookmarks.
 - packages/api/src/store.test.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/index.html
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
 Task 1 — shared model: added `tags` to `Bookmark`/`NewBookmark` and `normalizeTags` (trim, lower-case, dedupe in first-appearance order; null for non-array, non-string, empty, over 32 code points, or inner whitespace) with tests. `pnpm --filter @sample/shared test`: 10 passed; typecheck passed.
 Task 2 — API store: `BookmarkStore.add` normalises `input.tags` (default `[]`), throws `ValidationError("invalid tag")` before storing; tests for default, normalised listing, rejection without storing. `pnpm --filter @sample/api test`: 6 passed; typecheck passed.
 Task 3 — HTTP: `POST /bookmarks` passes `tags` to the store; invalid values (too long, inner whitespace, empty, non-string element, non-array, null) answer `400 {"error":"invalid tag"}`; tests cover POST with/without tags, 400 cases, and GET. `pnpm --filter @sample/api test`: 14 passed; typecheck passed.
+Task 4 — web: `renderList` renders a `span.tags` (tags joined with ", ") right after the title link and nothing for no tags; added a `.tags` style so the row layout holds; fixture and tests updated. `pnpm --filter @sample/web test`: 4 passed; typecheck passed.
 
 ## Validation Evidence
 
@@ -126,3 +130,4 @@ Task 3 — HTTP: `POST /bookmarks` passes `tags` to the store; invalid values (t
 - Task 1 implemented: shared tag model and normaliser.
 - Task 2 implemented: store tags.
 - Task 3 implemented: tags over HTTP.
+- Task 4 implemented: tags on the page.
