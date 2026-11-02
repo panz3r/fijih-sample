@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -53,7 +53,7 @@ so that I can export my list and use it outside the app.
   - [x] Unit tests in `packages/api/src/csv.test.ts`: header only for an empty list; column order and CRLF terminators; a title containing a comma, a double quote, and a line break round-trips as one quoted field; plain fields stay unquoted (AC: 2, 3, 4, 6)
 - [x] Add the `GET /bookmarks.csv` route in `packages/api/src/app.ts`, serializing `store.list()` and answering `200` with `content-type: text/csv; charset=utf-8` and `content-disposition: attachment; filename="bookmarks.csv"` (the existing `send` helper writes JSON only, so add a text writer or extend it) (AC: 1, 2, 5)
   - [x] Integration tests in `packages/api/src/app.test.ts` against a fresh store: status, content type, and content disposition; header-only body when empty; after adding two bookmarks, rows newest first with the right values; existing tests left unchanged (AC: 1, 2, 3, 5, 6)
-- [ ] Add `GET /bookmarks.csv` to the `packages/api` row of the package table in `README.md` (AC: 7)
+- [x] Add `GET /bookmarks.csv` to the `packages/api` row of the package table in `README.md` (AC: 7)
 
 ## Engineering Context
 
@@ -96,13 +96,25 @@ so that I can export my list and use it outside the app.
 - packages/api/src/csv.test.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- README.md
 
 ## Implementation Record
 
 Task 1 — Added `bookmarksToCsv` (RFC 4180 quoting, CRLF-terminated records) in `packages/api/src/csv.ts` with unit tests in `csv.test.ts`.
 Task 2 — Added `GET /bookmarks.csv` route with a `sendCsv` writer (`text/csv; charset=utf-8`, `content-disposition: attachment; filename="bookmarks.csv"`) serializing `store.list()`; integration tests use their own isolated store and server.
+Task 3 — Added `GET /bookmarks.csv` to the `packages/api` row of the README package table.
+Stale-statement sweep — `/bookmarks.csv`, `GET /bookmarks`, `content-type`, `GET /health`, route lists
+none found
 
 ## Validation Evidence
+
+AC-1: passed — `app.test.ts` "answers header only with csv headers when empty" asserts 200, content-type and content-disposition (`pnpm --filter @sample/api test`, 9 passed).
+AC-2: passed — `csv.test.ts` and `app.test.ts` "lists bookmarks newest first" (header, column order, CRLF, newest first).
+AC-3: passed — `csv.test.ts` empty list and `app.test.ts` empty store assert `title,url,createdAt\r\n`.
+AC-4: passed — `csv.test.ts` quoting test (comma, double quote, CR, LF; plain fields unquoted).
+AC-5: passed — existing `app.test.ts` tests unchanged and passing (`pnpm test`; `pnpm lint` and `pnpm typecheck` clean).
+AC-6: passed — tests for criteria 1-4 in `packages/api/src/csv.test.ts` and `app.test.ts`.
+AC-7: passed — `README.md` packages table row lists `GET /bookmarks.csv`.
 
 ## Quality Gate
 
@@ -112,3 +124,4 @@ Task 2 — Added `GET /bookmarks.csv` route with a `sendCsv` writer (`text/csv; 
 
 - Plan repair (plan-approval, conditional approval): "Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename=\"bookmarks.csv\". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan." Applied: README task and AC 7 added; `content-disposition` added to AC 1, the route task, and its integration test; formula-injection neutralising declined (AC 4 unchanged); RFC 4180 and CRLF confirmed; live smoke check task removed; open decisions recorded under Defaults taken at plan approval.
 - Approved: plan-approval — conditional: Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename="bookmarks.csv". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan. (verified at 0416a16bc1fb96258197ddff49ce56b00948e62d) (answering: Task 3 is the live smoke check ... Do you want to defer this check now, or keep it?)
+- Implementation complete: tasks 1-3 done; `pnpm test`, `pnpm lint`, `pnpm typecheck` pass; Jira FIJIH-69 moved to In Progress.
