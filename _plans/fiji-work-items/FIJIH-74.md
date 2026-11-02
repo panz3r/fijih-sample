@@ -8,9 +8,9 @@ source:
   revision: "2026-11-03T00:42:54.074+0100"
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 2
 quality:
   gate: pass
@@ -190,3 +190,5 @@ Residual risks: none.
 - 2026-11-03: Finalize (re-entry 2): checked every task and criterion against commits 085ce64..a0d0cb7; all have evidence, no discrepancies, no bookkeeping slips; File List matches the branch diff; checkpoint set to local-qa-review.
 - 2026-11-03: Approved: local-qa-review — Approve.
 - 2026-11-03: Delivery: changeset .changeset/fijih-74-add-tags-to-bookmarks.md (commit e7d1bdb) pushed; draft pull request #20 opened with title `[FIJIH-74] Add tags to bookmarks`, label enhancement, assignee panz3r; Copilot review requested (review_requested event confirmed); no reviewers requested (Ready-for-review pending); no (verify: ci) criterion.
+- 2026-11-03: Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Approve with the proposed defaults. Publish: yes. Notify: yes."; verified at 4e56e2e)
+- 2026-11-03: Ready-for-review: pull request #20 marked ready for review; review requested from `duckyduff369` (QA Engineer, Bookmarks team); `panz3r` is the author and is not requested. Confirmed by the timeline `review_requested` event and `requested_reviewers`.
