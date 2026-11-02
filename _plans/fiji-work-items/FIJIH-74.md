@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: qa-reviewed
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 quality:
   gate: concerns
@@ -63,9 +63,9 @@ so that I can group my bookmarks.
 - [x] Update the bundle-size baseline and run the project checks (AC: 6)
   - [x] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` to `measure/baseline.json`.
   - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
-- [ ] Re-entry 2: measure the tag length before lower-casing (AC: 1, 2, 5)
-  - [ ] `packages/shared/src/index.ts`: in `normalizeTags`, check `MAX_TAG_LENGTH` on the trimmed tag before lower-casing (a 32-character trimmed tag is valid even when its lower-case form is longer); keep the empty and whitespace checks.
-  - [ ] `packages/shared/src/index.test.ts`: test that `normalizeTags(["İ".repeat(32)])` is accepted and that 33 trimmed characters are still rejected.
+- [x] Re-entry 2: measure the tag length before lower-casing (AC: 1, 2, 5)
+  - [x] `packages/shared/src/index.ts`: in `normalizeTags`, check `MAX_TAG_LENGTH` on the trimmed tag before lower-casing (a 32-character trimmed tag is valid even when its lower-case form is longer); keep the empty and whitespace checks.
+  - [x] `packages/shared/src/index.test.ts`: test that `normalizeTags(["İ".repeat(32)])` is accepted and that 33 trimmed characters are still rejected.
 
 ## Engineering Context
 
@@ -134,15 +134,20 @@ Task 4 — Baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_b
 Root `pnpm test`, `pnpm lint`, `pnpm typecheck` all exit 0.
 Stale-statement sweep — Bookmark, NewBookmark, tags, "invalid tag", POST /bookmarks, GET /bookmarks, createdAt
 none found (README.md lists endpoints only; scenarios/ notes quote the Jira criteria, a historical input; no documentation, AGENTS.md text, comment, or test description is made untrue).
+Task 5 — Re-entry 2: `normalizeTags` checks `MAX_TAG_LENGTH` on the trimmed tag before lower-casing and stores the lower-cased tag (which may then exceed 32 code units); new test that 32 "İ" (trimmed, with surrounding spaces) is accepted and 33 rejected.
+(commit a0d0cb7)
+shared: 13 passed; root `pnpm test` (shared 13, api 16, web 4), `pnpm lint`, `pnpm typecheck` exit 0; `pnpm build` + `pnpm measure` print 881, delta 0, baseline unchanged.
+Stale-statement sweep — normalizeTags, MAX_TAG_LENGTH, lower-cased
+none found (scenarios/S1.md quotes the Jira criterion, a historical input; the normaliser doc comment was updated in the change commit).
 
 ## Validation Evidence
 
-- AC-1: passed — shared `normalizeTags` tests and API store/HTTP tests (trim, lower-case, dedupe in order, default `[]`, 201 with tags).
-- AC-2: passed — 33-character, inner-whitespace, empty, and non-array/non-string tags give 400 `{"error":"invalid tag"}` and store nothing (store and HTTP tests).
+- AC-1: passed — re-measured after re-entry 2 (a 32-character trimmed tag whose lower-case form is longer is accepted); shared `normalizeTags` tests and API store/HTTP tests (trim, lower-case, dedupe in order, default `[]`, 201 with tags).
+- AC-2: passed — re-measured after re-entry 2 (length measured after trimming, before lower-casing); 33-character, inner-whitespace, empty, and non-array/non-string tags give 400 `{"error":"invalid tag"}` and store nothing (store and HTTP tests).
 - AC-3: passed — HTTP test: `GET /bookmarks` returns each bookmark's `tags`.
 - AC-4: passed — web `renderList` tests: `work, reading` after the title link; no `.tags` element when empty.
-- AC-5: passed — Vitest tests added in packages/shared, packages/api, packages/web (shared 12, api 16, web 4 tests pass).
-- AC-6: passed — root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0; `pnpm build` + `pnpm measure` print 881 and `measure/baseline.json` is 881.
+- AC-5: passed — Vitest tests added in packages/shared, packages/api, packages/web (shared 13, api 16, web 4 tests pass).
+- AC-6: passed — re-run after re-entry 2: root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0; `pnpm build` + `pnpm measure` print 881 and `measure/baseline.json` is 881.
 
 ## Quality Gate
 
