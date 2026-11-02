@@ -8,12 +8,12 @@ source:
   revision: 2026-11-02T16:14:50.581+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: pass
 artifacts:
   branch: FIJIH-69-bookmarks-csv-endpoint
   base_branch: null
@@ -118,6 +118,28 @@ AC-7: passed — `README.md` packages table row lists `GET /bookmarks.csv`.
 
 ## Quality Gate
 
+Gate: pass
+
+Reviewed head: 9a8891317e6dacd12576f209af34ba90bdf04d09 (full branch diff against `main`: commits c7eb6a2, bd15f37, dbf8ffb, 9a88913).
+
+Acceptance trace:
+
+- AC-1: implementation `packages/api/src/app.ts` (`GET` + `pathname === "/bookmarks.csv"` branch, `sendCsv` writes `200`, `text/csv; charset=utf-8`, `attachment; filename="bookmarks.csv"`); verification `app.test.ts` "answers header only with csv headers when empty" asserts status and both headers. Passed (`pnpm test`, re-run at reviewed head: 9 api tests, 2 web tests).
+- AC-2: implementation `packages/api/src/csv.ts` `bookmarksToCsv` (header, `title,url,createdAt` columns, `\r\n` per record) over `store.list()`, the same call `GET /bookmarks` uses, so the order and same-millisecond ties match; verification `csv.test.ts` column order and CRLF, `app.test.ts` "lists bookmarks newest first", `store.test.ts` same-millisecond ordering of `store.list()`. Passed.
+- AC-3: implementation `bookmarksToCsv([])` yields the header record only; verification `csv.test.ts` empty list and `app.test.ts` empty store assert `title,url,createdAt\r\n`. Passed.
+- AC-4: implementation `field()` in `csv.ts` quotes on `"`, `,`, `\r`, `\n` and doubles inner quotes, other fields unquoted; verification `csv.test.ts` quoting test (comma, quote, CR, LF, CRLF) and plain-field test, `app.test.ts` `"B, two"`. Passed.
+- AC-5: implementation adds one branch only; other methods on `/bookmarks.csv` fall through to the existing `404`; the `/bookmarks/:id` pattern does not match `/bookmarks.csv`. Verification: the original `bookmarks api` tests are unchanged in the diff and pass. Passed.
+- AC-6: `packages/api/src/csv.test.ts` and the `bookmarks csv export` block of `app.test.ts` cover criteria 1-4 with an isolated store and server. Passed.
+- AC-7: `README.md` `packages/api` row lists `GET /bookmarks.csv`. Passed.
+
+Validations at reviewed head: `pnpm test` passed, `pnpm lint` passed, `pnpm typecheck` passed. Also checked: `csv.ts` and `app.ts` load under the API's runtime loader (`node --experimental-strip-types`) and produce the expected CSV.
+
+Findings: none.
+
+Residual risks: none. The live smoke check was removed from the plan by the user's plan-approval decision ("5) defer the live smoke check (task 3)"); no acceptance criterion depends on it, and the integration tests drive a real `http` server.
+
+Stale statements: none. Searched for route lists and `/bookmarks` references in docs, scenarios, web code, and tests; `README.md` "proxies /bookmarks to the api" still holds.
+
 ## Review Record
 
 ## Change Log
@@ -125,3 +147,4 @@ AC-7: passed — `README.md` packages table row lists `GET /bookmarks.csv`.
 - Plan repair (plan-approval, conditional approval): "Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename=\"bookmarks.csv\". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan." Applied: README task and AC 7 added; `content-disposition` added to AC 1, the route task, and its integration test; formula-injection neutralising declined (AC 4 unchanged); RFC 4180 and CRLF confirmed; live smoke check task removed; open decisions recorded under Defaults taken at plan approval.
 - Approved: plan-approval — conditional: Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename="bookmarks.csv". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan. (verified at 0416a16bc1fb96258197ddff49ce56b00948e62d) (answering: Task 3 is the live smoke check ... Do you want to defer this check now, or keep it?)
 - Implementation complete: tasks 1-3 done; `pnpm test`, `pnpm lint`, `pnpm typecheck` pass; Jira FIJIH-69 moved to In Progress.
+- Approved: implementation-approval — automatic (no risk triggers)
