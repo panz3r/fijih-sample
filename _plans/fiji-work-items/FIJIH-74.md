@@ -8,12 +8,12 @@ source:
   revision: "2026-11-03T00:42:54.074+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-74-add-tags-to-bookmarks
   base_branch: main
@@ -139,6 +139,29 @@ none found (README.md lists endpoints only; scenarios/ notes quote the Jira crit
 
 ## Quality Gate
 
+Gate: concerns. Every criterion is evidenced and every required validation passed; one `minor` finding remains.
+
+Reviewed head: 8c0412f1039008b494b3c001c1e61b261acb8430 (full branch diff against `main`; the latest Change Log entry is not a `user-request` re-entry, so the review is not scoped).
+
+Acceptance trace:
+
+- AC-1: implementation `packages/shared/src/index.ts` (`normalizeTags`: trim, lower-case, `Set` dedup in input order), `packages/api/src/store.ts` (`input.tags === undefined ? [] : normalizeTags(...)`, `tags` on the stored bookmark), `packages/api/src/app.ts` (passes `body.tags`). Verification: `packages/shared/src/index.test.ts` (trim and lower-case, dedup after case folding, order, empty input), `packages/api/src/store.test.ts` (default `[]`, normalisation), `packages/api/src/app.test.ts` ("returns normalised tags on create and on list, and [] when omitted": `201` with `["work","reading"]`, `[]` when omitted). Re-run here: `pnpm test` exit 0.
+- AC-2: implementation `normalizeTags` returns `null` for a trimmed tag over `MAX_TAG_LENGTH` (32), containing `/\s/`, empty, or for non-array/non-string input (approved defaults for Open product decisions 2 and 3); `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing; `app.ts` maps it to `400 {"error":"invalid tag"}`. Verification: shared tests (32 accepted, 33 rejected, length measured after trimming, inner space and tab rejected), store `it.each` (too long, inner whitespace, empty, not strings; `store.list()` stays `[]`), HTTP `it.each` (same plus not an array; `400 {"error":"invalid tag"}` and list length unchanged). See finding 1 for a boundary deviation.
+- AC-3: implementation `store.list()` returns stored bookmarks with `tags`. Verification: HTTP test lists `tags` for the tagged (`["work","reading"]`) and untagged (`[]`) bookmarks.
+- AC-4: implementation `packages/web/src/render.ts` appends `<span class="tags">` with `textContent = tags.join(", ")` after the title link only when `tags.length > 0`. Verification: `packages/web/src/render.test.ts` ("shows tags comma separated after the title": `work, reading`, link's `nextElementSibling` is the tags element; "renders no tags element when there are no tags": no `.tags`, item text `ExampleRemove`).
+- AC-5: Vitest tests added in all three packages; re-run here: shared 12, api 16, web 4 passed.
+- AC-6: re-run here at the reviewed head: root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0; `pnpm build` exit 0, `pnpm measure` prints `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`; `measure/baseline.json` holds 881.
+
+Findings:
+
+1. `minor` — `packages/shared/src/index.ts:53`: the length check runs on the lower-cased tag, not on the trimmed input, so a tag whose lower-case form is longer than its input is measured wrongly. Reproduced: `normalizeTags(["İ".repeat(32)])` (32 UTF-16 code units after trimming, no whitespace) returns `null`, so `POST /bookmarks` answers `400 {"error":"invalid tag"}` for a tag AC-1 should accept and AC-2 does not reject (lower-casing "İ" yields two code units, 64 in total). Exotic input; ASCII and common tags are unaffected. Fix: measure `value.trim().length` before lower-casing (and decide whether a stored tag may then exceed 32 code units), with a test for it.
+
+Stale statements: none. Searched the repository (outside `_plans/`, skill and APM directories) for `Bookmark`, `NewBookmark`, `tags`, `invalid tag`, `POST /bookmarks`, `GET /bookmarks`, and descriptions of bookmark fields; `README.md` lists endpoints and a non-exhaustive summary of `packages/shared`, which stay true; `scenarios/` notes are scenario inputs.
+
+Other review notes (no finding): validation order keeps the title, URL, and duplicate-URL checks; nothing is stored on any rejected tag; `textContent` is used, never `innerHTML`; `tags: null` answers `400 {"error":"invalid tag"}` per Open product decision 2; no CI-deferred, `not-run`, or pre-existing-failure validations; no `(verify: ci)` criteria; Operational Requirements entries carry evidence.
+
+Residual risks: none.
+
 ## Review Record
 
 ## Change Log
@@ -146,3 +169,4 @@ none found (README.md lists endpoints only; scenarios/ notes quote the Jira crit
 - 2026-11-03: Plan drafted from FIJIH-74 at revision 2026-11-03T00:42:54.074+0100; issue assigned to Mattia Panzeri.
 - 2026-11-03: Approved: plan-approval — Approve with the proposed defaults. Publish: yes. Notify: yes.
 - 2026-11-03: Implementation complete; Jira FIJIH-74 moved to In Progress.
+- 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
