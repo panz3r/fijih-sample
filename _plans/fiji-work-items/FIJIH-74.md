@@ -8,12 +8,12 @@ source:
   revision: "2026-11-03T00:42:54.074+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 2
 quality:
-  gate: concerns
+  gate: pass
 artifacts:
   branch: FIJIH-74-add-tags-to-bookmarks
   base_branch: main
@@ -151,26 +151,26 @@ none found (scenarios/S1.md quotes the Jira criterion, a historical input; the n
 
 ## Quality Gate
 
-Gate: concerns. Every criterion is evidenced and every required validation passed; one `minor` finding remains.
+Gate: pass. Every criterion is evidenced, every required validation passed, the earlier `minor` finding is resolved, and no finding or residual risk remains.
 
-Reviewed head: 8c0412f1039008b494b3c001c1e61b261acb8430 (full branch diff against `main`; the latest Change Log entry is not a `user-request` re-entry, so the review is not scoped).
+Reviewed head: a40bf9b5a39e7a2b251526abf929118bc4764ea1 (scoped review: the latest Change Log entry is the `user-request` Re-entry 2, so the review covers the commits since the previous Reviewed head 8c0412f: 4401377, dd5f2f9, b290bc5, a0d0cb7, a40bf9b. Product change: a0d0cb7 in `packages/shared/src/index.ts` and `packages/shared/src/index.test.ts`; the others change only this work item. In scope: AC-1, AC-2, AC-5 (Task 5's mapping) and AC-6 (its Validation Evidence line changed); AC-3 and AC-4 are carried forward from their Validation Evidence lines. No `Scope change:` entry.)
 
 Acceptance trace:
 
-- AC-1: implementation `packages/shared/src/index.ts` (`normalizeTags`: trim, lower-case, `Set` dedup in input order), `packages/api/src/store.ts` (`input.tags === undefined ? [] : normalizeTags(...)`, `tags` on the stored bookmark), `packages/api/src/app.ts` (passes `body.tags`). Verification: `packages/shared/src/index.test.ts` (trim and lower-case, dedup after case folding, order, empty input), `packages/api/src/store.test.ts` (default `[]`, normalisation), `packages/api/src/app.test.ts` ("returns normalised tags on create and on list, and [] when omitted": `201` with `["work","reading"]`, `[]` when omitted). Re-run here: `pnpm test` exit 0.
-- AC-2: implementation `normalizeTags` returns `null` for a trimmed tag over `MAX_TAG_LENGTH` (32), containing `/\s/`, empty, or for non-array/non-string input (approved defaults for Open product decisions 2 and 3); `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing; `app.ts` maps it to `400 {"error":"invalid tag"}`. Verification: shared tests (32 accepted, 33 rejected, length measured after trimming, inner space and tab rejected), store `it.each` (too long, inner whitespace, empty, not strings; `store.list()` stays `[]`), HTTP `it.each` (same plus not an array; `400 {"error":"invalid tag"}` and list length unchanged). See finding 1 for a boundary deviation.
-- AC-3: implementation `store.list()` returns stored bookmarks with `tags`. Verification: HTTP test lists `tags` for the tagged (`["work","reading"]`) and untagged (`[]`) bookmarks.
-- AC-4: implementation `packages/web/src/render.ts` appends `<span class="tags">` with `textContent = tags.join(", ")` after the title link only when `tags.length > 0`. Verification: `packages/web/src/render.test.ts` ("shows tags comma separated after the title": `work, reading`, link's `nextElementSibling` is the tags element; "renders no tags element when there are no tags": no `.tags`, item text `ExampleRemove`).
-- AC-5: Vitest tests added in all three packages; re-run here: shared 12, api 16, web 4 passed.
+- AC-1: implementation `packages/shared/src/index.ts` (`normalizeTags`: trim, then length/empty/whitespace checks on the trimmed tag, then lower-case, `Set` dedup in input order), `packages/api/src/store.ts` (`input.tags === undefined ? [] : normalizeTags(...)`, `tags` on the stored bookmark), `packages/api/src/app.ts` (passes `body.tags`). Verification: `packages/shared/src/index.test.ts` (trim and lower-case, dedup after case folding, order, empty input, and the new "measures the length after trimming and before lower-casing": 32 "İ" with surrounding spaces is accepted and returned lower-cased), `packages/api/src/store.test.ts`, `packages/api/src/app.test.ts` (`201` with normalised tags, `[]` when omitted). Reproduced here: `normalizeTags(["  " + "İ".repeat(32) + "  "])` returns one tag of 64 code units (the lower-case form), where the previous head returned `null`.
+- AC-2: implementation `normalizeTags` returns `null` when the trimmed tag is empty, longer than `MAX_TAG_LENGTH` (32, measured before lower-casing), or contains `/\s/`, and for non-array or non-string input; `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing; `app.ts` maps it to `400 {"error":"invalid tag"}`. Verification: shared tests (32 accepted, 33 rejected for both `x` and `İ`, length after trimming, inner space and tab rejected, empty, non-array, non-string), store and HTTP `it.each` (nothing stored). Reproduced here: `"İ".repeat(33)` and `"x".repeat(33)` return `null`; `"a b"` returns `null`.
+- AC-3: carried forward — Validation Evidence: passed (HTTP test: `GET /bookmarks` returns each bookmark's `tags`); unchanged since 8c0412f, and `pnpm test` passes here.
+- AC-4: carried forward — Validation Evidence: passed (web `renderList` tests: `work, reading` after the title link; no `.tags` element when empty); unchanged since 8c0412f, and `pnpm test` passes here.
+- AC-5: Vitest tests in all three packages; re-run here: shared 13, api 16, web 4 passed.
 - AC-6: re-run here at the reviewed head: root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0; `pnpm build` exit 0, `pnpm measure` prints `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`; `measure/baseline.json` holds 881.
 
-Findings:
+Findings: none.
 
-1. `minor` — `packages/shared/src/index.ts:53`: the length check runs on the lower-cased tag, not on the trimmed input, so a tag whose lower-case form is longer than its input is measured wrongly. Reproduced: `normalizeTags(["İ".repeat(32)])` (32 UTF-16 code units after trimming, no whitespace) returns `null`, so `POST /bookmarks` answers `400 {"error":"invalid tag"}` for a tag AC-1 should accept and AC-2 does not reject (lower-casing "İ" yields two code units, 64 in total). Exotic input; ASCII and common tags are unaffected. Fix: measure `value.trim().length` before lower-casing (and decide whether a stored tag may then exceed 32 code units), with a test for it.
+Earlier findings: finding 1 of the previous gate (`minor`, length measured after lower-casing, `packages/shared/src/index.ts:53`) is resolved by a0d0cb7: the check now runs on `trimmed.length` and the new test covers the reproduced input.
 
-Stale statements: none. Searched the repository (outside `_plans/`, skill and APM directories) for `Bookmark`, `NewBookmark`, `tags`, `invalid tag`, `POST /bookmarks`, `GET /bookmarks`, and descriptions of bookmark fields; `README.md` lists endpoints and a non-exhaustive summary of `packages/shared`, which stay true; `scenarios/` notes are scenario inputs.
+Stale statements: none. Searched the repository (outside `_plans/`, skill and APM directories) for `normalizeTags`, `MAX_TAG_LENGTH`, lower-casing, "32 characters", and code units. The `normalizeTags` doc comment was updated in the same commit; the test "accepts 32 characters and rejects 33" stays true; `scenarios/S1.md` quotes the Jira criteria, a scenario input; this work item's Task 1 text and Engineering Context ("Length is counted in UTF-16 code units") stay true.
 
-Other review notes (no finding): validation order keeps the title, URL, and duplicate-URL checks; nothing is stored on any rejected tag; `textContent` is used, never `innerHTML`; `tags: null` answers `400 {"error":"invalid tag"}` per Open product decision 2; no CI-deferred, `not-run`, or pre-existing-failure validations; no `(verify: ci)` criteria; Operational Requirements entries carry evidence.
+Other review notes (no finding): the implementation result records that a stored tag can exceed 32 UTF-16 code units when lower-casing expands it (32 "İ" stores 64). This follows the user's Re-entry 2 decision ("measure the tag length after trimming and before lower-casing"), AC-1 and AC-2 bound only the trimmed input, and no code reads a stored tag's length (storage is an in-memory `Map`; the page joins tags as text), so it is neither a finding nor a residual risk. Lower-casing adds no whitespace, so the whitespace check on the trimmed form is equivalent. Dedup still uses the lower-case form (`"İ"` and `"i̇"` collapse to one tag). No CI-deferred, `not-run`, or pre-existing-failure validations; no `(verify: ci)` criteria; Operational Requirements entries carry evidence.
 
 Residual risks: none.
 
@@ -184,3 +184,4 @@ Residual risks: none.
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Finalize: added commit citations (085ce64, b3d36b2, ff5a75d, 8bce3ff) to the four task entries in Implementation Record (routine reconciliation); each task's entry was added by its own commit; no task or evidence discrepancies; File List matches the branch diff; checkpoint set to local-qa-review.
 - 2026-11-03: Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip dd5f2f9: "Request the fix first: measure the tag length after trimming and before lower-casing, with a test for it. Keep Publish and Notify as granted."
+- 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
