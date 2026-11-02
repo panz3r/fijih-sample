@@ -7,9 +7,9 @@ source:
   key: FIJIH-69
   revision: 2026-11-02T16:14:50.581+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -103,3 +103,4 @@ so that I can export my list and use it outside the app.
 ## Change Log
 
 - Plan repair (plan-approval, conditional approval): "Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename=\"bookmarks.csv\". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan." Applied: README task and AC 7 added; `content-disposition` added to AC 1, the route task, and its integration test; formula-injection neutralising declined (AC 4 unchanged); RFC 4180 and CRLF confirmed; live smoke check task removed; open decisions recorded under Defaults taken at plan approval.
+- Approved: plan-approval — conditional: Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename="bookmarks.csv". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan. (verified at 0416a16bc1fb96258197ddff49ce56b00948e62d) (answering: Task 3 is the live smoke check ... Do you want to defer this check now, or keep it?)
