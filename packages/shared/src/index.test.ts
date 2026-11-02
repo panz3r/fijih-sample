@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,34 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("trims, lower-cases, and deduplicates keeping first-appearance order", () => {
+    expect(normalizeTags([" Work ", "work", "READ", "Work", "read "])).toEqual(["work", "read"]);
+  });
+  it("accepts an empty array", () => {
+    expect(normalizeTags([])).toEqual([]);
+  });
+  it("accepts 32 characters and rejects 33", () => {
+    expect(normalizeTags(["a".repeat(32)])).toEqual(["a".repeat(32)]);
+    expect(normalizeTags(["a".repeat(33)])).toBeNull();
+  });
+  it("counts Unicode code points, not UTF-16 units", () => {
+    expect(normalizeTags(["😀".repeat(32)])).toHaveLength(1);
+    expect(normalizeTags(["😀".repeat(33)])).toBeNull();
+  });
+  it("rejects inner whitespace and empty tags", () => {
+    expect(normalizeTags(["a b"])).toBeNull();
+    expect(normalizeTags(["a\tb"])).toBeNull();
+    expect(normalizeTags(["  "])).toBeNull();
+    expect(normalizeTags([""])).toBeNull();
+  });
+  it("rejects a non-array value and non-string elements", () => {
+    expect(normalizeTags("a")).toBeNull();
+    expect(normalizeTags(undefined)).toBeNull();
+    expect(normalizeTags([1])).toBeNull();
+    expect(normalizeTags(["a", null])).toBeNull();
   });
 });
