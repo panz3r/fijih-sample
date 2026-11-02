@@ -8,12 +8,12 @@ source:
   revision: 2026-11-02T19:31:03.625+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-73-add-bookmark-tags
   base_branch: null
@@ -132,6 +132,28 @@ AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root; `pnpm
 
 ## Quality Gate
 
+Gate: concerns
+
+Reviewed head: 394835797125b793f2b129eb52d06c1bffb307a4
+
+Scope: full review of the branch diff against `main` (no `user-request` re-entry).
+
+Acceptance trace:
+- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (trim, `toLowerCase`, `Set` dedupe in first-appearance order), `packages/api/src/store.ts` `add` (default `[]`, tags on the stored bookmark), `packages/api/src/app.ts` (passes `body.tags`); verification `packages/shared/src/index.test.ts` "trims, lower-cases, and deduplicates…", "accepts an empty array"; `packages/api/src/store.test.ts` "defaults tags to an empty array and stores normalised tags"; `packages/api/src/app.test.ts` "accepts tags, normalises them, and lists them", "defaults tags to an empty array". Re-run at the reviewed head: `pnpm test` passed (shared 10, api 14, web 4).
+- AC-2: implementation `normalizeTags` returns null for a trimmed tag over 32 code points or containing `\s`, and `BookmarkStore.add` throws `ValidationError("invalid tag")` before `items.set`, which `app.ts` maps to `400 {"error":"invalid tag"}`; verification shared tests "accepts 32 characters and rejects 33", "counts Unicode code points…", "rejects inner whitespace and empty tags"; store test "rejects an invalid tag without storing the bookmark"; app test "rejects an invalid tags value (%s) and stores nothing" (too long, inner whitespace, empty, non-string element, non-array, null; list length unchanged). Passed at the reviewed head.
+- AC-3: implementation `GET /bookmarks` returns `store.list()`, whose bookmarks carry `tags`; verification app tests "accepts tags, normalises them, and lists them" and "defaults tags to an empty array" (both read `GET /bookmarks`). Passed at the reviewed head.
+- AC-4: implementation `packages/web/src/render.ts` appends `span.tags` with `tags.join(", ")` between the title link and the Remove button only when `tags.length > 0`; `packages/web/index.html` `.tags` margin keeps the flex row; verification `packages/web/src/render.test.ts` "shows tags comma separated right after the title" (text `a, b`, `link.nextElementSibling` is the tags element) and "shows no tag element or separator text without tags" (no `.tags`, row text `ExampleRemove`). Passed at the reviewed head. Bundle: `pnpm build` then `pnpm measure` at the reviewed head gave `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against the updated `measure/baseline.json`.
+- AC-5: tests in all three packages as above; at the reviewed head `pnpm test` exit 0, `pnpm lint` exit 0, `pnpm typecheck` exit 0.
+
+Findings:
+- minor — `packages/api/src/store.ts:17-22`: tag validation runs before the existing duplicate-URL check, although the work item's Engineering Context says to keep existing checks (title, URL, duplicate URL) first. Reproduced: adding `https://example.com/a`, then posting the same URL with `tags: ["a b"]` answers `invalid tag` instead of `url already bookmarked` (at the base the same request, whose `tags` were ignored, answered `url already bookmarked`). No acceptance criterion fixes the order, so this is a follow-up, not a blocker.
+
+Stale-statement check: searched `README.md`, `AGENTS.md`, `TEAMS.md`, `scenarios/`, `scripts/`, `.changeset/`, `.github/workflows/`, and source comments for `NewBookmark`, `Bookmark` fields, `renderList`, `POST /bookmarks`, `invalid tag`, and the bookmark body fields; none made untrue by this change.
+
+Residual risks: none.
+
+Unmet required validations: none.
+
 ## Review Record
 
 ## Change Log
@@ -143,3 +165,5 @@ AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root; `pnpm
 - Task 4 implemented: tags on the page.
 - Task 5 implemented: baseline updated.
 - Task 6 checks run; stale-statement sweep found nothing; implementation complete.
+- Approved: implementation-approval — automatic (no risk triggers)
+- Quality gate recorded: concerns (one minor finding) at 3948357.
