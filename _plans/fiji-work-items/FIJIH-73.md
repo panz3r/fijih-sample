@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: qa-reviewed
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 quality:
   gate: concerns
@@ -129,9 +129,13 @@ Task 5 — baseline: `pnpm build` then `pnpm measure` gave `web_bundle_gzip_byte
 Task 6 — repository checks: from the repository root `pnpm test` (shared 10, api 14, web 4 passed), `pnpm lint` and `pnpm typecheck` passed. (checked at c21d140)
 
 Task 7 — validation order (Re-entry 2): `BookmarkStore.add` now validates tags after the duplicate-URL check (title, URL, duplicate URL, then tags); tests in `store.test.ts` and `app.test.ts` for a duplicate URL plus an invalid tag answering `url already bookmarked` with nothing added. `pnpm test` (shared 10, api 16, web 4 passed), `pnpm lint`, `pnpm typecheck` passed from the root. Web bundle inputs unchanged, so `pnpm measure` is not re-run.
+(commit f037de2)
 
 Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `renderList`, `invalid tag`, title/url body fields
 none found (README.md line 10 describes the endpoints only and stays true).
+
+Stale-statement sweep — `invalid tag`, `url already bookmarked`, validation order of `BookmarkStore.add` (Re-entry 2)
+none found (README.md, AGENTS.md, scenarios/, .github/ state nothing about validation order).
 
 ## Validation Evidence
 
@@ -181,3 +185,4 @@ Unmet required validations: none.
 - Finalize (Local QA review): added `(commit <hash>)` lines under the Implementation Record entries for Tasks 1-5 (routine reconciliation); all tasks and acceptance criteria have committed evidence on the branch; File List matches the 10 non-work-item files in the branch diff; no discrepancies. Checkpoint local-qa-review set.
 - Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip 358ed86, user decision: "Request more work: move tag validation after the duplicate-URL check, so existing error responses keep their order, with a test for a duplicate URL plus an invalid tag. Keep Publish as granted."
 - Task 7 implemented: tag validation moved after the duplicate-URL check, with tests.
+- Re-entry 2 stale-statement sweep: terms `tags` validation order, `invalid tag`, `url already bookmarked`; none found. Implementation complete; checkpoint implementation-approval set.
