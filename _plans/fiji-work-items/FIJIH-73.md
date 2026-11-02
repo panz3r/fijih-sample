@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 quality:
   gate: pass
@@ -189,3 +189,4 @@ Unmet required validations: none.
 - Re-entry 2 stale-statement sweep: terms `tags` validation order, `invalid tag`, `url already bookmarked`; none found. Implementation complete; checkpoint implementation-approval set.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality gate recorded: pass (no findings; Re-entry 2 resolved the earlier minor finding) at 8b1ea58.
+- Finalize (Local QA review, Re-entry 2): all seven tasks and five acceptance criteria have committed evidence on the branch (Tasks 1-5 and 7 cite their commits, Task 6 cites c21d140, AC-1 to AC-5 have Validation Evidence lines); File List matches the 10 non-work-item files in the branch diff against main; no discrepancies. Checkpoint local-qa-review set, transition qa-reviewed.
