@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -125,8 +125,17 @@ Task 3 — Web: `renderList` appends `<span class="tags">` with `tags.join(", ")
 web: `pnpm --filter @sample/web test` 4 passed.
 Task 4 — Baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (was 835); `measure/baseline.json` updated to 881; re-running `pnpm measure` reports delta 0.
 Root `pnpm test`, `pnpm lint`, `pnpm typecheck` all exit 0.
+Stale-statement sweep — Bookmark, NewBookmark, tags, "invalid tag", POST /bookmarks, GET /bookmarks, createdAt
+none found (README.md lists endpoints only; scenarios/ notes quote the Jira criteria, a historical input; no documentation, AGENTS.md text, comment, or test description is made untrue).
 
 ## Validation Evidence
+
+- AC-1: passed — shared `normalizeTags` tests and API store/HTTP tests (trim, lower-case, dedupe in order, default `[]`, 201 with tags).
+- AC-2: passed — 33-character, inner-whitespace, empty, and non-array/non-string tags give 400 `{"error":"invalid tag"}` and store nothing (store and HTTP tests).
+- AC-3: passed — HTTP test: `GET /bookmarks` returns each bookmark's `tags`.
+- AC-4: passed — web `renderList` tests: `work, reading` after the title link; no `.tags` element when empty.
+- AC-5: passed — Vitest tests added in packages/shared, packages/api, packages/web (shared 12, api 16, web 4 tests pass).
+- AC-6: passed — root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0; `pnpm build` + `pnpm measure` print 881 and `measure/baseline.json` is 881.
 
 ## Quality Gate
 
@@ -136,3 +145,4 @@ Root `pnpm test`, `pnpm lint`, `pnpm typecheck` all exit 0.
 
 - 2026-11-03: Plan drafted from FIJIH-74 at revision 2026-11-03T00:42:54.074+0100; issue assigned to Mattia Panzeri.
 - 2026-11-03: Approved: plan-approval — Approve with the proposed defaults. Publish: yes. Notify: yes.
+- 2026-11-03: Implementation complete; Jira FIJIH-74 moved to In Progress.
