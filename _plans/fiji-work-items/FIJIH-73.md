@@ -8,12 +8,12 @@ source:
   revision: 2026-11-02T19:31:03.625+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 2
 quality:
-  gate: concerns
+  gate: pass
 artifacts:
   branch: FIJIH-73-add-bookmark-tags
   base_branch: null
@@ -147,23 +147,24 @@ AC-5: passed — `pnpm test` (shared 10, api 16, web 4), `pnpm lint`, `pnpm type
 
 ## Quality Gate
 
-Gate: concerns
+Gate: pass
 
-Reviewed head: 394835797125b793f2b129eb52d06c1bffb307a4
+Reviewed head: 8b1ea589f1c206d5eae54395e2e0a373246d864b
 
-Scope: full review of the branch diff against `main` (no `user-request` re-entry).
+Scope: the latest Re-entry is `user-request` (Re-entry 2), so the review is scoped to the commits since the previous Reviewed head `3948357` (54d8d38, 358ed86, df38cb6, f037de2, 8b1ea58; product change only in f037de2: `packages/api/src/store.ts`, `store.test.ts`, `app.test.ts`) and to AC-2 and AC-5 (Task 7 maps `AC: 2, 5`, and those commits change the AC-2 and AC-5 Validation Evidence lines). Because product code changed, the adversarial review covered that product diff and what it could break, and the whole branch diff against `main` was re-read; `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and `pnpm measure` were re-run at the reviewed head. Out-of-scope criteria AC-1, AC-3, AC-4 are traced from their current Validation Evidence lines and were also re-verified by the same runs.
 
 Acceptance trace:
-- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (trim, `toLowerCase`, `Set` dedupe in first-appearance order), `packages/api/src/store.ts` `add` (default `[]`, tags on the stored bookmark), `packages/api/src/app.ts` (passes `body.tags`); verification `packages/shared/src/index.test.ts` "trims, lower-cases, and deduplicates…", "accepts an empty array"; `packages/api/src/store.test.ts` "defaults tags to an empty array and stores normalised tags"; `packages/api/src/app.test.ts` "accepts tags, normalises them, and lists them", "defaults tags to an empty array". Re-run at the reviewed head: `pnpm test` passed (shared 10, api 14, web 4).
-- AC-2: implementation `normalizeTags` returns null for a trimmed tag over 32 code points or containing `\s`, and `BookmarkStore.add` throws `ValidationError("invalid tag")` before `items.set`, which `app.ts` maps to `400 {"error":"invalid tag"}`; verification shared tests "accepts 32 characters and rejects 33", "counts Unicode code points…", "rejects inner whitespace and empty tags"; store test "rejects an invalid tag without storing the bookmark"; app test "rejects an invalid tags value (%s) and stores nothing" (too long, inner whitespace, empty, non-string element, non-array, null; list length unchanged). Passed at the reviewed head.
-- AC-3: implementation `GET /bookmarks` returns `store.list()`, whose bookmarks carry `tags`; verification app tests "accepts tags, normalises them, and lists them" and "defaults tags to an empty array" (both read `GET /bookmarks`). Passed at the reviewed head.
-- AC-4: implementation `packages/web/src/render.ts` appends `span.tags` with `tags.join(", ")` between the title link and the Remove button only when `tags.length > 0`; `packages/web/index.html` `.tags` margin keeps the flex row; verification `packages/web/src/render.test.ts` "shows tags comma separated right after the title" (text `a, b`, `link.nextElementSibling` is the tags element) and "shows no tag element or separator text without tags" (no `.tags`, row text `ExampleRemove`). Passed at the reviewed head. Bundle: `pnpm build` then `pnpm measure` at the reviewed head gave `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against the updated `measure/baseline.json`.
-- AC-5: tests in all three packages as above; at the reviewed head `pnpm test` exit 0, `pnpm lint` exit 0, `pnpm typecheck` exit 0.
+- AC-1 (carried forward, re-verified): implementation `packages/shared/src/index.ts` `normalizeTags` (trim, `toLowerCase`, `Set` dedupe in first-appearance order), `packages/api/src/store.ts` `add` (default `[]`, tags on the stored bookmark), `packages/api/src/app.ts` (passes `body.tags`); verification `packages/shared/src/index.test.ts` "trims, lower-cases, and deduplicates…", "accepts an empty array"; `packages/api/src/store.test.ts` "defaults tags to an empty array and stores normalised tags"; `packages/api/src/app.test.ts` "accepts tags, normalises them, and lists them", "defaults tags to an empty array". Validation Evidence: `AC-1: passed`. At the reviewed head `pnpm test` exit 0 (shared 10, api 16, web 4).
+- AC-2 (in scope): implementation `normalizeTags` returns null for a non-array, a non-string element, or a trimmed tag that is empty, over 32 code points, or contains `\s`; `BookmarkStore.add` (`packages/api/src/store.ts:14-32`) now checks title, URL, duplicate URL, then tags (lines 21-22), throwing `ValidationError("invalid tag")` before `items.set`, which `app.ts` maps to `400 {"error":"invalid tag"}`; verification shared tests "accepts 32 characters and rejects 33", "counts Unicode code points…", "rejects inner whitespace and empty tags", "rejects a non-array value and non-string elements"; store tests "rejects an invalid tag without storing the bookmark" and "reports a duplicate URL before an invalid tag" (list length stays 1); app tests "rejects an invalid tags value (%s) and stores nothing" (too long, inner whitespace, empty, non-string element, non-array, null; list length unchanged) and "reports a duplicate URL before an invalid tag" (`400 {"error":"url already bookmarked"}`). Passed at the reviewed head.
+- AC-3 (carried forward, re-verified): implementation `GET /bookmarks` returns `store.list()`, whose bookmarks carry `tags`; verification app tests "accepts tags, normalises them, and lists them" and "defaults tags to an empty array" (both read `GET /bookmarks`). Validation Evidence: `AC-3: passed`. Passed at the reviewed head.
+- AC-4 (carried forward, re-verified): implementation `packages/web/src/render.ts` appends `span.tags` with `tags.join(", ")` between the title link and the Remove button only when `tags.length > 0`; `packages/web/index.html` `.tags` margin keeps the flex row; verification `packages/web/src/render.test.ts` "shows tags comma separated right after the title" and "shows no tag element or separator text without tags". Validation Evidence: `AC-4: passed`. Passed at the reviewed head. Bundle: `pnpm build` then `pnpm measure` at the reviewed head gave `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against `measure/baseline.json`.
+- AC-5 (in scope): Vitest tests in `packages/shared`, `packages/api`, and `packages/web` as above; at the reviewed head from the repository root `pnpm test` exit 0 (shared 10, api 16, web 4), `pnpm lint` exit 0, `pnpm typecheck` exit 0.
 
-Findings:
-- minor — `packages/api/src/store.ts:17-22`: tag validation runs before the existing duplicate-URL check, although the work item's Engineering Context says to keep existing checks (title, URL, duplicate URL) first. Reproduced: adding `https://example.com/a`, then posting the same URL with `tags: ["a b"]` answers `invalid tag` instead of `url already bookmarked` (at the base the same request, whose `tags` were ignored, answered `url already bookmarked`). No acceptance criterion fixes the order, so this is a follow-up, not a blocker.
+Findings: none.
 
-Stale-statement check: searched `README.md`, `AGENTS.md`, `TEAMS.md`, `scenarios/`, `scripts/`, `.changeset/`, `.github/workflows/`, and source comments for `NewBookmark`, `Bookmark` fields, `renderList`, `POST /bookmarks`, `invalid tag`, and the bookmark body fields; none made untrue by this change.
+Previous finding (gate `concerns` at `3948357`): minor — tag validation ran before the duplicate-URL check in `packages/api/src/store.ts`. Resolved by f037de2: tag validation now follows the duplicate-URL check, and the store and HTTP tests for a duplicate URL plus an invalid tag answer `url already bookmarked` and pass at the reviewed head. Not carried forward.
+
+Stale-statement check: searched the repository outside `_plans/` (`README.md`, `AGENTS.md`, `TEAMS.md`, `scenarios/`, `scripts/`, `.changeset/`, `.github/workflows/`, `.claude/`, source comments, test descriptions) for `invalid tag`, `url already bookmarked`, `duplicate url`, validation order, and `tags`; no statement is made untrue by this change. The work item's Engineering Context ("keep existing checks first") now matches the code.
 
 Residual risks: none.
 
@@ -186,3 +187,5 @@ Unmet required validations: none.
 - Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip 358ed86, user decision: "Request more work: move tag validation after the duplicate-URL check, so existing error responses keep their order, with a test for a duplicate URL plus an invalid tag. Keep Publish as granted."
 - Task 7 implemented: tag validation moved after the duplicate-URL check, with tests.
 - Re-entry 2 stale-statement sweep: terms `tags` validation order, `invalid tag`, `url already bookmarked`; none found. Implementation complete; checkpoint implementation-approval set.
+- Approved: implementation-approval — automatic (no risk triggers)
+- Quality gate recorded: pass (no findings; Re-entry 2 resolved the earlier minor finding) at 8b1ea58.
