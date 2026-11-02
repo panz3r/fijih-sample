@@ -8,16 +8,16 @@ source:
   revision: 2026-11-02T19:31:03.625+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 2
 quality:
   gate: pass
 artifacts:
   branch: FIJIH-73-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/19
   jira_context_comment_id: null
 ---
 
@@ -190,3 +190,5 @@ Unmet required validations: none.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality gate recorded: pass (no findings; Re-entry 2 resolved the earlier minor finding) at 8b1ea58.
 - Finalize (Local QA review, Re-entry 2): all seven tasks and five acceptance criteria have committed evidence on the branch (Tasks 1-5 and 7 cite their commits, Task 6 cites c21d140, AC-1 to AC-5 have Validation Evidence lines); File List matches the 10 non-work-item files in the branch diff against main; no discrepancies. Checkpoint local-qa-review set, transition qa-reviewed.
+- Approved: local-qa-review — automatic (no risk triggers; Publish consent at plan-approval: "Approve, taking your recommendations for all seven questions. Publish: yes."; consent re-affirmed in the user's later message "Keep Publish as granted."; verified at 5afdf56)
+- Delivery: changeset `.changeset/fijih-73-add-bookmark-tags.md` added (commit 09d6927), branch pushed, draft pull request #19 opened with `enhancement` label, assignee panz3r, base `main`; Copilot automated review requested (timeline `review_requested` event). No human reviewers requested. No `(verify: ci)` criteria, so transition `delivery-complete`.
