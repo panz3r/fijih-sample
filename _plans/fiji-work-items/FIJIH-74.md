@@ -57,9 +57,9 @@ so that I can group my bookmarks.
   - [x] `packages/api/src/app.ts`: pass `body.tags` from the parsed JSON to `store.add`; a `tags` value that is not an array of strings is handled per the Open product decisions answer.
   - [x] `packages/api/src/store.test.ts`: tests for default `[]`, normalisation, and `ValidationError("invalid tag")` on a 33-character tag and on an inner-whitespace tag, with nothing stored.
   - [x] `packages/api/src/app.test.ts`: HTTP tests that `POST` with tags returns `201` with normalised tags, `POST` without tags returns `tags: []`, an invalid tag returns `400 {"error":"invalid tag"}`, and `GET /bookmarks` returns each bookmark's tags.
-- [ ] Web: show tags after the title (AC: 4, 5)
-  - [ ] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the title link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing when there are none. Use `textContent`, never `innerHTML`.
-  - [ ] `packages/web/src/render.test.ts`: update the existing fixture to carry `tags: []`; add tests that a bookmark with `["work", "reading"]` shows `work, reading` after the title and that a bookmark with no tags renders no tags element.
+- [x] Web: show tags after the title (AC: 4, 5)
+  - [x] `packages/web/src/render.ts`: when `bookmark.tags.length > 0`, append after the title link an element (for example `<span class="tags">`) whose `textContent` is `tags.join(", ")`; append nothing when there are none. Use `textContent`, never `innerHTML`.
+  - [x] `packages/web/src/render.test.ts`: update the existing fixture to carry `tags: []`; add tests that a bookmark with `["work", "reading"]` shows `work, reading` after the title and that a bookmark with no tags renders no tags element.
 - [ ] Update the bundle-size baseline and run the project checks (AC: 6)
   - [ ] Run `pnpm build` then `pnpm measure`; write the printed `web_bundle_gzip_bytes` to `measure/baseline.json`.
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
@@ -111,6 +111,8 @@ Asked under the Plan result's risks; Implementation follows the answers.
 - packages/api/src/store.test.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
@@ -118,6 +120,8 @@ Task 1 — Shared: `tags` on `Bookmark`, optional on `NewBookmark`, `MAX_TAG_LEN
 shared: `pnpm --filter @sample/shared test` 12 passed.
 Task 2 — API: `BookmarkStore.add` normalises `tags ?? []` and throws `ValidationError("invalid tag")`; `POST /bookmarks` passes `body.tags` through (non-array or invalid tags answer 400 `{"error":"invalid tag"}`); stored and listed bookmarks carry `tags`. Store tests and HTTP tests added.
 api: `pnpm --filter @sample/api test` 16 passed.
+Task 3 — Web: `renderList` appends `<span class="tags">` with `tags.join(", ")` (textContent) after the title link when a bookmark has tags, nothing otherwise; fixture updated and two tests added.
+web: `pnpm --filter @sample/web test` 4 passed.
 
 ## Validation Evidence
 
