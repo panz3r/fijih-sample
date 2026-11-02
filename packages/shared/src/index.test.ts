@@ -50,6 +50,11 @@ describe("normalizeTags", () => {
     expect(normalizeTags(["a".repeat(65)])).toBeNull();
     expect(normalizeTags(["😀".repeat(32)])).toHaveLength(1);
   });
+  it("trims U+0085 at the edges but rejects it inside a tag", () => {
+    expect(normalizeTags(["\u0085Work\u0085", " \u0085 work \u0085 "])).toEqual(["work"]);
+    expect(normalizeTags(["\u0085"])).toBeNull();
+    expect(normalizeTags(["\u0085a\u0085b\u0085"])).toBeNull();
+  });
   it("rejects inner whitespace and empty tags", () => {
     expect(normalizeTags(["a b"])).toBeNull();
     expect(normalizeTags(["a\tb"])).toBeNull();

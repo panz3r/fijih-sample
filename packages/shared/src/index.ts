@@ -39,6 +39,15 @@ export function sortByCreatedDesc<T extends { createdAt: string }>(items: readon
 
 export const MAX_TAG_LENGTH = 32;
 
+/** `trim()` plus U+0085 (NEXT LINE), which `trim()` keeps although it is Unicode whitespace; linear time. */
+function trimTag(tag: string): string {
+  let start = 0;
+  let end = tag.length;
+  while (start < end && (tag[start] === "\u0085" || tag[start]!.trim() === "")) start++;
+  while (end > start && (tag[end - 1] === "\u0085" || tag[end - 1]!.trim() === "")) end--;
+  return tag.slice(start, end);
+}
+
 /**
  * Trims, lower-cases, and deduplicates tags, keeping the order of first appearance.
  * Returns null when `value` is not an array of valid tags: a non-string element, a tag that is empty after trimming,
@@ -49,7 +58,7 @@ export function normalizeTags(value: unknown): string[] | null {
   const out = new Set<string>();
   for (const tag of value) {
     if (typeof tag !== "string") return null;
-    const trimmed = tag.trim();
+    const trimmed = trimTag(tag);
     // A code point is at most 2 UTF-16 units, so a longer string is over the limit; this avoids spreading it.
     if (!trimmed || trimmed.length > MAX_TAG_LENGTH * 2 || [...trimmed].length > MAX_TAG_LENGTH) return null;
     // `\s` omits U+0085 (NEXT LINE), which is still Unicode whitespace.
