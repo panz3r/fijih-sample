@@ -8,16 +8,16 @@ source:
   revision: "2026-11-03T00:42:54.074+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 2
 quality:
   gate: pass
 artifacts:
   branch: FIJIH-74-add-tags-to-bookmarks
   base_branch: main
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/20
   jira_context_comment_id: null
 ---
 
@@ -186,3 +186,5 @@ Residual risks: none.
 - 2026-11-03: Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip dd5f2f9: "Request the fix first: measure the tag length after trimming and before lower-casing, with a test for it. Keep Publish and Notify as granted."
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Finalize (re-entry 2): checked every task and criterion against commits 085ce64..a0d0cb7; all have evidence, no discrepancies, no bookkeeping slips; File List matches the branch diff; checkpoint set to local-qa-review.
+- 2026-11-03: Approved: local-qa-review — Approve.
+- 2026-11-03: Delivery: changeset .changeset/fijih-74-add-tags-to-bookmarks.md (commit e7d1bdb) pushed; draft pull request #20 opened with title `[FIJIH-74] Add tags to bookmarks`, label enhancement, assignee panz3r; Copilot review requested (review_requested event confirmed); no reviewers requested (Ready-for-review pending); no (verify: ci) criterion.
