@@ -83,4 +83,16 @@ describe("bookmarks api", () => {
     expect(await res.json()).toEqual({ error: "invalid tag" });
     expect(((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length).toBe(before);
   });
+
+  it("reports a duplicate URL before an invalid tag", async () => {
+    const post = (tags?: unknown) =>
+      fetch(`${base}/bookmarks`, {
+        method: "POST",
+        body: JSON.stringify({ url: "https://example.com/dup", title: "Dup", tags }),
+      });
+    expect((await post()).status).toBe(201);
+    const res = await post(["a b"]);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "url already bookmarked" });
+  });
 });

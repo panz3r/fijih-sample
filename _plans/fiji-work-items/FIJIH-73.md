@@ -64,10 +64,10 @@ so that I can group related bookmarks.
   - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in its own `chore:` commit.
 - [x] Run the repository checks (AC: 5)
   - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their results in Validation Evidence.
-- [ ] Validate tags after the duplicate-URL check (AC: 2, 5; Re-entry 2)
-  - [ ] In `packages/api/src/store.ts`, move tag validation after the duplicate-URL check so existing error responses keep their order.
-  - [ ] Add a test in `packages/api/src/store.test.ts` (and one in `app.test.ts` over HTTP) for a duplicate URL plus an invalid tag answering `url already bookmarked`.
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
+- [x] Validate tags after the duplicate-URL check (AC: 2, 5; Re-entry 2)
+  - [x] In `packages/api/src/store.ts`, move tag validation after the duplicate-URL check so existing error responses keep their order.
+  - [x] Add a test in `packages/api/src/store.test.ts` (and one in `app.test.ts` over HTTP) for a duplicate URL plus an invalid tag answering `url already bookmarked`.
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
 
 ## Engineering Context
 
@@ -128,16 +128,18 @@ Task 5 — baseline: `pnpm build` then `pnpm measure` gave `web_bundle_gzip_byte
 (commit c21d140)
 Task 6 — repository checks: from the repository root `pnpm test` (shared 10, api 14, web 4 passed), `pnpm lint` and `pnpm typecheck` passed. (checked at c21d140)
 
+Task 7 — validation order (Re-entry 2): `BookmarkStore.add` now validates tags after the duplicate-URL check (title, URL, duplicate URL, then tags); tests in `store.test.ts` and `app.test.ts` for a duplicate URL plus an invalid tag answering `url already bookmarked` with nothing added. `pnpm test` (shared 10, api 16, web 4 passed), `pnpm lint`, `pnpm typecheck` passed from the root. Web bundle inputs unchanged, so `pnpm measure` is not re-run.
+
 Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `renderList`, `invalid tag`, title/url body fields
 none found (README.md line 10 describes the endpoints only and stays true).
 
 ## Validation Evidence
 
 AC-1: passed — shared normalizeTags tests and api store/app tests (`pnpm test`).
-AC-2: passed — 400 `{"error":"invalid tag"}` for too long, inner whitespace, empty, non-string, non-array, null; nothing stored (api app and store tests).
+AC-2: passed — 400 `{"error":"invalid tag"}` for too long, inner whitespace, empty, non-string, non-array, null; nothing stored; a duplicate URL with an invalid tag still answers `url already bookmarked` (api app and store tests, re-run after Re-entry 2).
 AC-3: passed — `GET /bookmarks` returns tags (api app test).
 AC-4: passed — web render tests: `span.tags` after the title with ", "; none for no tags.
-AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root; `pnpm measure` delta 0 after baseline update to 881.
+AC-5: passed — `pnpm test` (shared 10, api 16, web 4), `pnpm lint`, `pnpm typecheck` from the root after Re-entry 2; `pnpm measure` delta 0 after baseline update to 881 (web inputs unchanged since).
 
 ## Quality Gate
 
@@ -178,3 +180,4 @@ Unmet required validations: none.
 - Quality gate recorded: concerns (one minor finding) at 3948357.
 - Finalize (Local QA review): added `(commit <hash>)` lines under the Implementation Record entries for Tasks 1-5 (routine reconciliation); all tasks and acceptance criteria have committed evidence on the branch; File List matches the 10 non-work-item files in the branch diff; no discrepancies. Checkpoint local-qa-review set.
 - Re-entry 2: user-request — checkpoint local-qa-review, presented at branch tip 358ed86, user decision: "Request more work: move tag validation after the duplicate-URL check, so existing error responses keep their order, with a test for a duplicate URL plus an invalid tag. Keep Publish as granted."
+- Task 7 implemented: tag validation moved after the duplicate-URL check, with tests.

@@ -23,4 +23,11 @@ describe("BookmarkStore", () => {
     expect(() => store.add({ url: "https://example.com/a", title: "A", tags: ["x".repeat(33)] })).toThrow(ValidationError);
     expect(store.list()).toEqual([]);
   });
+
+  it("reports a duplicate URL before an invalid tag", () => {
+    const store = new BookmarkStore();
+    store.add({ url: "https://example.com/a", title: "A" });
+    expect(() => store.add({ url: "https://example.com/a", title: "A", tags: ["a b"] })).toThrow("url already bookmarked");
+    expect(store.list()).toHaveLength(1);
+  });
 });

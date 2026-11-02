@@ -14,12 +14,12 @@ export class BookmarkStore {
   add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
-    const tags = normalizeTags(input.tags === undefined ? [] : input.tags);
-    if (!tags) throw new ValidationError("invalid tag");
     const url = normalizeUrl(input.url);
     for (const existing of this.items.values()) {
       if (existing.url === url) throw new ValidationError("url already bookmarked");
     }
+    const tags = normalizeTags(input.tags === undefined ? [] : input.tags);
+    if (!tags) throw new ValidationError("invalid tag");
     const bookmark: Bookmark = {
       id: randomUUID(),
       url,
