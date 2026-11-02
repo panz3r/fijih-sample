@@ -53,6 +53,7 @@ describe("normalizeTags", () => {
   it("rejects inner whitespace and empty tags", () => {
     expect(normalizeTags(["a b"])).toBeNull();
     expect(normalizeTags(["a\tb"])).toBeNull();
+    expect(normalizeTags(["a\u0085b"])).toBeNull();
     expect(normalizeTags(["  "])).toBeNull();
     expect(normalizeTags([""])).toBeNull();
   });

@@ -52,7 +52,8 @@ export function normalizeTags(value: unknown): string[] | null {
     const trimmed = tag.trim();
     // A code point is at most 2 UTF-16 units, so a longer string is over the limit; this avoids spreading it.
     if (!trimmed || trimmed.length > MAX_TAG_LENGTH * 2 || [...trimmed].length > MAX_TAG_LENGTH) return null;
-    if (/\s/u.test(trimmed)) return null;
+    // `\s` omits U+0085 (NEXT LINE), which is still Unicode whitespace.
+    if (/[\s\u0085]/u.test(trimmed)) return null;
     out.add(trimmed.toLowerCase());
   }
   return [...out];
