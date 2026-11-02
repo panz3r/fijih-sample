@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -118,12 +118,16 @@ Asked under the Plan result's risks; Implementation follows the answers.
 ## Implementation Record
 
 Task 1 — Shared: `tags` on `Bookmark`, optional on `NewBookmark`, `MAX_TAG_LENGTH = 32`, and `normalizeTags(input: unknown): string[] | null` (trim, lower-case, dedupe in order; null for non-array, non-string, empty-after-trim, over 32 characters, or inner whitespace, per the approved defaults for Open product decisions 2 and 3). 8 new unit tests.
+(commit 085ce64)
 shared: `pnpm --filter @sample/shared test` 12 passed.
 Task 2 — API: `BookmarkStore.add` normalises `tags ?? []` and throws `ValidationError("invalid tag")`; `POST /bookmarks` passes `body.tags` through (non-array or invalid tags answer 400 `{"error":"invalid tag"}`); stored and listed bookmarks carry `tags`. Store tests and HTTP tests added.
+(commit b3d36b2)
 api: `pnpm --filter @sample/api test` 16 passed.
 Task 3 — Web: `renderList` appends `<span class="tags">` with `tags.join(", ")` (textContent) after the title link when a bookmark has tags, nothing otherwise; fixture updated and two tests added.
+(commit ff5a75d)
 web: `pnpm --filter @sample/web test` 4 passed.
 Task 4 — Baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881` (was 835); `measure/baseline.json` updated to 881; re-running `pnpm measure` reports delta 0.
+(commit 8bce3ff)
 Root `pnpm test`, `pnpm lint`, `pnpm typecheck` all exit 0.
 Stale-statement sweep — Bookmark, NewBookmark, tags, "invalid tag", POST /bookmarks, GET /bookmarks, createdAt
 none found (README.md lists endpoints only; scenarios/ notes quote the Jira criteria, a historical input; no documentation, AGENTS.md text, comment, or test description is made untrue).
@@ -170,3 +174,4 @@ Residual risks: none.
 - 2026-11-03: Approved: plan-approval — Approve with the proposed defaults. Publish: yes. Notify: yes.
 - 2026-11-03: Implementation complete; Jira FIJIH-74 moved to In Progress.
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03: Finalize: added commit citations (085ce64, b3d36b2, ff5a75d, 8bce3ff) to the four task entries in Implementation Record (routine reconciliation); each task's entry was added by its own commit; no task or evidence discrepancies; File List matches the branch diff; checkpoint set to local-qa-review.
