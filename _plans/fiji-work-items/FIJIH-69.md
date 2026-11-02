@@ -37,28 +37,23 @@ so that I can export my list and use it outside the app.
 - Out of scope here, per the issue's Decisions: the web Export button and its test (they belong to the "web" item).
 - No Figma or other design source is referenced.
 
-### Open decisions (asked at plan approval)
-
-1. `README.md` lists the API routes (`GET/POST /bookmarks`, `DELETE /bookmarks/:id`, `GET /health`); the issue does not mention it. Is adding `GET /bookmarks.csv` to that row in scope for this item?
-2. Should the endpoint also send `content-disposition: attachment; filename="bookmarks.csv"`? The issue asks only for `text/csv`; without the header a browser may display the CSV instead of saving it unless the "web" item's button uses an `<a download>` link.
-3. Should the export neutralise spreadsheet formula injection (for example prefixing `'` to a title or url that starts with `=`, `+`, `-`, or `@`)? Doing so changes the exported values, which AC 4 currently requires to round-trip unchanged.
-
 ## Acceptance Criteria
 
-1. `GET /bookmarks.csv` responds `200` with a `content-type` of `text/csv; charset=utf-8`.
+1. `GET /bookmarks.csv` responds `200` with a `content-type` of `text/csv; charset=utf-8` and a `content-disposition` of `attachment; filename="bookmarks.csv"`.
 2. The body's first record is the header `title,url,createdAt`, followed by exactly one record per stored bookmark holding that bookmark's `title`, `url`, and `createdAt` in those columns, in the same newest-first order `GET /bookmarks` returns (including bookmarks created in the same millisecond). Every record, the header included, ends with CRLF.
 3. With no bookmarks stored, the body is the header record only (`title,url,createdAt\r\n`).
 4. A field containing a comma, a double quote, CR, or LF is enclosed in double quotes with each inner double quote doubled (RFC 4180), so every bookmark still parses back as exactly one record of three fields with its original values; other fields are written unquoted.
 5. Existing routes keep their behaviour: `GET /health`, `GET /bookmarks`, `POST /bookmarks`, and `DELETE /bookmarks/:id` respond as before, and the existing API tests pass unchanged.
 6. Vitest tests in `packages/api` cover criteria 1–4 (the issue's "tests cover the endpoint").
+7. The `packages/api` row of the `README.md` package table lists `GET /bookmarks.csv` alongside the existing routes.
 
 ## Tasks and Subtasks
 
 - [ ] Add a pure CSV serializer in `packages/api/src/csv.ts` (for example `bookmarksToCsv(bookmarks: readonly Bookmark[]): string`) that writes the header and one CRLF-terminated record per bookmark with RFC 4180 field escaping (AC: 2, 3, 4)
   - [ ] Unit tests in `packages/api/src/csv.test.ts`: header only for an empty list; column order and CRLF terminators; a title containing a comma, a double quote, and a line break round-trips as one quoted field; plain fields stay unquoted (AC: 2, 3, 4, 6)
-- [ ] Add the `GET /bookmarks.csv` route in `packages/api/src/app.ts`, serializing `store.list()` and answering `200` with `content-type: text/csv; charset=utf-8` (the existing `send` helper writes JSON only, so add a text writer or extend it) (AC: 1, 2, 5)
-  - [ ] Integration tests in `packages/api/src/app.test.ts` against a fresh store: status and content type; header-only body when empty; after adding two bookmarks, rows newest first with the right values; existing tests left unchanged (AC: 1, 2, 3, 5, 6)
-- [ ] Live smoke check, run by the implementing agent with the Bash tool: start `pnpm --filter @sample/api start`, `POST /bookmarks` one bookmark with `curl`, then `curl -i http://localhost:3000/bookmarks.csv` and confirm the status, content type, header record, and row; stop the server. This confirms the new module loads under Node type stripping, which Vitest does not exercise (AC: 1, 2)
+- [ ] Add the `GET /bookmarks.csv` route in `packages/api/src/app.ts`, serializing `store.list()` and answering `200` with `content-type: text/csv; charset=utf-8` and `content-disposition: attachment; filename="bookmarks.csv"` (the existing `send` helper writes JSON only, so add a text writer or extend it) (AC: 1, 2, 5)
+  - [ ] Integration tests in `packages/api/src/app.test.ts` against a fresh store: status, content type, and content disposition; header-only body when empty; after adding two bookmarks, rows newest first with the right values; existing tests left unchanged (AC: 1, 2, 3, 5, 6)
+- [ ] Add `GET /bookmarks.csv` to the `packages/api` row of the package table in `README.md` (AC: 7)
 
 ## Engineering Context
 
@@ -71,12 +66,20 @@ so that I can export my list and use it outside the app.
 - Change intent: Delivery adds a changeset for `@sample/api` whose summary is the pull request title without the Jira key ("Export bookmarks as CSV"), per `AGENTS.md`.
 - Bundle size: the web bundle is unchanged by this item, so `measure/baseline.json` stays as is.
 
+### Defaults taken at plan approval
+
+- Add `GET /bookmarks.csv` to the README API routes row — in scope (AC 7).
+- Send `content-disposition: attachment; filename="bookmarks.csv"` — yes (AC 1).
+- Spreadsheet formula-injection neutralising — none; values are exported as stored (AC 4).
+- RFC 4180 quoting and CRLF record terminators — confirmed (AC 2, 4).
+- Live smoke check (former task 3) — deferred by the user; removed from the tasks.
+
 ## Testing Strategy
 
 - Unit (Vitest, `packages/api/src/csv.test.ts`): empty list, ordering and columns as given, CRLF terminators, RFC 4180 escaping of comma, double quote, CR, and LF, and unquoted plain fields.
-- Integration (Vitest, `packages/api/src/app.test.ts`): real `http` server on an ephemeral port with an isolated store; status, `content-type`, empty body, newest-first rows; existing route tests unchanged (regression for AC 5).
+- Integration (Vitest, `packages/api/src/app.test.ts`): real `http` server on an ephemeral port with an isolated store; status, `content-type`, `content-disposition`, empty body, newest-first rows; existing route tests unchanged (regression for AC 5).
 - Unhappy paths: a title with special characters (unit); no bookmarks (unit and integration). The endpoint takes no input, so there is no validation path.
-- Live check: the Bash-run smoke check in Tasks against `pnpm --filter @sample/api start`.
+- Live check: deferred by the user at plan approval; no live smoke check is a task of this item.
 - Repository checks from the root before each commit: `pnpm test`, `pnpm lint`, `pnpm typecheck` (package-scoped: `pnpm --filter @sample/api test`, `pnpm lint packages/api`, `pnpm --filter @sample/api typecheck`).
 - No migration, design, or release work: the store is in memory and nothing is deployed.
 
@@ -98,3 +101,5 @@ so that I can export my list and use it outside the app.
 ## Review Record
 
 ## Change Log
+
+- Plan repair (plan-approval, conditional approval): "Answers: 1) yes, add the route to the README API routes row. 2) yes, send content-disposition: attachment; filename=\"bookmarks.csv\". 3) no formula-injection neutralising. 4) confirmed: RFC 4180 quoting and CRLF terminators. 5) defer the live smoke check (task 3). With those answers, approve the plan." Applied: README task and AC 7 added; `content-disposition` added to AC 1, the route task, and its integration test; formula-injection neutralising declined (AC 4 unchanged); RFC 4180 and CRLF confirmed; live smoke check task removed; open decisions recorded under Defaults taken at plan approval.
