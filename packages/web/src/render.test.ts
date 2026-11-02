@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { renderList } from "./render.js";
 
@@ -31,5 +32,14 @@ describe("renderList", () => {
     renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: [] }], () => {});
     expect(list.querySelector(".tags")).toBeNull();
     expect(list.querySelector("li")?.textContent).toBe("ExampleRemove");
+  });
+});
+
+describe("page styles", () => {
+  it("lets a long tag shrink and break so Remove stays in the row", () => {
+    const html = readFileSync("index.html", "utf8");
+    const rule = /\.tags\s*\{([^}]*)\}/.exec(html)?.[1] ?? "";
+    expect(rule).toMatch(/min-width:\s*0/);
+    expect(rule).toMatch(/overflow-wrap:\s*anywhere/);
   });
 });
