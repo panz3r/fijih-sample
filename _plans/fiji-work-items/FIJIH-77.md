@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 quality:
   gate: fail
@@ -63,7 +63,7 @@ so that I can group my bookmarks.
   - [ ] 4.2 Vitest tests in `packages/web/src/render.test.ts`: a bookmark with tags shows `news, tech` after its title; a bookmark with `tags: []` shows no tag text or separator; the existing fixtures gain `tags`.
 - [x] 5. Bundle baseline: run `pnpm build` then `pnpm measure`, and when the delta is not 0 set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed size, then re-run `pnpm measure` to confirm `web_bundle_gzip_delta=0` (AC: 6)
 - [x] 6. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5)
-- [ ] 7. Remediate Quality Gate finding F1 (`blocking`, Re-entry 2): count the 32-code-point limit on the trimmed tag, not the lower-cased tag, in `packages/shared`, add a shared and an API test for a tag whose length changes under lower-casing (`"İ".repeat(32)`), and correct the Engineering Context approach line (AC: 2, 5)
+- [x] 7. Remediate Quality Gate finding F1 (`blocking`, Re-entry 2): count the 32-code-point limit on the trimmed tag, not the lower-cased tag, in `packages/shared`, add a shared and an API test for a tag whose length changes under lower-casing (`"İ".repeat(32)`), and correct the Engineering Context approach line (AC: 2, 5)
 
 ## Engineering Context
 
@@ -74,7 +74,7 @@ so that I can group my bookmarks.
   - `packages/api/src/app.ts`: `POST /bookmarks` casts the body to `{ url?: string; title?: string }`; `ValidationError` maps to `400 {"error": message}`, a JSON `SyntaxError` to `400 {"error":"invalid json"}`, anything else to `500`. The body type gains `tags?: unknown`; malformed `tags` answers `400 {"error":"invalid tag"}` and must not reach the `500` path.
   - `packages/web/src/render.ts`: `renderList` builds `<li>` with the title `<a>` and a Remove `<button>`; `packages/web/index.html` styles `li` as a flex row with `space-between`. Tags go in an element between the link and the button, set through `textContent`.
   - `packages/web/src/main.ts`: fetches `/bookmarks` and posts `{ title, url }` from the form; it needs no change (the tags input is out of scope).
-- Approach: normalisation and validation live in `packages/shared` as pure functions (the README describes shared as the home of validation and normalisation helpers); the store owns the `ValidationError`; the HTTP layer only passes the body through. Order of normalisation: trim, lower-case, validate, deduplicate keeping first occurrence. "Whitespace" is any character matched by `\s`. Length is checked on the trimmed, lower-cased tag, in Unicode code points.
+- Approach: normalisation and validation live in `packages/shared` as pure functions (the README describes shared as the home of validation and normalisation helpers); the store owns the `ValidationError`; the HTTP layer only passes the body through. Order of normalisation: trim, validate, lower-case, deduplicate keeping first occurrence. "Whitespace" is any character matched by `\s`. Length is checked on the trimmed tag (before lower-casing), in Unicode code points.
 - Storage is in memory only, so there is no data migration; existing bookmarks do not survive a restart.
 - Change intent: the pull request changes packages, so it needs a changeset in `.changeset/` whose summary is the pull request title without the Jira key ("Add tags to bookmarks"); Delivery adds it per AGENTS.md.
 - No design source (no Figma URL in the issue).
@@ -138,18 +138,25 @@ Stale-statement sweep — `Bookmark`, `NewBookmark`, `normalizeUrl`/`isValidBook
 - Corrected: README.md (shared package description now names tag validation and normalisation).
 - Skipped: none; AGENTS.md and TEAMS.md hold no statement the change makes untrue.
 
+Task 7 — F1: 32-code-point limit counted on the trimmed tag: `parseTags` now trims, validates with `isValidTag`, then lower-cases and deduplicates; added a shared test (`"İ".repeat(32)` accepted, with or without padding, 33 rejected) and an API test (`POST` with that tag answers `201` with the lower-cased tag); Engineering Context approach line corrected.
+(commit a85b419)
+`pnpm test` (shared 12, api 23, web 4), `pnpm lint`, `pnpm typecheck` clean; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_delta=0` (baseline 871 unchanged).
+
 Task 6 — repository checks
 (checked at 78a3f4d)
 `pnpm test`: shared 11, api 22, web 4 tests passed. `pnpm lint`: clean. `pnpm typecheck`: clean.
 
+Stale-statement sweep — `parseTags`, `isValidTag`, "lower-cased", "code point", "32 characters" (diff since acf696e).
+- Corrected: none found (the Engineering Context approach line is corrected in Task 7; `scenarios/S1.md` and README.md hold no statement the change makes untrue).
+
 ## Validation Evidence
 
 - AC-1: passed — shared `normalizeTags`/`parseTags` tests, store tests, and app test "normalises tags on create" and "defaults tags to []".
-- AC-2: passed — shared `isValidTag`/`parseTags` tests (33 chars, whitespace, empty, astral 32 code points accepted), store and app invalid-tag tests (400 `{"error":"invalid tag"}`, nothing listed).
+- AC-2: passed — shared `parseTags` test for 32 `İ` (lower-case form longer) accepted, app test answering `201`; shared `isValidTag`/`parseTags` tests (33 chars, whitespace, empty, astral 32 code points accepted), store and app invalid-tag tests (400 `{"error":"invalid tag"}`, nothing listed).
 - AC-3: passed — app test lists tags for tagged and untagged bookmarks.
 - AC-4: passed — web render tests ("news, tech" after the title; no tag text for empty tags).
-- AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root at 78a3f4d.
-- AC-6: passed — `pnpm build` then `pnpm measure` printed `web_bundle_gzip_delta=0` with baseline 871.
+- AC-5: passed — `pnpm test` (shared 12, api 23, web 4), `pnpm lint`, `pnpm typecheck` from the root after Task 7.
+- AC-6: passed — `pnpm build` then `pnpm measure` printed `web_bundle_gzip_delta=0` with baseline 871 (re-run after Task 7).
 
 ## Quality Gate
 
