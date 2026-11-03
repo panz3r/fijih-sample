@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 quality:
   gate: pass
@@ -188,3 +188,4 @@ Reviewed head: e760c28790ef85998e1d59b3c6eb834d6c2bf2a6
 - 2026-11-03 — Re-entry 2: user-request — checkpoint local-qa-review at branch tip 9cb4c3e; user decision: "Request more work: fix the finding first, as you recommend. Validate the normalised tag in BookmarkStore.add and add a regression test." Task 7 appended.
 - 2026-11-03 — Implementation (Re-entry 2): task 7 done (commit f30d831); checks pass, bundle delta 0.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03 — Finalize (Re-entry 2): checked every task and acceptance criterion against branch commits 855b349..f30d831; all have evidence (Tasks 1-4 and 6 cite commits in range, Task 5 cites 0eacf5c, Task 7 cites f30d831). File List matches the branch diff; Validation Evidence has one current line per criterion. No bookkeeping slips, no discrepancies. Checkpoint set to local-qa-review.
