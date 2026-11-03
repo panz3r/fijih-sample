@@ -8,12 +8,12 @@ source:
   revision: "2026-11-03T14:32:45.535+0100"
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-79-add-tags-to-bookmarks
   base_branch: null
@@ -147,6 +147,33 @@ none found (README.md row for packages/api lists routes only; scenarios/ notes a
 
 ## Quality Gate
 
+Gate: concerns. Every criterion is evidenced; two minor findings remain as follow-ups.
+
+Acceptance trace:
+
+- AC-1: implementation `normalizeTags` in `packages/shared/src/index.ts` (trim, validate, lower-case, first-occurrence dedupe; `[]` for undefined), called from `BookmarkStore.add` in `packages/api/src/store.ts`; `app.ts` forwards `body.tags`. Verification: shared `normalizeTags` tests (default `[]`, `["  News ", "news", "Tech", "NEWS", "a"]` → `["news", "tech", "a"]`); api test "normalises tags in the 201 body and in the list" and "defaults tags to an empty array". Re-run at review: `pnpm test` passed (shared 12, api 14, web 4).
+- AC-2a: implementation `isValidTag` (non-empty, at most 32 code points, no `\s`) applied to the trimmed tag; `store.ts` throws `ValidationError("invalid tag")` before `items.set`. Verification: shared `isValidTag` 32/33 and whitespace tests, length-after-trim test; api tests "accepts a 32-character tag" and the `it.each` rejections for 33 characters and inner whitespace, each asserting 400 `{"error":"invalid tag"}` and absence from `GET /bookmarks`.
+- AC-2b (D1 approved as proposed): implementation `normalizeTags` returns `null` for non-arrays, non-string elements, and tags empty after trimming. Verification: shared "rejects non-arrays, non-string elements, and empty tags"; api `it.each` rows for `"news"`, `null`, `["ok", 1]`, `[""]`, `["   "]`, each 400 `{"error":"invalid tag"}` and not listed.
+- AC-3: implementation `Bookmark.tags: string[]` stored on every bookmark; `list()` returns stored objects. Verification: api tests read `tags` back from `GET /bookmarks` (`["news", "tech"]` and `[]`). Ordering test unchanged and passing.
+- AC-4: implementation `render.ts` appends `span.tags` with `textContent = tags.join(", ")` between the link and Remove only when tags exist. Verification: web tests "shows tags after the title, comma separated" and "renders no tag element or text when there are no tags".
+- AC-5: Vitest tests in all three packages; re-run at review on 4f0a2dc: `pnpm test` exit 0, `pnpm lint` exit 0, `pnpm typecheck` exit 0.
+- AC-6: `.changeset/add-bookmark-tags.md` summary `Add tags to bookmarks` (minor for shared, api, web); `measure/baseline.json` 835 → 881; re-run at review: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`.
+
+Product decisions checked against criteria: D1 (yes) matches AC-2b; D2 (no) leaves `main.ts` and the add form unchanged; D3 (no) leaves `README.md` unchanged. No contradiction. Tag length in code points (Engineering Context) is the approved reading.
+
+Stale-statement sweep (Bookmark, NewBookmark, POST /bookmarks, tags, invalid tag, the list item structure): none found; `README.md` rows still hold.
+
+Findings:
+
+- minor — `packages/shared/src/index.ts:60`: deduplication uses `out.includes` inside the loop, so `normalizeTags` is quadratic in the number of tags, and `POST /bookmarks` sets no limit on tag count. Reproduced at review: 50,000 distinct tags (a 439 KB body) take about 1.4 s in `normalizeTags`, blocking the event loop; 10,000 take about 67 ms. A `Set` for seen tags (or a tag-count limit) removes it.
+- minor — `packages/web/src/render.ts:24-26` with `packages/web/index.html:10`: `li` is `display: flex; justify-content: space-between`, so the new third child `span.tags` sits in the middle of the row rather than next to the title as the issue context says ("the page shows them next to the title"). AC-4's "after its title" holds in DOM and visual order; only the placement is off.
+
+Residual risks: none.
+
+Unmet required validations: none.
+
+Reviewed head: 4f0a2dc744fccf76f8f3d9c8acb23780df00a621
+
 ## Review Record
 
 ## Change Log
@@ -159,3 +186,4 @@ none found (README.md row for packages/api lists routes only; scenarios/ notes a
 - 2026-11-03 — T4 implemented.
 - 2026-11-03 — T5 implemented.
 - 2026-11-03 — T6 checks passed; stale-statement sweep found nothing to correct.
+- 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
