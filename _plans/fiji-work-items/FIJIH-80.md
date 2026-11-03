@@ -7,9 +7,9 @@ source:
   key: FIJIH-80
   revision: 2026-11-03T15:01:02.875+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -100,3 +100,4 @@ so that I can group my bookmarks.
 ## Change Log
 
 - 2026-11-03: Plan drafted from FIJIH-80 revision `2026-11-03T15:01:02.875+0100`; issue assigned to the current user.
+- Approved: plan-approval — Approve. 1. No form input. 2. Yes, as proposed. 3. All three readings confirmed.
