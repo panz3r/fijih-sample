@@ -74,8 +74,8 @@ so that I can group related bookmarks.
   - [x] Vitest tests in `packages/web/src/render.test.ts`: tags shown after the title, comma separated; no tag element or text when `tags` is `[]`. Update existing fixtures to include `tags`.
 - [x] T4 — Bundle-size baseline (AC: 6)
   - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in this change, and record both values under Validation Evidence.
-- [ ] T5 — Changeset (AC: 6)
-  - [ ] Add `.changeset/<name>.md` with summary `Add tags to bookmarks` covering `@sample/shared`, `@sample/api`, and `@sample/web` (`minor`).
+- [x] T5 — Changeset (AC: 6)
+  - [x] Add `.changeset/<name>.md` with summary `Add tags to bookmarks` covering `@sample/shared`, `@sample/api`, and `@sample/web` (`minor`).
 - [ ] T6 — Repository checks (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results under Validation Evidence.
 
@@ -120,6 +120,7 @@ so that I can group related bookmarks.
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - measure/baseline.json
+- .changeset/add-bookmark-tags.md
 
 ## Implementation Record
 
@@ -127,6 +128,7 @@ Task T1 — shared tag model: `Bookmark.tags`, optional `NewBookmark.tags` (unkn
 Task T2 — api accepts, validates, stores, and returns tags: `app.ts` forwards `body.tags`; `store.ts` normalises with `normalizeTags`, throws `ValidationError("invalid tag")` before storing; HTTP tests cover normalised tags, default `[]`, 32/33 characters, inner whitespace, and the D1 cases.
 Task T3 — web page shows tags after the title: `render.ts` appends a `span.tags` (textContent `tags.join(", ")`) between the link and Remove only when the bookmark has tags; tests cover shown, comma separated, and absent for `[]`.
 Task T4 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46` against 835; `measure/baseline.json` set to 881.
+Task T5 — changeset `.changeset/add-bookmark-tags.md`: summary `Add tags to bookmarks`, minor for @sample/shared, @sample/api, @sample/web.
 
 ## Validation Evidence
 
@@ -134,6 +136,7 @@ Task T4 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundl
 - AC-1/AC-2/AC-3 (api part): `pnpm --filter @sample/api test` 14 passed; api typecheck and lint passed.
 - AC-4: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint passed.
 - AC-6 (baseline): before 835, after 881 (delta 46); re-measure after update reports delta 0.
+- AC-6 (changeset): added with summary `Add tags to bookmarks`.
 
 ## Quality Gate
 
@@ -147,3 +150,4 @@ Task T4 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundl
 - 2026-11-03 — T2 implemented.
 - 2026-11-03 — T3 implemented.
 - 2026-11-03 — T4 implemented.
+- 2026-11-03 — T5 implemented.
