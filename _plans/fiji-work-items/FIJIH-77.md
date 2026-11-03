@@ -61,7 +61,7 @@ so that I can group my bookmarks.
 - [x] 4. `packages/web`: show tags after the title (AC: 4, 5)
   - [ ] 4.1 In `renderList` (`packages/web/src/render.ts`), when a bookmark has tags, render them after the title link, joined by `", "`, as text content (never as HTML); render nothing extra when `tags` is empty.
   - [ ] 4.2 Vitest tests in `packages/web/src/render.test.ts`: a bookmark with tags shows `news, tech` after its title; a bookmark with `tags: []` shows no tag text or separator; the existing fixtures gain `tags`.
-- [ ] 5. Bundle baseline: run `pnpm build` then `pnpm measure`, and when the delta is not 0 set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed size, then re-run `pnpm measure` to confirm `web_bundle_gzip_delta=0` (AC: 6)
+- [x] 5. Bundle baseline: run `pnpm build` then `pnpm measure`, and when the delta is not 0 set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed size, then re-run `pnpm measure` to confirm `web_bundle_gzip_delta=0` (AC: 6)
 - [ ] 6. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5)
 
 ## Engineering Context
@@ -118,6 +118,7 @@ User's answers at `plan-approval`, applied above:
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -128,6 +129,8 @@ Task 2 — store validates and stores tags: `BookmarkStore.add` runs the tag che
 Task 3 — HTTP accepts and returns tags: `createApp` passes `body.tags` to `store.add`; app tests cover normalised create, default `[]`, eight invalid cases answering `400 {"error":"invalid tag"}` with nothing listed, and `GET` returning tags.
 
 Task 4 — web shows tags after the title: `renderList` appends a `<span>` with `tags.join(", ")` as text content only when tags exist; render tests cover `news, tech` and the empty case; the existing fixture gains `tags`.
+
+Task 5 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=871`, `web_bundle_gzip_delta=36` against 835; `measure/baseline.json` set to 871 and `pnpm measure` re-run printed `web_bundle_gzip_delta=0`.
 
 ## Validation Evidence
 
