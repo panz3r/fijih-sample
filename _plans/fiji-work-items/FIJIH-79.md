@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -76,8 +76,8 @@ so that I can group related bookmarks.
   - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in this change, and record both values under Validation Evidence.
 - [x] T5 — Changeset (AC: 6)
   - [x] Add `.changeset/<name>.md` with summary `Add tags to bookmarks` covering `@sample/shared`, `@sample/api`, and `@sample/web` (`minor`).
-- [ ] T6 — Repository checks (AC: 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results under Validation Evidence.
+- [x] T6 — Repository checks (AC: 5)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results under Validation Evidence.
 
 ## Engineering Context
 
@@ -129,6 +129,11 @@ Task T2 — api accepts, validates, stores, and returns tags: `app.ts` forwards 
 Task T3 — web page shows tags after the title: `render.ts` appends a `span.tags` (textContent `tags.join(", ")`) between the link and Remove only when the bookmark has tags; tests cover shown, comma separated, and absent for `[]`.
 Task T4 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46` against 835; `measure/baseline.json` set to 881.
 Task T5 — changeset `.changeset/add-bookmark-tags.md`: summary `Add tags to bookmarks`, minor for @sample/shared, @sample/api, @sample/web.
+Task T6 — repository checks: `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root all passed.
+(checked at b0d3dc5)
+
+Stale-statement sweep — Bookmark, NewBookmark, POST /bookmarks, createdAt, invalid tag, tags
+none found (README.md row for packages/api lists routes only; scenarios/ notes are non-product and describe other work).
 
 ## Validation Evidence
 
@@ -137,6 +142,8 @@ Task T5 — changeset `.changeset/add-bookmark-tags.md`: summary `Add tags to bo
 - AC-4: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint passed.
 - AC-6 (baseline): before 835, after 881 (delta 46); re-measure after update reports delta 0.
 - AC-6 (changeset): added with summary `Add tags to bookmarks`.
+- AC-5: `pnpm test`, `pnpm lint`, `pnpm typecheck` passed from the repository root at b0d3dc5.
+- AC-1, AC-2, AC-3, AC-4: covered by the Vitest tests above, all passing.
 
 ## Quality Gate
 
@@ -151,3 +158,4 @@ Task T5 — changeset `.changeset/add-bookmark-tags.md`: summary `Add tags to bo
 - 2026-11-03 — T3 implemented.
 - 2026-11-03 — T4 implemented.
 - 2026-11-03 — T5 implemented.
+- 2026-11-03 — T6 checks passed; stale-statement sweep found nothing to correct.
