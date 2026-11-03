@@ -8,9 +8,9 @@ source:
   revision: 2026-11-03T17:09:49.462+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 quality:
   gate: concerns
@@ -210,3 +210,5 @@ Copilot pass (review 5755764165 at b786ba8; one thread):
 - Approved: local-qa-review — Approve, accepting the finding as a follow-up.
 - Delivery: changeset `.changeset/fijih-82-add-tags-to-bookmarks.md` added and pushed (b786ba8); draft pull request #27 opened with the label `enhancement` and Copilot review requested (timeline shows review_requested for Copilot). No `(verify: ci)` criterion, so no CI measurement. Quality finding (UTF-16 length in `isValidTag`) accepted as a follow-up.
 - Finalize (local QA review): all tasks and acceptance criteria matched committed evidence on FIJIH-82-add-tags-to-bookmarks since main; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries for tasks 1 to 4 (routine reconciliation). File List matches the branch diff. Checkpoint set to local-qa-review.
+- Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Notify: yes"; verified at 5e6fff5dee1c005b92f6f453de47231691f344ff)
+- Ready for review: pull request #27 marked ready (no longer draft); review requested from `duckyduff369` (QA Engineer, Bookmarks team). Copilot thread resolved; its finding is accepted as a follow-up per local-qa-review.
