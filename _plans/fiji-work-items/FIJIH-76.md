@@ -58,9 +58,9 @@ so that I can group my bookmarks.
 - [x] 3. `packages/api` HTTP: accept and return tags (AC: 1, 2, 3, 5)
   - [x] 3.1 In `createApp`, read `tags` from the POST body and pass it to `store.add`; a `tags` value that is neither omitted nor an array of strings is handled per Open decision D4.
   - [x] 3.2 Tests in `packages/api/src/app.test.ts`: POST with tags returns 201 and normalised tags; POST without tags returns `tags: []`; POST with a 33-character tag and with a tag containing a space each return 400 `{"error":"invalid tag"}` and the bookmark is absent from `GET /bookmarks`; `GET /bookmarks` returns each bookmark's tags.
-- [ ] 4. `packages/web`: show tags after the title (AC: 4, 5)
-  - [ ] 4.1 In `renderList`, when `bookmark.tags` is non-empty append an element (for example `<span class="tags">`) after the link whose `textContent` is `tags.join(", ")`; append nothing when it is empty. Use `textContent`, never `innerHTML`.
-  - [ ] 4.2 Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: a bookmark with `["news", "tech"]` shows `news, tech` after the title; a bookmark with `[]` renders no tag element and its item text is the title plus `Remove` only.
+- [x] 4. `packages/web`: show tags after the title (AC: 4, 5)
+  - [x] 4.1 In `renderList`, when `bookmark.tags` is non-empty append an element (for example `<span class="tags">`) after the link whose `textContent` is `tags.join(", ")`; append nothing when it is empty. Use `textContent`, never `innerHTML`.
+  - [x] 4.2 Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: a bookmark with `["news", "tech"]` shows `news, tech` after the title; a bookmark with `[]` renders no tag element and its item text is the title plus `Remove` only.
 - [ ] 5. Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 5)
 - [ ] 6. Bundle size: run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change, per `AGENTS.md` (AC: 4)
 
@@ -110,12 +110,15 @@ so that I can group my bookmarks.
 - packages/api/src/store.test.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
 Task 1 — shared: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, pure `isValidTag` (trim, non-empty, <=32 code points, no whitespace) and `normalizeTags`; tests added. `pnpm --filter @sample/shared test`: 12 passed.
 Task 2 — api store: `BookmarkStore.add` validates every tag (after title/url checks, before the duplicate check and any write) and stores `normalizeTags(tags)`; store tests added (default, normalisation, 4 rejection cases leave store empty).
 Task 3 — api HTTP: POST passes `tags` through; a non-array or non-string-element `tags` (D4, including null) throws `ValidationError("invalid tag")` -> 400; integration tests added. `pnpm --filter @sample/api test`: 17 passed.
+Task 4 — web: `renderList` appends `<span class="tags">` (textContent, joined by ", ") between the title and Remove only when tags are non-empty; fixtures updated, 2 tests added. `pnpm --filter @sample/web test`: 4 passed.
 
 ## Validation Evidence
 
