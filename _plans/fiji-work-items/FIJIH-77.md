@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -62,7 +62,7 @@ so that I can group my bookmarks.
   - [ ] 4.1 In `renderList` (`packages/web/src/render.ts`), when a bookmark has tags, render them after the title link, joined by `", "`, as text content (never as HTML); render nothing extra when `tags` is empty.
   - [ ] 4.2 Vitest tests in `packages/web/src/render.test.ts`: a bookmark with tags shows `news, tech` after its title; a bookmark with `tags: []` shows no tag text or separator; the existing fixtures gain `tags`.
 - [x] 5. Bundle baseline: run `pnpm build` then `pnpm measure`, and when the delta is not 0 set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed size, then re-run `pnpm measure` to confirm `web_bundle_gzip_delta=0` (AC: 6)
-- [ ] 6. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5)
+- [x] 6. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5)
 
 ## Engineering Context
 
@@ -137,7 +137,18 @@ Stale-statement sweep — `Bookmark`, `NewBookmark`, `normalizeUrl`/`isValidBook
 - Corrected: README.md (shared package description now names tag validation and normalisation).
 - Skipped: none; AGENTS.md and TEAMS.md hold no statement the change makes untrue.
 
+Task 6 — repository checks
+(checked at 78a3f4d)
+`pnpm test`: shared 11, api 22, web 4 tests passed. `pnpm lint`: clean. `pnpm typecheck`: clean.
+
 ## Validation Evidence
+
+- AC-1: passed — shared `normalizeTags`/`parseTags` tests, store tests, and app test "normalises tags on create" and "defaults tags to []".
+- AC-2: passed — shared `isValidTag`/`parseTags` tests (33 chars, whitespace, empty, astral 32 code points accepted), store and app invalid-tag tests (400 `{"error":"invalid tag"}`, nothing listed).
+- AC-3: passed — app test lists tags for tagged and untagged bookmarks.
+- AC-4: passed — web render tests ("news, tech" after the title; no tag text for empty tags).
+- AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root at 78a3f4d.
+- AC-6: passed — `pnpm build` then `pnpm measure` printed `web_bundle_gzip_delta=0` with baseline 871.
 
 ## Quality Gate
 
