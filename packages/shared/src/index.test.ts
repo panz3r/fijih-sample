@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InvalidTagError, isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { INVALID_TAG_MESSAGE, InvalidTagError, isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -56,6 +56,10 @@ describe("normalizeTags", () => {
     expect(() => normalizeTags(5)).toThrow(InvalidTagError);
     expect(() => normalizeTags(null)).toThrow(InvalidTagError);
     expect(() => normalizeTags(["a", 1])).toThrow(InvalidTagError);
+  });
+  it("exports the invalid tag message the error carries", () => {
+    expect(INVALID_TAG_MESSAGE).toBe("invalid tag");
+    expect(() => normalizeTags([""])).toThrow(INVALID_TAG_MESSAGE);
   });
   it("validates every tag even when a duplicate precedes an invalid one", () => {
     expect(() => normalizeTags(["a", "a", "b c"])).toThrow(InvalidTagError);

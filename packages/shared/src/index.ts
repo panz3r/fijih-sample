@@ -8,6 +8,8 @@ export interface Bookmark {
 
 export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] };
 
+export const INVALID_TAG_MESSAGE = "invalid tag";
+
 export class InvalidTagError extends Error {}
 
 const MAX_TAG_LENGTH = 32;
@@ -19,12 +21,12 @@ const MAX_TAG_LENGTH = 32;
  */
 export function normalizeTags(input: unknown): string[] {
   if (input === undefined) return [];
-  if (!Array.isArray(input)) throw new InvalidTagError("invalid tag");
+  if (!Array.isArray(input)) throw new InvalidTagError(INVALID_TAG_MESSAGE);
   const tags = input.map((tag): string => {
-    if (typeof tag !== "string") throw new InvalidTagError("invalid tag");
+    if (typeof tag !== "string") throw new InvalidTagError(INVALID_TAG_MESSAGE);
     const trimmed = tag.trim();
     if (trimmed === "" || Array.from(trimmed).length > MAX_TAG_LENGTH || /\s/.test(trimmed)) {
-      throw new InvalidTagError("invalid tag");
+      throw new InvalidTagError(INVALID_TAG_MESSAGE);
     }
     return trimmed.toLowerCase();
   });

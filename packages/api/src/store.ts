@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { InvalidTagError, isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc, type Bookmark, type NewBookmark } from "@sample/shared";
+import { INVALID_TAG_MESSAGE, InvalidTagError, isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc, type Bookmark, type NewBookmark } from "@sample/shared";
 
 export class ValidationError extends Error {}
 
@@ -18,7 +18,7 @@ export class BookmarkStore {
     try {
       tags = normalizeTags(input.tags);
     } catch (error) {
-      if (error instanceof InvalidTagError) throw new ValidationError("invalid tag");
+      if (error instanceof InvalidTagError) throw new ValidationError(INVALID_TAG_MESSAGE);
       throw error;
     }
     const url = normalizeUrl(input.url);
