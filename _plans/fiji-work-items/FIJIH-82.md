@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -129,21 +129,25 @@ so that I can group my bookmarks.
 ## Implementation Record
 
 Task 1 — shared tag type and pure functions
+(commit 65d284f)
 
 - `Bookmark.tags` is required; `NewBookmark.tags` is optional and readonly. `normalizeTags` trims, lower-cases, and dedupes in first-occurrence order (Open question 3). `isValidTag` also rejects empty tags after trimming (Open question 2).
 - Focused: `pnpm --filter @sample/shared test` 10 passed; `pnpm --filter @sample/shared typecheck` clean. Root typecheck is expected to fail on api/web until tasks 2 and 3 add `tags`.
 
 Task 2 — API accepts, validates, stores, and returns tags
+(commit da7db1a)
 
 - `app.ts` passes `body.tags` unchanged; `store.add` validates after the URL check and before the duplicate-URL check. `undefined` gives `[]`; a non-array, non-string element, or empty tag throws `ValidationError("invalid tag")` (Open question 2).
 - Focused: `pnpm --filter @sample/api test` 10 passed; `pnpm --filter @sample/api typecheck` clean; `pnpm lint packages/api packages/shared` clean.
 
 Task 3 — web page renders tags
+(commit 3fb5b23)
 
 - `renderList` wraps the link and an optional `span.tags` (`tags.join(", ")`) in one `span`, so the `li` flex layout keeps Remove on the right. `index.html` gets a `.tags` style. The form subtask does not apply: the user answered Open question 1 with "No", so no tags input was added.
 - Focused: `pnpm --filter @sample/web test` 4 passed; `pnpm --filter @sample/web typecheck` clean; `pnpm lint packages/web` clean.
 
 Task 4 — bundle baseline
+(commit a86b941)
 
 - `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890` (baseline was 835, delta 55); wrote 890 to `measure/baseline.json`; re-run printed `web_bundle_gzip_delta=0`.
 
@@ -199,3 +203,4 @@ Stale-statement check: searched the repository outside the changed files for `ta
 - Implementation: tasks 1 to 5 completed in four commits; Jira FIJIH-82 moved from To Do to In Progress.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality review: gate concerns at 5223526 (one minor finding: tag length counted in UTF-16 code units of the lower-cased tag).
+- Finalize (local QA review): all tasks and acceptance criteria matched committed evidence on FIJIH-82-add-tags-to-bookmarks since main; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries for tasks 1 to 4 (routine reconciliation). File List matches the branch diff. Checkpoint set to local-qa-review.
