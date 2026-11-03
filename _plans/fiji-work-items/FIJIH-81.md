@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: source-reconciled
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -135,6 +135,10 @@ Task 2 — api: `BookmarkStore.add` normalises tags (order title, url, tags, dup
 Task 3 — web: `renderList` appends a `.tags` span (`work, read`) and a separate `.tag-count` span (`(2 tags)`, `(1 tag)`) after the title only when tags exist; `li > a { margin-right: auto }` and `gap` keep the row layout. Tests cover tags, count, singular, and none.
 Task 4 — release bookkeeping: changeset `Add tags to bookmarks` (minor for shared, api, web); `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=923`, `web_bundle_gzip_delta=88` against baseline 835, so `measure/baseline.json` is now 923 (re-measure: delta 0). Root `pnpm test` (9 + 10 + 5 tests), `pnpm lint`, and `pnpm typecheck` pass.
 
+Stale-statement sweep — `Bookmark`, `NewBookmark`, `tags`, `invalid tag`, `web_bundle_gzip_bytes`, `GET/POST /bookmarks`, list-row layout
+
+none found (README.md, AGENTS.md, workflows, and package manifests make no statement about bookmark fields or the baseline value that the change contradicts).
+
 ## Validation Evidence
 
 AC-1: passed — shared normalizeTags tests and api store/app tests (`pnpm test`: 9 + 10 + 5 passed)
@@ -156,3 +160,4 @@ AC-6: passed — web render tests: `(2 tags)`, `(1 tag)`, no count when empty
 - 2026-11-03 — Approved: source-reconciliation — "Keep the plan without AC 7: the filter is out of scope, as the issue's Decisions say."
 - 2026-11-03 — Rejected: GET /bookmarks?tag=<tag> filter criterion — Jira description: "GET /bookmarks?tag=<tag> returns only the bookmarks that carry that tag (matched after the same normalisation)." Kept out of scope per the user's decision; source.revision updated to 2026-11-03T16:41:26.748+0100.
 - 2026-11-03 — Approved: plan-approval — Approve.
+- 2026-11-03 — Implementation complete: tasks 1-4 done, validations recorded; Jira FIJIH-81 moved to In Progress.
