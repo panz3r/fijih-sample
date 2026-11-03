@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { InvalidTagError, isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,37 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("defaults a missing value to an empty array", () => {
+    expect(normalizeTags(undefined)).toEqual([]);
+    expect(normalizeTags([])).toEqual([]);
+  });
+  it("trims, lower-cases, and deduplicates keeping first occurrence order", () => {
+    expect(normalizeTags(["Work", " work ", "Read"])).toEqual(["work", "read"]);
+    expect(normalizeTags(["b", "a", "B"])).toEqual(["b", "a"]);
+    expect(normalizeTags(["  work "])).toEqual(["work"]);
+  });
+  it("accepts 32 code points and rejects 33", () => {
+    expect(normalizeTags(["a".repeat(32)])).toEqual(["a".repeat(32)]);
+    expect(() => normalizeTags(["a".repeat(33)])).toThrow(InvalidTagError);
+    expect(normalizeTags(["😀".repeat(32)])).toHaveLength(1);
+    expect(() => normalizeTags(["😀".repeat(33)])).toThrow(InvalidTagError);
+  });
+  it("rejects internal whitespace, empty, and whitespace-only tags", () => {
+    expect(() => normalizeTags(["read later"])).toThrow(InvalidTagError);
+    expect(() => normalizeTags([""])).toThrow(InvalidTagError);
+    expect(() => normalizeTags(["   "])).toThrow(InvalidTagError);
+  });
+  it("rejects a non-array value, null, and a non-string element", () => {
+    expect(() => normalizeTags("work")).toThrow(InvalidTagError);
+    expect(() => normalizeTags(5)).toThrow(InvalidTagError);
+    expect(() => normalizeTags(null)).toThrow(InvalidTagError);
+    expect(() => normalizeTags(["a", 1])).toThrow(InvalidTagError);
+  });
+  it("validates every tag even when a duplicate precedes an invalid one", () => {
+    expect(() => normalizeTags(["a", "a", "b c"])).toThrow(InvalidTagError);
   });
 });

@@ -3,9 +3,33 @@ export interface Bookmark {
   url: string;
   title: string;
   createdAt: string;
+  tags: string[];
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title">;
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] };
+
+export class InvalidTagError extends Error {}
+
+const MAX_TAG_LENGTH = 32;
+
+/**
+ * Trims, lower-cases, and deduplicates tags (first occurrence wins). A missing value is `[]`.
+ * Throws InvalidTagError for a non-array value, a non-string element, or a trimmed tag that is empty,
+ * longer than 32 code points, or contains whitespace.
+ */
+export function normalizeTags(input: unknown): string[] {
+  if (input === undefined) return [];
+  if (!Array.isArray(input)) throw new InvalidTagError("invalid tag");
+  const tags = input.map((tag): string => {
+    if (typeof tag !== "string") throw new InvalidTagError("invalid tag");
+    const trimmed = tag.trim();
+    if (trimmed === "" || Array.from(trimmed).length > MAX_TAG_LENGTH || /\s/.test(trimmed)) {
+      throw new InvalidTagError("invalid tag");
+    }
+    return trimmed.toLowerCase();
+  });
+  return [...new Set(tags)];
+}
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
