@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -138,9 +138,20 @@ Task 4 — repository checks from the root
 - `pnpm test` exit 0 (shared 10, api 15, web 4 tests), `pnpm lint` clean, `pnpm typecheck` clean in all three packages.
 
 Task 5 — bundle baseline moved to the measured size
+(commit 8983579)
 - `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46`; baseline.json updated from 835 to 881; re-run printed `web_bundle_gzip_delta=0`.
+Stale-statement sweep — Bookmark, NewBookmark, normalizeTags, InvalidTagError, "invalid tag", POST /bookmarks, GET /bookmarks, web_bundle_gzip_bytes, .tags
+- none found (README and AGENTS.md hold no statement the change makes untrue; scenarios and work items are records).
 
 ## Validation Evidence
+AC-1: passed — shared normalizeTags tests and api "stores normalized tags" test (["Work"," work ","Read"] -> ["work","read"]).
+AC-2: passed — api "defaults tags to an empty array" test.
+AC-3: passed — shared boundary/whitespace/empty tests; api 32-char accepted, too-long, whitespace, empty, whitespace-only return 400 {"error":"invalid tag"} with list unchanged.
+AC-4: passed — api tests for non-array, number, null, non-string element return 400 {"error":"invalid tag"} with list unchanged.
+AC-5: passed — api GET /bookmarks test reads tags back.
+AC-6: passed — web render tests: "work, read" after the title, no tag element when empty.
+AC-7: passed — pnpm test, pnpm lint, pnpm typecheck exit 0 from the root.
+AC-8: passed — pnpm build then pnpm measure prints web_bundle_gzip_bytes=881, web_bundle_gzip_delta=0.
 
 ## Quality Gate
 
