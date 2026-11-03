@@ -7,9 +7,9 @@ source:
   key: FIJIH-77
   revision: 2026-11-03T13:00:33.932+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -121,3 +121,4 @@ User's answers at `plan-approval`, applied above:
 ## Change Log
 
 - 2026-11-03: Plan approved conditionally at `plan-approval` with the answers "Approve. Answers: 1. No form input. 2. Yes. 3. 400 invalid tag. 4. Yes. 5. Yes, \", \". Publish: yes. Notify: yes." Applied: AC 2 and 4, tasks 1-4, Product Context, and Engineering Context (open questions replaced by decisions).
+- 2026-11-03: Approved: plan-approval — Approve. Answers: 1. No form input. 2. Yes. 3. 400 invalid tag. 4. Yes. 5. Yes, ", ".
