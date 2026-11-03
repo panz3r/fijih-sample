@@ -125,14 +125,24 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/web/index.html
+- .changeset/add-tags-to-bookmarks.md
+- measure/baseline.json
 
 ## Implementation Record
 
 Task 1 — shared tag model: `tags` on `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, and `normalizeTags` (returns `null` for invalid input; empty-after-trim and non-array/non-string input rejected per the plan's choices).
 Task 2 — api: `BookmarkStore.add` normalises tags (order title, url, tags, duplicate) and throws `ValidationError("invalid tag")`; `createApp` forwards `body.tags`; store and HTTP tests added.
 Task 3 — web: `renderList` appends a `.tags` span (`work, read`) and a separate `.tag-count` span (`(2 tags)`, `(1 tag)`) after the title only when tags exist; `li > a { margin-right: auto }` and `gap` keep the row layout. Tests cover tags, count, singular, and none.
+Task 4 — release bookkeeping: changeset `Add tags to bookmarks` (minor for shared, api, web); `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=923`, `web_bundle_gzip_delta=88` against baseline 835, so `measure/baseline.json` is now 923 (re-measure: delta 0). Root `pnpm test` (9 + 10 + 5 tests), `pnpm lint`, and `pnpm typecheck` pass.
 
 ## Validation Evidence
+
+AC-1: passed — shared normalizeTags tests and api store/app tests (`pnpm test`: 9 + 10 + 5 passed)
+AC-2: passed — api app tests: 400 {"error":"invalid tag"} for 33-character and whitespace tags, list unchanged; 32 characters accepted
+AC-3: passed — api app test: GET /bookmarks returns `tags` per bookmark, `[]` by default
+AC-4: passed — web render tests: `work, read` after the title, no tags element when empty
+AC-5: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 from the repository root
+AC-6: passed — web render tests: `(2 tags)`, `(1 tag)`, no count when empty
 
 ## Quality Gate
 
