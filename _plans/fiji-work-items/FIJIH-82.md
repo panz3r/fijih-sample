@@ -7,9 +7,9 @@ source:
   key: FIJIH-82
   revision: 2026-11-03T17:09:49.462+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -124,3 +124,5 @@ so that I can group my bookmarks.
 ## Review Record
 
 ## Change Log
+
+- Approved: plan-approval — Approve. 1. No. 2. Yes, as proposed. 3. Yes. 4. No.
