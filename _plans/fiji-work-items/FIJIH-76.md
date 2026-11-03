@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -61,7 +61,7 @@ so that I can group my bookmarks.
 - [x] 4. `packages/web`: show tags after the title (AC: 4, 5)
   - [x] 4.1 In `renderList`, when `bookmark.tags` is non-empty append an element (for example `<span class="tags">`) after the link whose `textContent` is `tags.join(", ")`; append nothing when it is empty. Use `textContent`, never `innerHTML`.
   - [x] 4.2 Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: a bookmark with `["news", "tech"]` shows `news, tech` after the title; a bookmark with `[]` renders no tag element and its item text is the title plus `Remove` only.
-- [ ] 5. Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 5)
+- [x] 5. Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 5)
 - [x] 6. Bundle size: run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change, per `AGENTS.md` (AC: 4)
 
 ## Engineering Context
@@ -121,8 +121,20 @@ Task 2 — api store: `BookmarkStore.add` validates every tag (after title/url c
 Task 3 — api HTTP: POST passes `tags` through; a non-array or non-string-element `tags` (D4, including null) throws `ValidationError("invalid tag")` -> 400; integration tests added. `pnpm --filter @sample/api test`: 17 passed.
 Task 4 — web: `renderList` appends `<span class="tags">` (textContent, joined by ", ") between the title and Remove only when tags are non-empty; fixtures updated, 2 tests added. `pnpm --filter @sample/web test`: 4 passed.
 Task 6 — `pnpm build` then `pnpm measure`: web_bundle_gzip_bytes=881, web_bundle_gzip_delta=46; set `measure/baseline.json` `web_bundle_gzip_bytes` from 835 to 881.
+Task 5 — repository checks from the root
+(checked at 0eacf5c)
+`pnpm test`: shared 12, api 17, web 4 passed. `pnpm lint`: clean. `pnpm typecheck`: clean. `pnpm measure` after the baseline update: delta 0.
+
+Stale-statement sweep — Bookmark, NewBookmark, POST /bookmarks, createdAt, tags (git grep over docs, html, json)
+none found (README.md api row only names routes, which are unchanged).
 
 ## Validation Evidence
+
+AC-1: passed — api store and app tests: normalised tags, [] default, 201 body includes tags (packages/api/src/store.test.ts, app.test.ts; packages/shared index.test.ts).
+AC-2: passed — app.test.ts: 33-char, whitespace, empty, and malformed tags return 400 {"error":"invalid tag"} and are absent from GET /bookmarks.
+AC-3: passed — app.test.ts: GET /bookmarks returns each bookmark's tags ([] when none).
+AC-4: passed — packages/web/src/render.test.ts: `news, tech` in span.tags after the title; no tag element and item text `ExampleRemove` for [].
+AC-5: passed — pnpm test (12+17+4), pnpm lint, pnpm typecheck all pass from the repository root; bundle baseline updated to 881.
 
 ## Quality Gate
 
@@ -132,3 +144,4 @@ Task 6 — `pnpm build` then `pnpm measure`: web_bundle_gzip_bytes=881, web_bund
 
 - 2026-11-03 — Plan: drafted from FIJIH-76 at source revision 2026-11-03T12:22:07.636+0100; issue assigned to Mattia Panzeri.
 - 2026-11-03 — Approved: plan-approval — Approve with the proposed answers: 1. No to both. 2. Yes. 3. 400. 4. Yes. Publish: yes. Notify: no.
+- 2026-11-03 — Implementation: tasks 1-6 done. Decisions applied: D1 no web form input or README change; D2 trim before checks; D3 empty tag rejected 400; D4 malformed tags rejected 400 invalid tag. Jira FIJIH-76 moved to In Progress.
