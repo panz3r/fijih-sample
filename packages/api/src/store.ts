@@ -14,6 +14,7 @@ export class BookmarkStore {
   add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
+    // normalizeTags returns null for any invalid tag (see @sample/shared), so a null result means the input was rejected.
     const tags = normalizeTags(input.tags);
     if (!tags) throw new ValidationError("invalid tag");
     const url = normalizeUrl(input.url);
