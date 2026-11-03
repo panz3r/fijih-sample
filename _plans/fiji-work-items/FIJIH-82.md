@@ -57,11 +57,11 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Add tag types and pure tag functions to `packages/shared/src/index.ts` (AC: 1, 2)
-  - [ ] Add `tags: string[]` to `Bookmark`. Change `NewBookmark` to `Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] }`.
-  - [ ] Add `normalizeTags(tags: readonly string[]): string[]`. It trims each tag, lower-cases it, and removes duplicates while it keeps the first occurrence.
-  - [ ] Add `isValidTag(tag: string): boolean`. It is true when the normalised tag has 32 characters or fewer and does not match `/\s/`. Apply the answer to Open question 2 for empty tags.
-  - [ ] Add tests to `packages/shared/src/index.test.ts`: trimming, lower-casing, removing duplicates while keeping order, and the boundaries at 32 and 33 characters. Also test internal whitespace (space, tab, and newline) and an empty input array.
+- [x] Add tag types and pure tag functions to `packages/shared/src/index.ts` (AC: 1, 2)
+  - [x] Add `tags: string[]` to `Bookmark`. Change `NewBookmark` to `Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] }`.
+  - [x] Add `normalizeTags(tags: readonly string[]): string[]`. It trims each tag, lower-cases it, and removes duplicates while it keeps the first occurrence.
+  - [x] Add `isValidTag(tag: string): boolean`. It is true when the normalised tag has 32 characters or fewer and does not match `/\s/`. Apply the answer to Open question 2 for empty tags.
+  - [x] Add tests to `packages/shared/src/index.test.ts`: trimming, lower-casing, removing duplicates while keeping order, and the boundaries at 32 and 33 characters. Also test internal whitespace (space, tab, and newline) and an empty input array.
 - [ ] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3)
   - [ ] `app.ts`: pass the `tags` value from the body to `store.add` without changing it, so that the store validates it.
   - [ ] `store.ts`: `add` sets `tags` to `[]` when the value is `undefined`. It throws `ValidationError("invalid tag")` when a tag is invalid after normalisation, and also for the malformed inputs in the answer to Open question 2. It stores `normalizeTags(...)` on the bookmark. Put the tag check after the URL validity check and before the duplicate-URL check.
@@ -115,7 +115,15 @@ so that I can group my bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — shared tag type and pure functions
+
+- `Bookmark.tags` is required; `NewBookmark.tags` is optional and readonly. `normalizeTags` trims, lower-cases, and dedupes in first-occurrence order (Open question 3). `isValidTag` also rejects empty tags after trimming (Open question 2).
+- Focused: `pnpm --filter @sample/shared test` 10 passed; `pnpm --filter @sample/shared typecheck` clean. Root typecheck is expected to fail on api/web until tasks 2 and 3 add `tags`.
 
 ## Validation Evidence
 
