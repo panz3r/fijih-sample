@@ -8,16 +8,16 @@ source:
   revision: 2026-11-03T18:59:24.934+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: pass
 artifacts:
   branch: FIJIH-83-add-tags-to-bookmarks
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/28
   jira_context_comment_id: null
 ---
 
@@ -187,3 +187,5 @@ Reviewed head: 42c76f1fb8d204db0c59bace04433be7dc1c3212
 - 2026-11-03 — Approved: plan-approval — Approve this plan.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03 — Local QA finalize: all tasks and AC 1–8 have committed evidence; added `(commit <hash>)` citations to the Implementation Record entries of Tasks 1–3 (routine reconciliation); File List already covers every branch file change; no task/evidence discrepancies. Checkpoint local-qa-review, transition qa-reviewed.
+- 2026-11-03 — Approved: local-qa-review — Approve.
+- 2026-11-03 — Delivery: changeset `.changeset/fijih-83-add-tags-to-bookmarks.md` committed (f42c69c) and pushed; draft PR #28 opened with Copilot review requested; phase automated-review, transition delivery-complete. No `(verify: ci)` criteria. This work-item commit is held locally.
