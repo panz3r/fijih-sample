@@ -15,17 +15,18 @@ export function normalizeTags(tags: readonly string[]): string[] {
   return [...new Set(tags.map((tag) => tag.trim().toLowerCase()))];
 }
 
-/** True for a normalised tag that is non-empty, has no whitespace, and is at most 32 Unicode code points. */
+/** True for a trimmed tag that is non-empty, has no whitespace, and is at most 32 Unicode code points. */
 export function isValidTag(tag: string): boolean {
   return tag.length > 0 && !/\s/.test(tag) && [...tag].length <= MAX_TAG_LENGTH;
 }
 
-/** Returns the normalised tags, or null when `input` is not an array of valid tag strings. */
+/** Returns the normalised tags, or null when `input` is not an array of valid tag strings (validity is judged on the trimmed tag, before lower-casing). */
 export function parseTags(input: unknown): string[] | null {
   if (!Array.isArray(input)) return null;
   if (!input.every((tag) => typeof tag === "string")) return null;
-  const tags = normalizeTags(input as string[]);
-  return tags.every(isValidTag) ? tags : null;
+  const trimmed = (input as string[]).map((tag) => tag.trim());
+  if (!trimmed.every(isValidTag)) return null;
+  return normalizeTags(trimmed);
 }
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);

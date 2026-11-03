@@ -66,6 +66,16 @@ describe("bookmarks api", () => {
     expect(list.find((b) => b.url === "https://example.com/untagged")?.tags).toEqual([]);
   });
 
+  it("accepts a tag of exactly 32 code points whose lower-case form is longer", async () => {
+    const tag = "\u0130".repeat(32);
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/dotted-i", title: "D", tags: [tag] }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([tag.toLowerCase()]);
+  });
+
   it.each([["a".repeat(33)], ["a b"], [""], ["   "], ["a\tb"], ["news"], [null], [["ok", 1]]].map((v, i) => [i, v[0]] as const))(
     "rejects invalid tags (case %i) with 400 and stores nothing",
     async (i, tags) => {

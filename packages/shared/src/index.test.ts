@@ -70,4 +70,12 @@ describe("parseTags", () => {
     expect(parseTags(["a b"])).toBeNull();
     expect(parseTags(["a".repeat(33)])).toBeNull();
   });
+  it("applies the 32-code-point limit to the trimmed tag, not the lower-cased tag", () => {
+    const tag = "\u0130".repeat(32);
+    expect(tag.toLowerCase()).not.toHaveLength(tag.length);
+    expect([...tag.toLowerCase()].length).toBeGreaterThan(32);
+    expect(parseTags([tag])).toEqual([tag.toLowerCase()]);
+    expect(parseTags([`  ${tag}  `])).toEqual([tag.toLowerCase()]);
+    expect(parseTags(["\u0130".repeat(33)])).toBeNull();
+  });
 });
