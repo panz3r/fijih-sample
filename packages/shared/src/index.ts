@@ -15,7 +15,7 @@ export function normalizeTags(tags: readonly string[]): string[] {
   return [...new Set(tags.map((tag) => tag.trim().toLowerCase()))];
 }
 
-/** True for a trimmed tag that is non-empty, has no whitespace, and is at most 32 Unicode code points. */
+/** True for a trimmed tag that is non-empty, has no whitespace, and is at most MAX_TAG_LENGTH Unicode code points. */
 export function isValidTag(tag: string): boolean {
   return tag.length > 0 && !/\s/.test(tag) && [...tag].length <= MAX_TAG_LENGTH;
 }
