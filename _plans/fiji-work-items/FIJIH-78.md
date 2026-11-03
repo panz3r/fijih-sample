@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -60,8 +60,8 @@ so that I can group my bookmarks.
   - [x] Unit tests in `render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is `[]`. Update the existing fixtures to include `tags`.
 - [x] Bundle size baseline (AC: 4)
   - [x] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is not `0`, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in this change, per `AGENTS.md`.
-- [ ] Repository checks (AC: 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
+- [x] Repository checks (AC: 5)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
 
 ## Engineering Context
 
@@ -122,7 +122,20 @@ Task 3 — web page shows tags after the title
 Task 4 — bundle size baseline
 `pnpm build` then `pnpm measure` gave web_bundle_gzip_bytes=881, delta 46; set `measure/baseline.json` to 881; re-measure gives delta 0.
 
+Task 5 — repository checks
+(checked at 496b269)
+`pnpm test` (shared 11, api 9, web 4 tests), `pnpm lint`, and `pnpm typecheck` all passed from the repository root.
+
+Stale-statement sweep — Bookmark, NewBookmark, normalizeTags, MAX_TAG_LENGTH, invalid tag, POST /bookmarks, bundle baseline
+none found (README, AGENTS.md, index.html and comments describe nothing the change makes untrue).
+
 ## Validation Evidence
+
+- AC-1: passed — shared normalizeTags tests, store tests, and app.test.ts (201 with normalized tags, empty tag dropped, default []).
+- AC-2: passed — shared tests (33 chars, 33 code points, inner whitespace, non-array, non-string) and app.test.ts 400 {"error":"invalid tag"} with nothing stored.
+- AC-3: passed — app.test.ts GET /bookmarks returns tags.
+- AC-4: passed — render.test.ts (tags joined by ", " after title; no tag element when empty). Bundle baseline updated to 881.
+- AC-5: passed — pnpm test, pnpm lint, pnpm typecheck pass from the root at 496b269.
 
 ## Quality Gate
 
@@ -133,3 +146,4 @@ Task 4 — bundle size baseline
 - Drafted from Jira FIJIH-78 at revision 2026-11-03T13:41:58.714+0100.
 - Plan approval repair, attempt 1: user answered "Approve. Answers: 1. No form input. 2. Yes, 400 invalid tag. 3. Drop an empty tag silently instead of rejecting it. 4. Yes, limits after trimming, but count the 32 in Unicode code points, not string length. Publish: yes. Notify: yes." AC 1 now drops empty tags; AC 2 now covers non-array and non-string `tags` and counts code points; the web form stays unchanged and is recorded as out of scope; open decisions replaced by the answers.
 - Approved: plan-approval — Approve.
+- Implementation complete: tasks 1-5 done; baseline moved 835 -> 881 bytes.
