@@ -9,7 +9,7 @@ source:
 lifecycle:
   status: draft
   phase: plan
-  checkpoint: plan-approval
+  checkpoint: source-reconciliation
   transition: source-reconciled
   attempt: 1
 quality:
@@ -128,3 +128,4 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 
 - 2026-11-03 — Plan drafted from FIJIH-81 at revision 2026-11-03T16:37:21.007+0100; issue assigned to Mattia Panzeri.
 - 2026-11-03 — Source reconciliation: Jira description changed at 2026-11-03T16:39:56.659+0100 (changelog 10289); adopted additive difference: new Jira criterion 6, `Each bookmark row shows how many tags it has, for example "(2 tags)", after the tag list; nothing when it has none.`, recorded as AC 6 with subtasks under the web render task (AC 6). Interpretation to confirm at plan-approval: count is a separate element after the tags element; `(1 tag)` for one. source.revision updated; no existing criterion or task changed.
+- 2026-11-03 — Reconciliation risk: Jira description changed at 2026-11-03T16:41:26.748+0100 (changelog 10290) and now adds a seventh criterion, `GET /bookmarks?tag=<tag> returns only the bookmarks that carry that tag (matched after the same normalisation).`, while the unchanged Decisions ("Tags are not filterable yet.") and Out of scope ("Filtering or searching by tag.") sections still exclude it; it also needs new tasks and tests in shared/api. Classified conflicting; work item content and source.revision left unchanged pending the user's decision at source-reconciliation.
