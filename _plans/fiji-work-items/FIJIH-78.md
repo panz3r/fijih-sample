@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T13:41:58.714+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-78-add-tags-to-bookmarks
   base_branch: null
@@ -139,6 +139,32 @@ none found (README, AGENTS.md, index.html and comments describe nothing the chan
 
 ## Quality Gate
 
+Gate: concerns
+
+Reviewed head: e818db9fed08bce4f232236b6d0bf72d6b485252
+
+Scope: full branch diff against `main` (first review; no `user-request` re-entry).
+
+Acceptance trace:
+
+- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (trim, lower-case, drop empty, dedupe in first-occurrence order), `packages/api/src/store.ts` `BookmarkStore.add` (omitted `tags` → `[]`, normalized tags stored), `packages/api/src/app.ts` (passes `body.tags`, 201 returns the stored bookmark); verification `packages/shared/src/index.test.ts` (trim/lower-case/dedupe order, empty array, empty and whitespace-only dropped), `packages/api/src/store.test.ts` (normalized tags stored, default `[]`), `packages/api/src/app.test.ts` (201 with `["work","read"]` from `[" Work ","work","","Read"]`, `tags: []` without tags). Re-run at the reviewed head: `pnpm test` passed (shared 11, api 9, web 4).
+- AC-2: implementation `normalizeTags` returns `null` for a non-array, a non-string element, a trimmed tag over `MAX_TAG_LENGTH` (32) code points (`[...trimmed].length`), or one matching `/\s/u`; `BookmarkStore.add` throws `ValidationError("invalid tag")` before the duplicate-URL check and insert; `app.ts` maps it to `400 {"error":"invalid tag"}`; verification shared tests (32/33 ASCII, 32/33 astral code points, inner space and tab, `"work"`, `null`, `["a", 1]`), `store.test.ts` (throws and stores nothing; validated before duplicate URL), `app.test.ts` (400 `{"error":"invalid tag"}` for `["a b"]`, 33 chars, `"work"`, `null`, `["a", 1]`, list length unchanged). See the minor finding on U+0085.
+- AC-3: implementation `store.list()` returns stored bookmarks with `tags`; verification `app.test.ts` `GET /bookmarks` returns `["work","read"]` and `[]`.
+- AC-4: implementation `packages/web/src/render.ts` appends `span.tags` with `tags.join(", ")` after the title link only when `tags.length > 0`; verification `packages/web/src/render.test.ts` (text `work, reading`, element is the link's next sibling; no `.tags` and text `ExampleRemove` when empty). Bundle: `pnpm build` then `pnpm measure` at the reviewed head gave `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against `measure/baseline.json` 881.
+- AC-5: Vitest tests in all three packages cover AC 1–4; re-run at the reviewed head from the repository root: `pnpm test` passed, `pnpm lint` passed, `pnpm typecheck` passed.
+
+Product decisions checked against criteria: `tags: null` → 400 matches AC-2 ("present and not an array"); length measured on the trimmed tag before lower-casing matches AC-2 ("after trimming"); no web form input matches the recorded out-of-scope note and AC-4 (display only). No contradiction.
+
+Stale-statement sweep (names `Bookmark`, `NewBookmark`, `normalizeTags`, `MAX_TAG_LENGTH`, `invalid tag`, `POST /bookmarks`, `GET /bookmarks`, `tags`, bundle baseline 835/881 across README.md, AGENTS.md, scenarios/, packages/web/index.html, code comments, and test descriptions): none found.
+
+Findings:
+
+- minor — `packages/shared/src/index.ts:54` (`normalizeTags`): the whitespace rule and trimming use ECMAScript's whitespace set, which omits U+0085 (NEXT LINE), a Unicode `White_Space` character. `normalizeTags(["a\u0085b"])` returns `["a\u0085b"]` (accepted, not 400) and `normalizeTags(["\u0085a"])` returns `["\u0085a"]` (not trimmed). AC-2 does not define "whitespace"; under the ECMAScript definition the criterion is met, under the Unicode definition this input should answer 400. Follow-up: also reject (and trim) `\u0085`, for example `/[\s\u0085]/u`, with a shared test.
+
+Residual risks: none.
+
+Unmet required validations: none.
+
 ## Review Record
 
 ## Change Log
@@ -147,3 +173,5 @@ none found (README, AGENTS.md, index.html and comments describe nothing the chan
 - Plan approval repair, attempt 1: user answered "Approve. Answers: 1. No form input. 2. Yes, 400 invalid tag. 3. Drop an empty tag silently instead of rejecting it. 4. Yes, limits after trimming, but count the 32 in Unicode code points, not string length. Publish: yes. Notify: yes." AC 1 now drops empty tags; AC 2 now covers non-array and non-string `tags` and counts code points; the web form stays unchanged and is recorded as out of scope; open decisions replaced by the answers.
 - Approved: plan-approval — Approve.
 - Implementation complete: tasks 1-5 done; baseline moved 835 -> 881 bytes.
+- Approved: implementation-approval — automatic (no risk triggers)
+- Quality gate recorded: concerns at e818db9 (one minor finding: U+0085 not treated as whitespace).
