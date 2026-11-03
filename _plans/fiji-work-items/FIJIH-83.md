@@ -63,10 +63,10 @@ so that I can group my bookmarks.
   - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
   - [x] Add a pure `normalizeTags(input: unknown): string[]` (or equivalent) that defaults a missing value to `[]`, trims, lower-cases, deduplicates keeping first occurrence, and throws or reports an invalid tag for a non-array `tags` value, a non-string element, a trimmed tag that is empty, longer than 32 code points (count with `Array.from(tag).length`), or containing whitespace.
   - [x] Unit tests in `packages/shared/src/index.test.ts`: normalization, dedup order, default `[]`, the 32/33 code-point boundary (including a multi-code-point character), internal whitespace, empty and whitespace-only tags, a non-array value, and a non-string element.
-- [ ] Accept and return tags in `packages/api` (AC: 1, 2, 3, 4, 5, 7)
-  - [ ] `app.ts`: pass `body.tags` through to `store.add`.
-  - [ ] `store.ts`: normalize tags with the shared function, map an invalid tag to `ValidationError("invalid tag")` before any insert, and store `tags` on the bookmark.
-  - [ ] Tests in `packages/api/src/app.test.ts` (and `store.test.ts` where simpler): create with tags, create without tags, 400 `{"error":"invalid tag"}` for a too-long, a whitespace, an empty, a non-array, and a non-string-element tag with the list unchanged afterwards, and `GET /bookmarks` returning `tags`.
+- [x] Accept and return tags in `packages/api` (AC: 1, 2, 3, 4, 5, 7)
+  - [x] `app.ts`: pass `body.tags` through to `store.add`.
+  - [x] `store.ts`: normalize tags with the shared function, map an invalid tag to `ValidationError("invalid tag")` before any insert, and store `tags` on the bookmark.
+  - [x] Tests in `packages/api/src/app.test.ts` (and `store.test.ts` where simpler): create with tags, create without tags, 400 `{"error":"invalid tag"}` for a too-long, a whitespace, an empty, a non-array, and a non-string-element tag with the list unchanged afterwards, and `GET /bookmarks` returning `tags`.
 - [ ] Show tags in `packages/web` (AC: 6, 7)
   - [ ] `render.ts`: after the title link, append an element holding `bookmark.tags.join(", ")` only when `tags` is non-empty.
   - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `work, read`; no tag element or text when `tags` is `[]`; update existing fixtures to the new `Bookmark` shape.
@@ -115,11 +115,17 @@ so that I can group my bookmarks.
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
 - _plans/fiji-work-items/FIJIH-83.md
+- packages/api/src/app.ts
+- packages/api/src/store.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 Task 1 — shared tag normalization and validation
 - Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, `InvalidTagError`, and `normalizeTags` (validate every tag, then trim/lower-case/dedupe via Set, code-point length).
 - shared test 10 passed, typecheck and lint clean.
+Task 2 — API accepts and returns tags
+- `app.ts` passes `body.tags` to the store; `store.ts` normalizes before any insert and maps InvalidTagError to `ValidationError("invalid tag")`.
+- api test 15 passed (new cases in app.test.ts covering create, default, boundary, 8 invalid shapes with list unchanged), typecheck and lint clean.
 
 ## Validation Evidence
 

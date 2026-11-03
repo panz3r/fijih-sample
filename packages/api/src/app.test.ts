@@ -43,4 +43,43 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+  const list = async () => (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+
+  it("stores normalized tags and returns them on GET", async () => {
+    const res = await post({ url: "https://example.com/tags-1", title: "T", tags: ["Work", " work ", "Read"] });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["work", "read"]);
+    expect((await list()).find((b) => b.url === "https://example.com/tags-1")?.tags).toEqual(["work", "read"]);
+  });
+
+  it("defaults tags to an empty array", async () => {
+    const res = await post({ url: "https://example.com/tags-2", title: "T" });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+  });
+
+  it("accepts a 32 character tag and a padded tag", async () => {
+    const res = await post({ url: "https://example.com/tags-3", title: "T", tags: ["a".repeat(32), "  work "] });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["a".repeat(32), "work"]);
+  });
+
+  it.each([
+    ["too long", ["a".repeat(33)]],
+    ["whitespace", ["read later"]],
+    ["empty", [""]],
+    ["whitespace only", ["   "]],
+    ["not an array", "work"],
+    ["a number", 5],
+    ["null", null],
+    ["non-string element", ["a", 1]],
+  ])("rejects an invalid tag (%s) and stores nothing", async (_name, tags) => {
+    const before = await list();
+    const res = await post({ url: "https://example.com/tags-bad", title: "T", tags });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid tag" });
+    expect(await list()).toEqual(before);
+  });
 });
