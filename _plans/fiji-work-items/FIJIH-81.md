@@ -7,9 +7,9 @@ source:
   key: FIJIH-81
   revision: 2026-11-03T16:41:26.748+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: source-reconciled
   attempt: 1
 quality:
@@ -131,3 +131,4 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 - 2026-11-03 — Reconciliation risk: Jira description changed at 2026-11-03T16:41:26.748+0100 (changelog 10290) and now adds a seventh criterion, `GET /bookmarks?tag=<tag> returns only the bookmarks that carry that tag (matched after the same normalisation).`, while the unchanged Decisions ("Tags are not filterable yet.") and Out of scope ("Filtering or searching by tag.") sections still exclude it; it also needs new tasks and tests in shared/api. Classified conflicting; work item content and source.revision left unchanged pending the user's decision at source-reconciliation.
 - 2026-11-03 — Approved: source-reconciliation — "Keep the plan without AC 7: the filter is out of scope, as the issue's Decisions say."
 - 2026-11-03 — Rejected: GET /bookmarks?tag=<tag> filter criterion — Jira description: "GET /bookmarks?tag=<tag> returns only the bookmarks that carry that tag (matched after the same normalisation)." Kept out of scope per the user's decision; source.revision updated to 2026-11-03T16:41:26.748+0100.
+- 2026-11-03 — Approved: plan-approval — Approve.
