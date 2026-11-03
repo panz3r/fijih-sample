@@ -65,10 +65,10 @@ so that I can group related bookmarks.
   - [x] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags`.
   - [x] Add pure, exported tag functions (for example `isValidTag(tag)` and `normalizeTags(value)`) that trim, check length (≤ 32) and whitespace, lower-case, and deduplicate in first-occurrence order, and report invalid input (including the D1 cases as decided) without throwing a package-specific error.
   - [x] Vitest tests in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe order, default `[]`, 32 vs 33 characters, inner whitespace, and the D1 cases.
-- [ ] T2 — API accepts, validates, stores, and returns tags in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `app.ts`: forward `body.tags` from the POST body to the store.
-  - [ ] `store.ts`: normalise tags with the shared functions, throw `ValidationError("invalid tag")` for invalid input before storing, and store `tags` (default `[]`) on the bookmark.
-  - [ ] Vitest tests in `packages/api/src/app.test.ts` (and `store.test.ts` where simpler): normalised tags in the 201 body and in `GET /bookmarks`; omitted `tags` gives `[]`; a 33-character tag and a tag with inner whitespace answer 400 `{"error":"invalid tag"}` and are not listed afterwards; the D1 cases as decided.
+- [x] T2 — API accepts, validates, stores, and returns tags in `packages/api` (AC: 1, 2, 3, 5)
+  - [x] `app.ts`: forward `body.tags` from the POST body to the store.
+  - [x] `store.ts`: normalise tags with the shared functions, throw `ValidationError("invalid tag")` for invalid input before storing, and store `tags` (default `[]`) on the bookmark.
+  - [x] Vitest tests in `packages/api/src/app.test.ts` (and `store.test.ts` where simpler): normalised tags in the 201 body and in `GET /bookmarks`; omitted `tags` gives `[]`; a 33-character tag and a tag with inner whitespace answer 400 `{"error":"invalid tag"}` and are not listed afterwards; the D1 cases as decided.
 - [ ] T3 — Web page shows tags after the title in `packages/web` (AC: 4, 5)
   - [ ] `render.ts`: after the link, append an element holding `bookmark.tags.join(", ")` only when the bookmark has tags.
   - [ ] Vitest tests in `packages/web/src/render.test.ts`: tags shown after the title, comma separated; no tag element or text when `tags` is `[]`. Update existing fixtures to include `tags`.
@@ -114,14 +114,19 @@ so that I can group related bookmarks.
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task T1 — shared tag model: `Bookmark.tags`, optional `NewBookmark.tags` (unknown), `isValidTag`, `normalizeTags` (returns `null` for invalid input, `[]` for undefined) with Vitest tests.
+Task T2 — api accepts, validates, stores, and returns tags: `app.ts` forwards `body.tags`; `store.ts` normalises with `normalizeTags`, throws `ValidationError("invalid tag")` before storing; HTTP tests cover normalised tags, default `[]`, 32/33 characters, inner whitespace, and the D1 cases.
 
 ## Validation Evidence
 
 - AC-1/AC-2/AC-3 (shared part): `pnpm --filter @sample/shared test` 12 passed; shared typecheck and lint passed.
+- AC-1/AC-2/AC-3 (api part): `pnpm --filter @sample/api test` 14 passed; api typecheck and lint passed.
 
 ## Quality Gate
 
@@ -132,3 +137,4 @@ Task T1 — shared tag model: `Bookmark.tags`, optional `NewBookmark.tags` (unkn
 - 2026-11-03 — Plan drafted from FIJIH-79 revision `2026-11-03T14:32:45.535+0100`; issue assigned to the current user.
 - 2026-11-03 — Approved: plan-approval — Approve. D1: yes, as proposed. D2: no. D3: no. 4: all four readings confirmed. Publish: yes. Notify: yes.
 - 2026-11-03 — T1 implemented.
+- 2026-11-03 — T2 implemented.

@@ -43,4 +43,45 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  describe("tags", () => {
+    const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+    const listUrls = async () => ((await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[]).map((b) => b.url);
+
+    it("normalises tags in the 201 body and in the list", async () => {
+      const res = await post({ url: "https://example.com/tags-ok", title: "T", tags: ["  News ", "news", "Tech"] });
+      expect(res.status).toBe(201);
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+      expect(list.find((b) => b.url === "https://example.com/tags-ok")?.tags).toEqual(["news", "tech"]);
+    });
+
+    it("defaults tags to an empty array", async () => {
+      const res = await post({ url: "https://example.com/tags-none", title: "T" });
+      expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+      expect(list.find((b) => b.url === "https://example.com/tags-none")?.tags).toEqual([]);
+    });
+
+    it("accepts a 32-character tag", async () => {
+      const res = await post({ url: "https://example.com/tags-32", title: "T", tags: ["a".repeat(32)] });
+      expect(res.status).toBe(201);
+    });
+
+    it.each([
+      ["a 33-character tag", ["a".repeat(33)]],
+      ["a tag with inner whitespace", ["a b"]],
+      ["a non-array value", "news"],
+      ["null", null],
+      ["a non-string element", ["ok", 1]],
+      ["an empty tag", [""]],
+      ["a whitespace-only tag", ["   "]],
+    ])("rejects %s with 400 and stores nothing", async (_name, tags) => {
+      const url = `https://example.com/tags-bad-${encodeURIComponent(_name)}`;
+      const res = await post({ url, title: "T", tags });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+      expect(await listUrls()).not.toContain(url);
+    });
+  });
 });
