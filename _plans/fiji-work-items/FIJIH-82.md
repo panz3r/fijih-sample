@@ -62,15 +62,15 @@ so that I can group my bookmarks.
   - [x] Add `normalizeTags(tags: readonly string[]): string[]`. It trims each tag, lower-cases it, and removes duplicates while it keeps the first occurrence.
   - [x] Add `isValidTag(tag: string): boolean`. It is true when the normalised tag has 32 characters or fewer and does not match `/\s/`. Apply the answer to Open question 2 for empty tags.
   - [x] Add tests to `packages/shared/src/index.test.ts`: trimming, lower-casing, removing duplicates while keeping order, and the boundaries at 32 and 33 characters. Also test internal whitespace (space, tab, and newline) and an empty input array.
-- [ ] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3)
-  - [ ] `app.ts`: pass the `tags` value from the body to `store.add` without changing it, so that the store validates it.
-  - [ ] `store.ts`: `add` sets `tags` to `[]` when the value is `undefined`. It throws `ValidationError("invalid tag")` when a tag is invalid after normalisation, and also for the malformed inputs in the answer to Open question 2. It stores `normalizeTags(...)` on the bookmark. Put the tag check after the URL validity check and before the duplicate-URL check.
-  - [ ] `app.test.ts`: add these tests through the real HTTP server:
+- [x] Accept, validate, store, and return tags in `packages/api` (AC: 1, 2, 3)
+  - [x] `app.ts`: pass the `tags` value from the body to `store.add` without changing it, so that the store validates it.
+  - [x] `store.ts`: `add` sets `tags` to `[]` when the value is `undefined`. It throws `ValidationError("invalid tag")` when a tag is invalid after normalisation, and also for the malformed inputs in the answer to Open question 2. It stores `normalizeTags(...)` on the bookmark. Put the tag check after the URL validity check and before the duplicate-URL check.
+  - [x] `app.test.ts`: add these tests through the real HTTP server:
     - A POST with mixed-case, padded, and duplicate tags returns 201 with the normalised `tags`.
     - A POST without `tags` returns `tags: []`.
     - A tag of 33 characters returns 400 `{"error":"invalid tag"}`, and so does a tag with internal whitespace. In both cases, a later GET does not list the bookmark.
     - GET returns the `tags` of each bookmark.
-  - [ ] `store.test.ts`: test the default `[]` and that a rejected tag stores nothing.
+  - [x] `store.test.ts`: test the default `[]` and that a rejected tag stores nothing.
 - [ ] Render tags on the web page in `packages/web` (AC: 4)
   - [ ] `render.ts`: when `bookmark.tags.length > 0`, append an element with class `tags` and the text `bookmark.tags.join(", ")` right after the title link. Put the link and the tags in one wrapper so that the `li` flex layout keeps the Remove button on the right. When there are no tags, append nothing.
   - [ ] `index.html`: add a small style for `.tags` (a left margin and a muted colour) so that the tags are visually separate from the title.
@@ -117,6 +117,10 @@ so that I can group my bookmarks.
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/app.ts
+- packages/api/src/store.ts
+- packages/api/src/app.test.ts
+- packages/api/src/store.test.ts
 
 ## Implementation Record
 
@@ -124,6 +128,11 @@ Task 1 — shared tag type and pure functions
 
 - `Bookmark.tags` is required; `NewBookmark.tags` is optional and readonly. `normalizeTags` trims, lower-cases, and dedupes in first-occurrence order (Open question 3). `isValidTag` also rejects empty tags after trimming (Open question 2).
 - Focused: `pnpm --filter @sample/shared test` 10 passed; `pnpm --filter @sample/shared typecheck` clean. Root typecheck is expected to fail on api/web until tasks 2 and 3 add `tags`.
+
+Task 2 — API accepts, validates, stores, and returns tags
+
+- `app.ts` passes `body.tags` unchanged; `store.add` validates after the URL check and before the duplicate-URL check. `undefined` gives `[]`; a non-array, non-string element, or empty tag throws `ValidationError("invalid tag")` (Open question 2).
+- Focused: `pnpm --filter @sample/api test` 10 passed; `pnpm --filter @sample/api typecheck` clean; `pnpm lint packages/api packages/shared` clean.
 
 ## Validation Evidence
 

@@ -9,4 +9,19 @@ describe("BookmarkStore", () => {
     store.add({ url: "https://example.com/b", title: "B" }, now);
     expect(store.list().map((b) => b.title)).toEqual(["B", "A"]);
   });
+
+  it("defaults tags to an empty array and normalises given tags", () => {
+    const store = new BookmarkStore();
+    expect(store.add({ url: "https://example.com/a", title: "A" }).tags).toEqual([]);
+    expect(store.add({ url: "https://example.com/b", title: "B", tags: ["  Work ", "work", "Read"] }).tags).toEqual(["work", "read"]);
+  });
+
+  it("rejects invalid tags and stores nothing", () => {
+    const store = new BookmarkStore();
+    const bad: unknown[] = [["a".repeat(33)], ["a b"], [""], ["   "], [1], "a", null];
+    for (const tags of bad) {
+      expect(() => store.add({ url: "https://example.com/a", title: "A", tags: tags as string[] })).toThrow("invalid tag");
+    }
+    expect(store.list()).toEqual([]);
+  });
 });

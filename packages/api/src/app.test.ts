@@ -43,4 +43,36 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+  const listUrls = async () => ((await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[]).map((b) => b.url);
+
+  it("normalises tags and returns them from POST and GET", async () => {
+    const res = await post({ url: "https://example.com/tagged", title: "T", tags: ["  Work ", "work", "Read"] });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["work", "read"]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://example.com/tagged")?.tags).toEqual(["work", "read"]);
+  });
+
+  it("defaults tags to an empty array", async () => {
+    const res = await post({ url: "https://example.com/untagged", title: "U" });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://example.com/untagged")?.tags).toEqual([]);
+  });
+
+  it("accepts a 32 character tag", async () => {
+    expect((await post({ url: "https://example.com/t32", title: "x", tags: ["a".repeat(32)] })).status).toBe(201);
+  });
+
+  it("rejects a 33 character tag and a tag with whitespace without storing the bookmark", async () => {
+    for (const [path, tag] of [["t33", "a".repeat(33)], ["tws", "a b"]]) {
+      const res = await post({ url: `https://example.com/${path}`, title: "x", tags: [tag] });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+      expect(await listUrls()).not.toContain(`https://example.com/${path}`);
+    }
+  });
 });
