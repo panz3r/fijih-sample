@@ -35,12 +35,12 @@ so that I can group my bookmarks.
 - Issue context: "A bookmark gets an optional list of tags; the API accepts and returns them, and the page shows them next to the title."
 - Decision recorded in the issue: "Tags are not filterable yet."
 - Out of scope per the issue: filtering or searching by tag; editing the tags of an existing bookmark.
-- Open questions (see Engineering Context, "Open decisions"): whether the web Add form gets a tags input, and how the API treats malformed `tags` values and empty tags.
+- Out of scope per the user at plan approval: a tags input on the web Add form (`index.html`, `main.ts` stay unchanged); tags are set through the API only.
 
 ## Acceptance Criteria
 
-1. `POST /bookmarks` accepts an optional `tags` field holding an array of strings. Each tag is trimmed, then lower-cased, and duplicates are removed (the first occurrence keeps its position). When `tags` is omitted, the bookmark is stored with `tags: []`. The `201` response body includes the normalized `tags`.
-2. When any tag, after trimming, is longer than 32 characters or contains whitespace, `POST /bookmarks` answers `400` with body `{"error":"invalid tag"}` and stores no bookmark.
+1. `POST /bookmarks` accepts an optional `tags` field holding an array of strings. Each tag is trimmed, then lower-cased, and duplicates are removed (the first occurrence keeps its position). A tag that is empty after trimming (`""` or `"   "`) is dropped silently: it is not stored and does not cause an error. When `tags` is omitted, the bookmark is stored with `tags: []`. The `201` response body includes the normalized `tags`.
+2. When `tags` is present and is not an array, or the array holds a non-string, or any tag, after trimming, is longer than 32 Unicode code points (not JavaScript string length) or contains whitespace, `POST /bookmarks` answers `400` with body `{"error":"invalid tag"}` and stores no bookmark.
 3. `GET /bookmarks` returns each bookmark with its `tags` array.
 4. The web page shows each bookmark's tags after its title, joined by `, ` (for example `work, reading`), and renders no tag element or text for a bookmark whose `tags` is empty.
 5. Vitest unit tests in `packages/shared`, `packages/api`, and `packages/web` cover the behaviour in criteria 1–4, and `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
@@ -49,12 +49,12 @@ so that I can group my bookmarks.
 
 - [ ] Shared model and tag normalization in `packages/shared` (AC: 1, 2, 5)
   - [ ] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags?: readonly string[]`.
-  - [ ] Add a pure `normalizeTags` function (with a `MAX_TAG_LENGTH = 32` constant) that trims, lower-cases, and deduplicates in first-occurrence order, and reports an invalid tag (longer than 32 characters or containing whitespace after trimming) to its caller, for example by returning `null`.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication order, empty input, a 32-character tag accepted, a 33-character tag rejected, an inner space or tab rejected.
+  - [ ] Add a pure `normalizeTags` function (with a `MAX_TAG_LENGTH = 32` constant) that accepts `unknown`, trims, lower-cases, drops tags that are empty after trimming, and deduplicates in first-occurrence order, and reports an invalid input to its caller, for example by returning `null`: `tags` not an array, a non-string element, or a tag that after trimming is longer than 32 Unicode code points (counted with `[...tag].length`, not `.length`) or contains whitespace.
+  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication order, empty input, empty and whitespace-only tags dropped, a 32-character tag accepted, a 33-character tag rejected, 32 astral characters (such as an emoji, 64 UTF-16 units) accepted and 33 rejected, an inner space or tab rejected, a non-array `tags` and a non-string element rejected.
 - [ ] API accepts, validates, stores, and returns tags in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `BookmarkStore.add` normalizes `input.tags` (default `[]`) with `normalizeTags`, throws `ValidationError("invalid tag")` for an invalid tag before any duplicate-URL check or insert, and stores the normalized tags on the bookmark.
-  - [ ] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store.
-  - [ ] Unit tests in `store.test.ts` (normalized tags stored, default `[]`, invalid tag throws and stores nothing) and `app.test.ts` (`POST` with tags returns `201` with normalized tags, `POST` with an invalid tag returns `400 {"error":"invalid tag"}`, `GET /bookmarks` returns each bookmark's tags, `POST` without tags returns `tags: []`).
+  - [ ] `BookmarkStore.add` normalizes `input.tags` (default `[]`) with `normalizeTags`, throws `ValidationError("invalid tag")` for invalid tags before any duplicate-URL check or insert, and stores the normalized tags on the bookmark.
+  - [ ] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store unchanged, so a non-array value reaches validation.
+  - [ ] Unit tests in `store.test.ts` (normalized tags stored, default `[]`, invalid tag throws and stores nothing, empty tag dropped) and `app.test.ts` (`POST` with tags returns `201` with normalized tags, `POST` with an empty tag returns `201` without it, `POST` with an invalid tag, a non-array `tags`, or a non-string element returns `400 {"error":"invalid tag"}`, `GET /bookmarks` returns each bookmark's tags, `POST` without tags returns `tags: []`).
 - [ ] Web page shows tags in `packages/web` (AC: 4, 5)
   - [ ] `renderList` appends, after the title link, an element whose text is the bookmark's tags joined by `, `, only when the bookmark has at least one tag.
   - [ ] Unit tests in `render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is `[]`. Update the existing fixtures to include `tags`.
@@ -71,9 +71,12 @@ so that I can group my bookmarks.
 - `packages/web/src/render.ts` `renderList` builds each `<li>` as title link plus Remove button; `index.html` styles `li` as `display: flex; justify-content: space-between`, so a tags element placed between the link and the button stays after the title. `packages/web/src/main.ts` posts only `title` and `url`, which keeps working because `tags` defaults to `[]`.
 - Changing `Bookmark` to require `tags` changes the type of every `Bookmark` literal (existing web test fixtures, store construction); typecheck catches each one.
 - Release: a changeset (`pnpm changeset`) is required for the pull request per `AGENTS.md`; Delivery adds it with the summary "Add tags to bookmarks".
-- Open decisions (asked under `risks` in the Plan result; recorded here until answered):
-  - Whether the web Add form (`index.html`, `main.ts`) gets a tags input. The issue names only showing tags; without an input, tags can be added only through the API.
-  - The response for a `tags` value that is not an array, or an array holding a non-string, and for a tag that is empty after trimming (`""` or `"  "`).
+- Decisions taken by the user at plan approval: no tags input on the web Add form; a non-array `tags` or a non-string element answers `400 {"error":"invalid tag"}`; a tag empty after trimming is dropped silently; the 32 limit and whitespace check apply after trimming and the 32 counts Unicode code points.
+
+### Defaults taken at plan approval
+
+- `tags: null` — treated as present and not an array, so it answers `400 {"error":"invalid tag"}`; only an omitted (`undefined`) `tags` defaults to `[]`.
+- Length is measured on the trimmed tag before lower-casing — so the check follows the user's "after trimming" wording and the stored form can differ in length only for rare case mappings.
 
 ## Testing Strategy
 
@@ -106,3 +109,4 @@ so that I can group my bookmarks.
 ## Change Log
 
 - Drafted from Jira FIJIH-78 at revision 2026-11-03T13:41:58.714+0100.
+- Plan approval repair, attempt 1: user answered "Approve. Answers: 1. No form input. 2. Yes, 400 invalid tag. 3. Drop an empty tag silently instead of rejecting it. 4. Yes, limits after trimming, but count the 32 in Unicode code points, not string length. Publish: yes. Notify: yes." AC 1 now drops empty tags; AC 2 now covers non-array and non-string `tags` and counts code points; the web form stays unchanged and is recorded as out of scope; open decisions replaced by the answers.
