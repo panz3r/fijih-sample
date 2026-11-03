@@ -8,16 +8,16 @@ source:
   revision: 2026-11-03T17:09:49.462+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-82-add-tags-to-bookmarks
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/27
   jira_context_comment_id: null
 ---
 
@@ -203,4 +203,6 @@ Stale-statement check: searched the repository outside the changed files for `ta
 - Implementation: tasks 1 to 5 completed in four commits; Jira FIJIH-82 moved from To Do to In Progress.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality review: gate concerns at 5223526 (one minor finding: tag length counted in UTF-16 code units of the lower-cased tag).
+- Approved: local-qa-review — Approve, accepting the finding as a follow-up.
+- Delivery: changeset `.changeset/fijih-82-add-tags-to-bookmarks.md` added and pushed (b786ba8); draft pull request #27 opened with the label `enhancement` and Copilot review requested (timeline shows review_requested for Copilot). No `(verify: ci)` criterion, so no CI measurement. Quality finding (UTF-16 length in `isValidTag`) accepted as a follow-up.
 - Finalize (local QA review): all tasks and acceptance criteria matched committed evidence on FIJIH-82-add-tags-to-bookmarks since main; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries for tasks 1 to 4 (routine reconciliation). File List matches the branch diff. Checkpoint set to local-qa-review.
