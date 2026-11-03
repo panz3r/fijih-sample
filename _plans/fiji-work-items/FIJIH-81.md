@@ -122,11 +122,15 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 - packages/api/src/app.ts
 - packages/api/src/store.test.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+- packages/web/index.html
 
 ## Implementation Record
 
 Task 1 — shared tag model: `tags` on `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, and `normalizeTags` (returns `null` for invalid input; empty-after-trim and non-array/non-string input rejected per the plan's choices).
 Task 2 — api: `BookmarkStore.add` normalises tags (order title, url, tags, duplicate) and throws `ValidationError("invalid tag")`; `createApp` forwards `body.tags`; store and HTTP tests added.
+Task 3 — web: `renderList` appends a `.tags` span (`work, read`) and a separate `.tag-count` span (`(2 tags)`, `(1 tag)`) after the title only when tags exist; `li > a { margin-right: auto }` and `gap` keep the row layout. Tests cover tags, count, singular, and none.
 
 ## Validation Evidence
 
