@@ -67,9 +67,9 @@ so that I can group my bookmarks.
   - [x] `app.ts`: pass `body.tags` through to `store.add`.
   - [x] `store.ts`: normalize tags with the shared function, map an invalid tag to `ValidationError("invalid tag")` before any insert, and store `tags` on the bookmark.
   - [x] Tests in `packages/api/src/app.test.ts` (and `store.test.ts` where simpler): create with tags, create without tags, 400 `{"error":"invalid tag"}` for a too-long, a whitespace, an empty, a non-array, and a non-string-element tag with the list unchanged afterwards, and `GET /bookmarks` returning `tags`.
-- [ ] Show tags in `packages/web` (AC: 6, 7)
-  - [ ] `render.ts`: after the title link, append an element holding `bookmark.tags.join(", ")` only when `tags` is non-empty.
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `work, read`; no tag element or text when `tags` is `[]`; update existing fixtures to the new `Bookmark` shape.
+- [x] Show tags in `packages/web` (AC: 6, 7)
+  - [x] `render.ts`: after the title link, append an element holding `bookmark.tags.join(", ")` only when `tags` is non-empty.
+  - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `work, read`; no tag element or text when `tags` is `[]`; update existing fixtures to the new `Bookmark` shape.
 - [ ] Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 7)
 - [ ] Run `pnpm build` then `pnpm measure` and update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value so `web_bundle_gzip_delta=0` (AC: 8)
 
@@ -118,6 +118,9 @@ so that I can group my bookmarks.
 - packages/api/src/app.ts
 - packages/api/src/store.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+- packages/web/index.html
 
 ## Implementation Record
 Task 1 — shared tag normalization and validation
@@ -126,6 +129,9 @@ Task 1 — shared tag normalization and validation
 Task 2 — API accepts and returns tags
 - `app.ts` passes `body.tags` to the store; `store.ts` normalizes before any insert and maps InvalidTagError to `ValidationError("invalid tag")`.
 - api test 15 passed (new cases in app.test.ts covering create, default, boundary, 8 invalid shapes with list unchanged), typecheck and lint clean.
+Task 3 — web page shows tags
+- `render.ts` appends a `span.tags` after the title link only when `tags` is non-empty; `index.html` gets a one-line `.tags` rule so it sits after the title; fixtures updated.
+- web test 4 passed, typecheck and lint clean.
 
 ## Validation Evidence
 
