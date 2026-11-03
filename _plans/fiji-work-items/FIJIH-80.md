@@ -57,9 +57,9 @@ so that I can group my bookmarks.
   - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` for `POST /bookmarks`.
   - [x] Store tests in `packages/api/src/store.test.ts`: default `[]`, normalized tags stored, invalid tag throws and stores nothing.
   - [x] HTTP tests in `packages/api/src/app.test.ts`: `POST` with tags returns them normalized; `GET` lists them; invalid tag answers `400` `{"error":"invalid tag"}` and `GET` does not list the rejected bookmark; existing tests keep passing.
-- [ ] Web page renders tags after the title (AC: 5, 6)
-  - [ ] In `packages/web/src/render.ts`, after the link append an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when `bookmark.tags.length > 0`.
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element when tags are `[]`; update the existing fixture with `tags: []` so it type-checks.
+- [x] Web page renders tags after the title (AC: 5, 6)
+  - [x] In `packages/web/src/render.ts`, after the link append an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when `bookmark.tags.length > 0`.
+  - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element when tags are `[]`; update the existing fixture with `tags: []` so it type-checks.
 - [ ] Root checks and bundle measurement (AC: 6)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
   - [ ] Run `pnpm build` then `pnpm measure`; when the gzipped web bundle size moves from `measure/baseline.json` (835 bytes), update `web_bundle_gzip_bytes` there in this change, as `AGENTS.md` requires.
@@ -95,6 +95,8 @@ so that I can group my bookmarks.
 - packages/api/src/store.test.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
@@ -106,10 +108,15 @@ Task 2 — API accepts, validates, stores, and returns tags
 
 - `BookmarkStore.add` validates via `normalizeTags` after title/URL checks (`ValidationError("invalid tag")`); `POST /bookmarks` passes `body.tags`; 5 new tests; `pnpm --filter @sample/api test` and `typecheck` pass.
 
+Task 3 — web page renders tags after the title
+
+- `renderList` appends `<span class="tags">` (via `textContent`) between link and Remove only when tags exist; fixture updated; 2 new tests; `pnpm --filter @sample/web test` and `typecheck` pass.
+
 ## Validation Evidence
 
 - shared: `pnpm --filter @sample/shared test` passed (10 tests), `typecheck` passed.
 - api: `pnpm --filter @sample/api test` passed (9 tests), `typecheck` passed.
+- web: `pnpm --filter @sample/web test` passed (4 tests), `typecheck` passed.
 
 ## Quality Gate
 
@@ -121,3 +128,4 @@ Task 2 — API accepts, validates, stores, and returns tags
 - Approved: plan-approval — Approve. 1. No form input. 2. Yes, as proposed. 3. All three readings confirmed.
 - 2026-11-03: Task 1 implemented (shared tags).
 - 2026-11-03: Task 2 implemented (API tags).
+- 2026-11-03: Task 3 implemented (web tags).
