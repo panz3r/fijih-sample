@@ -7,9 +7,9 @@ source:
   key: FIJIH-79
   revision: "2026-11-03T14:32:45.535+0100"
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -123,3 +123,4 @@ so that I can group related bookmarks.
 ## Change Log
 
 - 2026-11-03 — Plan drafted from FIJIH-79 revision `2026-11-03T14:32:45.535+0100`; issue assigned to the current user.
+- 2026-11-03 — Approved: plan-approval — Approve. D1: yes, as proposed. D2: no. D3: no. 4: all four readings confirmed. Publish: yes. Notify: yes.
