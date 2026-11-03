@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -78,7 +78,7 @@ so that I can group my bookmarks.
   - [x] If the answer to Open question 1 adds a form field: add the input to `index.html`, send `tags` from `main.ts`, and add a test for how the input is parsed.
 - [x] Update the bundle baseline (AC: 6)
   - [x] Run `pnpm build` then `pnpm measure`. Write the printed `web_bundle_gzip_bytes` into `measure/baseline.json`.
-- [ ] Run the checks from the repository root: `pnpm test`, `pnpm lint`, and `pnpm typecheck` (AC: 5)
+- [x] Run the checks from the repository root: `pnpm test`, `pnpm lint`, and `pnpm typecheck` (AC: 5)
 
 ## Engineering Context
 
@@ -147,7 +147,22 @@ Task 4 — bundle baseline
 
 - `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890` (baseline was 835, delta 55); wrote 890 to `measure/baseline.json`; re-run printed `web_bundle_gzip_delta=0`.
 
+Task 5 — repository checks (checked at a86b941)
+
+- From the repository root: `pnpm test` passed (shared 10, api 10, web 4); `pnpm lint` clean; `pnpm typecheck` clean in all three packages.
+
+Stale-statement sweep — Bookmark, NewBookmark, tags, normalizeTags, isValidTag, "invalid tag", POST /bookmarks body, web_bundle_gzip_bytes, title/gzip wording in `*.md`
+
+- none found. `README.md` describes `packages/web` and `packages/shared` without the bookmark shape; the user answered Open question 4 with "No", so it is unchanged.
+
 ## Validation Evidence
+
+- AC-1: passed — `packages/shared` `normalizeTags` tests and `packages/api` `app.test.ts`/`store.test.ts` (POST with `["  Work ", "work", "Read"]` returns `["work", "read"]`; no `tags` gives `[]`).
+- AC-2: passed — `app.test.ts`: 33 characters and internal whitespace return 400 `{"error":"invalid tag"}` and the bookmark is not listed; 32 characters returns 201.
+- AC-3: passed — `app.test.ts`: GET returns `tags` per bookmark, `[]` when created without tags.
+- AC-4: passed — `packages/web` `render.test.ts`: `a, b` in `.tags` after the link; no `.tags` element for `tags: []`.
+- AC-5: passed — `pnpm test` (24 tests), `pnpm lint`, `pnpm typecheck` from the repository root.
+- AC-6: passed — `pnpm build && pnpm measure` printed `web_bundle_gzip_bytes=890`, `web_bundle_gzip_delta=0` with `measure/baseline.json` at 890.
 
 ## Quality Gate
 
@@ -156,3 +171,4 @@ Task 4 — bundle baseline
 ## Change Log
 
 - Approved: plan-approval — Approve. 1. No. 2. Yes, as proposed. 3. Yes. 4. No.
+- Implementation: tasks 1 to 5 completed in four commits; Jira FIJIH-82 moved from To Do to In Progress.
