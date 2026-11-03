@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -102,18 +102,22 @@ so that I can group my bookmarks.
 ## Implementation Record
 
 Task 1 — shared tag model and `normalizeTags`
+(commit d470b9d)
 
 - `Bookmark.tags`, optional `NewBookmark.tags`, `MAX_TAG_LENGTH = 32`, `normalizeTags(unknown)`; 7 new tests; `pnpm --filter @sample/shared test` and `typecheck` pass.
 
 Task 2 — API accepts, validates, stores, and returns tags
+(commit 0a2b003)
 
 - `BookmarkStore.add` validates via `normalizeTags` after title/URL checks (`ValidationError("invalid tag")`); `POST /bookmarks` passes `body.tags`; 5 new tests; `pnpm --filter @sample/api test` and `typecheck` pass.
 
 Task 3 — web page renders tags after the title
+(commit 784af28)
 
 - `renderList` appends `<span class="tags">` (via `textContent`) between link and Remove only when tags exist; fixture updated; 2 new tests; `pnpm --filter @sample/web test` and `typecheck` pass.
 
 Task 4 — root checks and bundle measurement
+(commit d3dc1b4)
 
 - `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` all pass from the root. `pnpm measure` reported `web_bundle_gzip_bytes=881` (delta 46 from 835); `web_bundle_gzip_bytes` in `measure/baseline.json` updated to 881, re-measure delta 0.
 
@@ -172,3 +176,4 @@ Reviewed head: d3dc1b46cadcb47042c2047118dc79aeb4115ec4
 - 2026-11-03: Task 4 done (root checks, baseline 835 -> 881 bytes); stale-statement sweep found nothing; implementation complete.
 - Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Quality gate `concerns` recorded at d3dc1b4 (two minor findings, no residual risk).
+- 2026-11-03: Finalize (local QA review): reconciled task evidence by adding `(commit <hash>)` lines to the Task 1-4 Implementation Record entries (each entry was added by its task's own commit); File List already matched the branch diff; no task or evidence discrepancies. Set checkpoint `local-qa-review` and transition `qa-reviewed`.
