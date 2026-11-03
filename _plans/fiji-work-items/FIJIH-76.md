@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T12:22:07.636+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-76-add-bookmark-tags
   base_branch: null
@@ -138,6 +138,28 @@ AC-5: passed — pnpm test (12+17+4), pnpm lint, pnpm typecheck all pass from th
 
 ## Quality Gate
 
+Gate: concerns — every criterion is evidenced; one minor finding remains.
+
+Acceptance trace:
+
+- AC-1 — implementation: `normalizeTags` (packages/shared/src/index.ts:49), `BookmarkStore.add` defaults to `[]` and stores `normalizeTags(tags)` (packages/api/src/store.ts:17-26), POST passes `tags` (packages/api/src/app.ts:23-28). Verification: packages/shared/src/index.test.ts (trim, lower-case, dedupe, order, immutability), packages/api/src/store.test.ts (default `[]`, normalisation), packages/api/src/app.test.ts (`["News", " news ", "Tech"]` → 201 `["news", "tech"]`; omitted → `[]`). Re-run at 5ccdbfc: passed.
+- AC-2 — implementation: `isValidTag` (packages/shared/src/index.ts:43-46) checked for every tag before any write (packages/api/src/store.ts:18); D4 malformed `tags` guard (packages/api/src/app.ts:25-27). Verification: app.test.ts 400 `{"error":"invalid tag"}` and absent from `GET /bookmarks` for 33 characters, a space, empty, a string, a non-string element, and `null`; store.test.ts rejection leaves the store empty; index.test.ts 32 vs 33 boundary, space, tab, empty, blank. Re-run at 5ccdbfc: passed.
+- AC-3 — implementation: stored bookmarks carry `tags`, returned by `store.list()`. Verification: app.test.ts `GET /bookmarks` returns `["news", "tech"]` and `[]`; store.test.ts `list()` includes tags. Re-run at 5ccdbfc: passed.
+- AC-4 — implementation: `renderList` appends `span.tags` with `textContent = tags.join(", ")` between the link and Remove only when tags are non-empty (packages/web/src/render.ts:21-28). Verification: render.test.ts children `A, SPAN, BUTTON` with `news, tech`; no `.tags` and item text `ExampleRemove` for `[]`. Re-run at 5ccdbfc: passed.
+- AC-5 — Vitest tests in all three packages; re-run from the repository root at 5ccdbfc: `pnpm test` exit 0 (shared 12, api 17, web 4), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Also `pnpm build` then `pnpm measure`: `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against the updated `measure/baseline.json`.
+
+Findings:
+
+- minor — packages/shared/src/index.ts:43-51 (used by packages/api/src/store.ts:18,26): validation runs on the submitted tag but `normalizeTags` lower-cases afterwards, and `toLowerCase()` can lengthen a string, so a stored tag can exceed the 32-character limit of AC-2 and fail `isValidTag` itself. Reproduced at 5ccdbfc: `isValidTag("İ".repeat(32))` is `true`, `normalizeTags(["İ".repeat(32)])[0]` has 64 code points, and `isValidTag` of that stored value is `false`. Fix by validating the normalised tag (or checking the length after lower-casing) and adding a test.
+
+Residual risks: none.
+
+Unmet required validations: none.
+
+Stale-statement sweep: README.md, AGENTS.md, TEAMS.md, scenarios/README.md, .changeset/, and the comments and test descriptions in the changed packages hold no statement the change makes untrue (README's `packages/api` row names only routes, which are unchanged; D1 leaves the web form without a tags input).
+
+Reviewed head: 5ccdbfc17f5de20d7cc8c5ffc84661b1fe49bc37
+
 ## Review Record
 
 ## Change Log
@@ -145,3 +167,4 @@ AC-5: passed — pnpm test (12+17+4), pnpm lint, pnpm typecheck all pass from th
 - 2026-11-03 — Plan: drafted from FIJIH-76 at source revision 2026-11-03T12:22:07.636+0100; issue assigned to Mattia Panzeri.
 - 2026-11-03 — Approved: plan-approval — Approve with the proposed answers: 1. No to both. 2. Yes. 3. 400. 4. Yes. Publish: yes. Notify: no.
 - 2026-11-03 — Implementation: tasks 1-6 done. Decisions applied: D1 no web form input or README change; D2 trim before checks; D3 empty tag rejected 400; D4 malformed tags rejected 400 invalid tag. Jira FIJIH-76 moved to In Progress.
+- 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
