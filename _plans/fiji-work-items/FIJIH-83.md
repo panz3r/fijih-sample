@@ -7,9 +7,9 @@ source:
   key: FIJIH-83
   revision: 2026-11-03T18:59:24.934+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -123,3 +123,4 @@ so that I can group my bookmarks.
 
 ## Change Log
 - 2026-11-03 — Plan approval request (targeted repair, attempt 1): "Approve. Answers: Q1 no tags input. Q2 a yes, b reject with 400 invalid tag, c yes, d yes. Q3 yes to both." Applied: recorded Q1–Q3 decisions in Product Context; AC 3 now includes empty tags and code-point counting; new AC 4 for non-array and non-string values (AC 4–7 renumbered to 5–8); removed the conditional tags-input task; updated tasks and Testing Strategy; added defaults.
+- 2026-11-03 — Approved: plan-approval — Approve this plan.
