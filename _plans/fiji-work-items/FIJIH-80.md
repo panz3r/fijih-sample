@@ -48,10 +48,10 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Shared tag model and normalization (AC: 1, 2, 3, 6)
-  - [ ] In `packages/shared/src/index.ts`, add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
-  - [ ] Add an exported `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(input: unknown): string[] | null` that returns `[]` for `undefined`, the trimmed, lower-cased, first-occurrence-deduplicated list for a valid array, and `null` for any invalid input (AC 2 and the AC 3 cases).
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe (including case-variant duplicates), default `[]`, exactly 32 characters accepted, 33 rejected, inner whitespace (space, tab) rejected, and the AC 3 cases.
+- [x] Shared tag model and normalization (AC: 1, 2, 3, 6)
+  - [x] In `packages/shared/src/index.ts`, add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
+  - [x] Add an exported `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(input: unknown): string[] | null` that returns `[]` for `undefined`, the trimmed, lower-cased, first-occurrence-deduplicated list for a valid array, and `null` for any invalid input (AC 2 and the AC 3 cases).
+  - [x] Unit tests in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe (including case-variant duplicates), default `[]`, exactly 32 characters accepted, 33 rejected, inner whitespace (space, tab) rejected, and the AC 3 cases.
 - [ ] API accepts, validates, stores, and returns tags (AC: 1, 2, 3, 4, 6)
   - [ ] In `packages/api/src/store.ts`, `add` calls `normalizeTags(input.tags)`, throws `ValidationError("invalid tag")` on `null`, and stores the result on the bookmark.
   - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` for `POST /bookmarks`.
@@ -89,9 +89,18 @@ so that I can group my bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
 
+Task 1 — shared tag model and `normalizeTags`
+
+- `Bookmark.tags`, optional `NewBookmark.tags`, `MAX_TAG_LENGTH = 32`, `normalizeTags(unknown)`; 7 new tests; `pnpm --filter @sample/shared test` and `typecheck` pass.
+
 ## Validation Evidence
+
+- shared: `pnpm --filter @sample/shared test` passed (10 tests), `typecheck` passed.
 
 ## Quality Gate
 
@@ -101,3 +110,4 @@ so that I can group my bookmarks.
 
 - 2026-11-03: Plan drafted from FIJIH-80 revision `2026-11-03T15:01:02.875+0100`; issue assigned to the current user.
 - Approved: plan-approval — Approve. 1. No form input. 2. Yes, as proposed. 3. All three readings confirmed.
+- 2026-11-03: Task 1 implemented (shared tags).

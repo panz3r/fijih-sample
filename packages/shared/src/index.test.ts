@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, MAX_TAG_LENGTH, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,36 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("defaults to an empty list", () => {
+    expect(normalizeTags(undefined)).toEqual([]);
+    expect(normalizeTags([])).toEqual([]);
+  });
+  it("trims, lower-cases, and dedupes keeping the first position", () => {
+    expect(normalizeTags([" News ", "TECH", "news", "tech", "a"])).toEqual(["news", "tech", "a"]);
+  });
+  it("accepts 32 characters and rejects 33", () => {
+    expect(MAX_TAG_LENGTH).toBe(32);
+    expect(normalizeTags(["a".repeat(32)])).toEqual(["a".repeat(32)]);
+    expect(normalizeTags(["a".repeat(33)])).toBeNull();
+  });
+  it("applies the length limit after trimming", () => {
+    expect(normalizeTags([` ${"a".repeat(32)} `])).toEqual(["a".repeat(32)]);
+  });
+  it("rejects inner whitespace", () => {
+    expect(normalizeTags(["a b"])).toBeNull();
+    expect(normalizeTags(["a\tb"])).toBeNull();
+  });
+  it("rejects non-arrays, non-string elements, and empty tags", () => {
+    expect(normalizeTags("news")).toBeNull();
+    expect(normalizeTags(null)).toBeNull();
+    expect(normalizeTags({})).toBeNull();
+    expect(normalizeTags([1])).toBeNull();
+    expect(normalizeTags(["ok", null])).toBeNull();
+    expect(normalizeTags([""])).toBeNull();
+    expect(normalizeTags(["   "])).toBeNull();
   });
 });
