@@ -52,11 +52,11 @@ so that I can group my bookmarks.
   - [x] In `packages/shared/src/index.ts`, add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
   - [x] Add an exported `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(input: unknown): string[] | null` that returns `[]` for `undefined`, the trimmed, lower-cased, first-occurrence-deduplicated list for a valid array, and `null` for any invalid input (AC 2 and the AC 3 cases).
   - [x] Unit tests in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe (including case-variant duplicates), default `[]`, exactly 32 characters accepted, 33 rejected, inner whitespace (space, tab) rejected, and the AC 3 cases.
-- [ ] API accepts, validates, stores, and returns tags (AC: 1, 2, 3, 4, 6)
-  - [ ] In `packages/api/src/store.ts`, `add` calls `normalizeTags(input.tags)`, throws `ValidationError("invalid tag")` on `null`, and stores the result on the bookmark.
-  - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` for `POST /bookmarks`.
-  - [ ] Store tests in `packages/api/src/store.test.ts`: default `[]`, normalized tags stored, invalid tag throws and stores nothing.
-  - [ ] HTTP tests in `packages/api/src/app.test.ts`: `POST` with tags returns them normalized; `GET` lists them; invalid tag answers `400` `{"error":"invalid tag"}` and `GET` does not list the rejected bookmark; existing tests keep passing.
+- [x] API accepts, validates, stores, and returns tags (AC: 1, 2, 3, 4, 6)
+  - [x] In `packages/api/src/store.ts`, `add` calls `normalizeTags(input.tags)`, throws `ValidationError("invalid tag")` on `null`, and stores the result on the bookmark.
+  - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` for `POST /bookmarks`.
+  - [x] Store tests in `packages/api/src/store.test.ts`: default `[]`, normalized tags stored, invalid tag throws and stores nothing.
+  - [x] HTTP tests in `packages/api/src/app.test.ts`: `POST` with tags returns them normalized; `GET` lists them; invalid tag answers `400` `{"error":"invalid tag"}` and `GET` does not list the rejected bookmark; existing tests keep passing.
 - [ ] Web page renders tags after the title (AC: 5, 6)
   - [ ] In `packages/web/src/render.ts`, after the link append an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when `bookmark.tags.length > 0`.
   - [ ] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element when tags are `[]`; update the existing fixture with `tags: []` so it type-checks.
@@ -91,6 +91,10 @@ so that I can group my bookmarks.
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/store.test.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
@@ -98,9 +102,14 @@ Task 1 — shared tag model and `normalizeTags`
 
 - `Bookmark.tags`, optional `NewBookmark.tags`, `MAX_TAG_LENGTH = 32`, `normalizeTags(unknown)`; 7 new tests; `pnpm --filter @sample/shared test` and `typecheck` pass.
 
+Task 2 — API accepts, validates, stores, and returns tags
+
+- `BookmarkStore.add` validates via `normalizeTags` after title/URL checks (`ValidationError("invalid tag")`); `POST /bookmarks` passes `body.tags`; 5 new tests; `pnpm --filter @sample/api test` and `typecheck` pass.
+
 ## Validation Evidence
 
 - shared: `pnpm --filter @sample/shared test` passed (10 tests), `typecheck` passed.
+- api: `pnpm --filter @sample/api test` passed (9 tests), `typecheck` passed.
 
 ## Quality Gate
 
@@ -111,3 +120,4 @@ Task 1 — shared tag model and `normalizeTags`
 - 2026-11-03: Plan drafted from FIJIH-80 revision `2026-11-03T15:01:02.875+0100`; issue assigned to the current user.
 - Approved: plan-approval — Approve. 1. No form input. 2. Yes, as proposed. 3. All three readings confirmed.
 - 2026-11-03: Task 1 implemented (shared tags).
+- 2026-11-03: Task 2 implemented (API tags).
