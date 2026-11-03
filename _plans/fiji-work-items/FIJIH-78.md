@@ -47,10 +47,10 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Shared model and tag normalization in `packages/shared` (AC: 1, 2, 5)
-  - [ ] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags?: readonly string[]`.
-  - [ ] Add a pure `normalizeTags` function (with a `MAX_TAG_LENGTH = 32` constant) that accepts `unknown`, trims, lower-cases, drops tags that are empty after trimming, and deduplicates in first-occurrence order, and reports an invalid input to its caller, for example by returning `null`: `tags` not an array, a non-string element, or a tag that after trimming is longer than 32 Unicode code points (counted with `[...tag].length`, not `.length`) or contains whitespace.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication order, empty input, empty and whitespace-only tags dropped, a 32-character tag accepted, a 33-character tag rejected, 32 astral characters (such as an emoji, 64 UTF-16 units) accepted and 33 rejected, an inner space or tab rejected, a non-array `tags` and a non-string element rejected.
+- [x] Shared model and tag normalization in `packages/shared` (AC: 1, 2, 5)
+  - [x] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags?: readonly string[]`.
+  - [x] Add a pure `normalizeTags` function (with a `MAX_TAG_LENGTH = 32` constant) that accepts `unknown`, trims, lower-cases, drops tags that are empty after trimming, and deduplicates in first-occurrence order, and reports an invalid input to its caller, for example by returning `null`: `tags` not an array, a non-string element, or a tag that after trimming is longer than 32 Unicode code points (counted with `[...tag].length`, not `.length`) or contains whitespace.
+  - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication order, empty input, empty and whitespace-only tags dropped, a 32-character tag accepted, a 33-character tag rejected, 32 astral characters (such as an emoji, 64 UTF-16 units) accepted and 33 rejected, an inner space or tab rejected, a non-array `tags` and a non-string element rejected.
 - [ ] API accepts, validates, stores, and returns tags in `packages/api` (AC: 1, 2, 3, 5)
   - [ ] `BookmarkStore.add` normalizes `input.tags` (default `[]`) with `normalizeTags`, throws `ValidationError("invalid tag")` for invalid tags before any duplicate-URL check or insert, and stores the normalized tags on the bookmark.
   - [ ] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store unchanged, so a non-array value reaches validation.
@@ -98,7 +98,13 @@ so that I can group my bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — shared tags model and normalizeTags
+Added `tags: string[]` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH` and a pure `normalizeTags` (null when invalid; length by code points). Shared tests: 11 passed.
 
 ## Validation Evidence
 
