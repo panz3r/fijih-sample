@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, isValidTag, normalizeTags, normalizeUrl, parseTags, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,47 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("trims, lower-cases, and deduplicates across case and whitespace, keeping order", () => {
+    expect(normalizeTags([" News ", "tech", "NEWS", "news", "Tech "])).toEqual(["news", "tech"]);
+  });
+  it("gives [] for empty input", () => {
+    expect(normalizeTags([])).toEqual([]);
+  });
+});
+
+describe("isValidTag", () => {
+  it("accepts 32 characters and rejects 33", () => {
+    expect(isValidTag("a".repeat(32))).toBe(true);
+    expect(isValidTag("a".repeat(33))).toBe(false);
+  });
+  it("counts Unicode code points, not UTF-16 units", () => {
+    const tag = "\u{1F600}".repeat(32);
+    expect(tag.length).toBeGreaterThan(32);
+    expect(isValidTag(tag)).toBe(true);
+    expect(isValidTag("\u{1F600}".repeat(33))).toBe(false);
+  });
+  it("rejects empty tags and tags with inner whitespace", () => {
+    expect(isValidTag("")).toBe(false);
+    expect(isValidTag("a b")).toBe(false);
+    expect(isValidTag("a\tb")).toBe(false);
+  });
+});
+
+describe("parseTags", () => {
+  it("returns normalised tags", () => {
+    expect(parseTags([" A ", "a", "b"])).toEqual(["a", "b"]);
+    expect(parseTags([])).toEqual([]);
+  });
+  it("returns null for wrong shapes and invalid tags", () => {
+    expect(parseTags("news")).toBeNull();
+    expect(parseTags(null)).toBeNull();
+    expect(parseTags(["a", 1])).toBeNull();
+    expect(parseTags(["   "])).toBeNull();
+    expect(parseTags(["a b"])).toBeNull();
+    expect(parseTags(["a".repeat(33)])).toBeNull();
   });
 });

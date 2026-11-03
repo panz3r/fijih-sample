@@ -43,4 +43,39 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  it("normalises tags on create and returns them on list", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/tagged", title: "T", tags: [" News ", "NEWS", "tech"] }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://example.com/tagged")?.tags).toEqual(["news", "tech"]);
+  });
+
+  it("defaults tags to [] when omitted", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/untagged", title: "U" }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://example.com/untagged")?.tags).toEqual([]);
+  });
+
+  it.each([["a".repeat(33)], ["a b"], [""], ["   "], ["a\tb"], ["news"], [null], [["ok", 1]]].map((v, i) => [i, v[0]] as const))(
+    "rejects invalid tags (case %i) with 400 and stores nothing",
+    async (i, tags) => {
+      const target = `https://example.com/invalid-${i}`;
+      const body = { url: target, title: "X", tags: typeof tags === "string" && i < 5 ? [tags] : tags };
+      const res = await fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[];
+      expect(list.some((b) => b.url === target)).toBe(false);
+    },
+  );
 });

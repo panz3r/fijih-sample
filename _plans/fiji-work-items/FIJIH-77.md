@@ -48,17 +48,17 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] 1. `packages/shared`: add tags to the shared model and a pure tag normaliser (AC: 1, 2, 5)
+- [x] 1. `packages/shared`: add tags to the shared model and a pure tag normaliser (AC: 1, 2, 5)
   - [ ] 1.1 Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` to `NewBookmark` (validated by `parseTags`). The tags input on the add-bookmark form is out of scope: `packages/web/index.html` and `packages/web/src/main.ts` stay unchanged.
   - [ ] 1.2 Add an exported pure function (for example `normalizeTags`) that trims, lower-cases, and deduplicates tags in first-occurrence order, and an exported predicate (for example `isValidTag`) that rejects a normalised tag that is empty, longer than 32 Unicode code points (counted with `[...tag].length`, not `.length`), or containing whitespace. Add an exported function (for example `parseTags(input: unknown)`) that returns the normalised tags, or `null` when `input` is present but not an array or has a non-string element or an invalid tag.
   - [ ] 1.3 Vitest tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding whitespace, order kept, empty input gives `[]`, a 32-character tag accepted, a 33-character tag, an empty or whitespace-only tag, and a tag with inner whitespace (space, tab) rejected, a tag of 32 code points that is longer than 32 UTF-16 units (for example one containing an astral character) accepted, and `parseTags` returning `null` for a string, `null`, and an array with a non-string element.
-- [ ] 2. `packages/api` store: validate, normalise, and store tags (AC: 1, 2, 3, 5)
+- [x] 2. `packages/api` store: validate, normalise, and store tags (AC: 1, 2, 3, 5)
   - [ ] 2.1 In `BookmarkStore.add`, validate and normalise `input.tags` (typed `unknown`, default `[]`) through the shared helpers, throw `ValidationError("invalid tag")` when `tags` is not an array, an element is not a string, or any tag is invalid or empty, and store `tags` on the bookmark; run the tag check after the existing title and URL checks so their errors are unchanged.
   - [ ] 2.2 Vitest tests in `packages/api/src/store.test.ts`: tags stored normalised, default `[]`, invalid tag, empty tag, non-array `tags`, and non-string element each throw `ValidationError` with message `invalid tag` and leave the store unchanged.
-- [ ] 3. `packages/api` HTTP: accept and return tags (AC: 1, 2, 3, 5)
+- [x] 3. `packages/api` HTTP: accept and return tags (AC: 1, 2, 3, 5)
   - [ ] 3.1 In `createApp`, pass the request body's `tags` to `store.add`; `GET /bookmarks` returns them through `store.list()`.
   - [ ] 3.2 Vitest tests in `packages/api/src/app.test.ts`: `POST` with mixed-case, padded, duplicate tags returns `201` with normalised tags; `POST` without `tags` returns `tags: []`; `POST` with a 33-character tag, a tag containing whitespace, an empty or whitespace-only tag, `tags` as a string or `null`, and an array with a non-string element each return `400` `{"error":"invalid tag"}` and the bookmark is not listed afterwards; `GET /bookmarks` returns each bookmark's tags.
-- [ ] 4. `packages/web`: show tags after the title (AC: 4, 5)
+- [x] 4. `packages/web`: show tags after the title (AC: 4, 5)
   - [ ] 4.1 In `renderList` (`packages/web/src/render.ts`), when a bookmark has tags, render them after the title link, joined by `", "`, as text content (never as HTML); render nothing extra when `tags` is empty.
   - [ ] 4.2 Vitest tests in `packages/web/src/render.test.ts`: a bookmark with tags shows `news, tech` after its title; a bookmark with `tags: []` shows no tag text or separator; the existing fixtures gain `tags`.
 - [ ] 5. Bundle baseline: run `pnpm build` then `pnpm measure`, and when the delta is not 0 set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed size, then re-run `pnpm measure` to confirm `web_bundle_gzip_delta=0` (AC: 6)
@@ -110,7 +110,24 @@ User's answers at `plan-approval`, applied above:
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/store.test.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+
 ## Implementation Record
+
+Task 1 — shared tag model and normaliser: `Bookmark.tags`, `NewBookmark.tags?: unknown`, `normalizeTags`, `isValidTag` (code-point length via `[...tag].length`, `\s` whitespace), `parseTags`; 8 new shared tests pass.
+
+Task 2 — store validates and stores tags: `BookmarkStore.add` runs the tag check after the title and URL checks and throws `ValidationError("invalid tag")`; store tests cover normalised storage, default `[]`, invalid and wrong-shaped tags with the store unchanged.
+
+Task 3 — HTTP accepts and returns tags: `createApp` passes `body.tags` to `store.add`; app tests cover normalised create, default `[]`, eight invalid cases answering `400 {"error":"invalid tag"}` with nothing listed, and `GET` returning tags.
+
+Task 4 — web shows tags after the title: `renderList` appends a `<span>` with `tags.join(", ")` as text content only when tags exist; render tests cover `news, tech` and the empty case; the existing fixture gains `tags`.
 
 ## Validation Evidence
 
