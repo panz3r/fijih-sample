@@ -47,11 +47,11 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] 1. `packages/shared`: extend the model and add pure tag helpers (AC: 1, 2, 5)
-  - [ ] 1.1 Add `tags: string[]` to `Bookmark`; make `NewBookmark` `Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] }`.
-  - [ ] 1.2 Add `isValidTag(tag: string): boolean` (after trimming: at most 32 characters and no whitespace character, `/\s/`; empty-tag handling per Open decision D3).
-  - [ ] 1.3 Add `normalizeTags(tags: readonly string[]): string[]` (trim, lower-case, deduplicate keeping first occurrence order; does not mutate the input).
-  - [ ] 1.4 Tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case/whitespace variants, order kept, input not mutated; `isValidTag` accepts a 32-character tag and rejects a 33-character tag, an internal space, and an internal tab.
+- [x] 1. `packages/shared`: extend the model and add pure tag helpers (AC: 1, 2, 5)
+  - [x] 1.1 Add `tags: string[]` to `Bookmark`; make `NewBookmark` `Pick<Bookmark, "url" | "title"> & { tags?: readonly string[] }`.
+  - [x] 1.2 Add `isValidTag(tag: string): boolean` (after trimming: at most 32 characters and no whitespace character, `/\s/`; empty-tag handling per Open decision D3).
+  - [x] 1.3 Add `normalizeTags(tags: readonly string[]): string[]` (trim, lower-case, deduplicate keeping first occurrence order; does not mutate the input).
+  - [x] 1.4 Tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case/whitespace variants, order kept, input not mutated; `isValidTag` accepts a 32-character tag and rejects a 33-character tag, an internal space, and an internal tab.
 - [ ] 2. `packages/api` store: validate, normalise, and store tags (AC: 1, 2, 3, 5)
   - [ ] 2.1 In `BookmarkStore.add`, validate every tag with `isValidTag` and throw `ValidationError("invalid tag")` on the first failure, before anything is stored; store `normalizeTags(input.tags ?? [])`.
   - [ ] 2.2 Tests in `packages/api/src/store.test.ts`: default `[]`, normalisation, rejection leaves the store unchanged, `list()` returns tags.
@@ -104,7 +104,12 @@ so that I can group my bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — shared: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, pure `isValidTag` (trim, non-empty, <=32 code points, no whitespace) and `normalizeTags`; tests added. `pnpm --filter @sample/shared test`: 12 passed.
 
 ## Validation Evidence
 
