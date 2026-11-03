@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 2
 quality:
   gate: pass
@@ -187,6 +187,8 @@ Stale statements: none found. Searched documentation, scenarios, agent instructi
 Unmet required validations: none (test, lint, type-check, build, and measure passed at the reviewed head).
 
 ## Review Record
+
+Copilot pass (attempt 2): Copilot review 5751987036 (COMMENTED, commit 7ebb905, "Approval recommended", no open issues) raised no review threads and no findings; nothing to fix, reply to, or resolve. No `(verify: ci)` criteria.
 
 ## Change Log
 
