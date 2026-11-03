@@ -71,11 +71,11 @@ so that I can group my bookmarks.
     - A tag of 33 characters returns 400 `{"error":"invalid tag"}`, and so does a tag with internal whitespace. In both cases, a later GET does not list the bookmark.
     - GET returns the `tags` of each bookmark.
   - [x] `store.test.ts`: test the default `[]` and that a rejected tag stores nothing.
-- [ ] Render tags on the web page in `packages/web` (AC: 4)
-  - [ ] `render.ts`: when `bookmark.tags.length > 0`, append an element with class `tags` and the text `bookmark.tags.join(", ")` right after the title link. Put the link and the tags in one wrapper so that the `li` flex layout keeps the Remove button on the right. When there are no tags, append nothing.
-  - [ ] `index.html`: add a small style for `.tags` (a left margin and a muted colour) so that the tags are visually separate from the title.
-  - [ ] `render.test.ts`: add `tags` to the existing fixture. Add a test that two tags render as `a, b` after the link, and a test that `tags: []` renders no `.tags` element and no extra text.
-  - [ ] If the answer to Open question 1 adds a form field: add the input to `index.html`, send `tags` from `main.ts`, and add a test for how the input is parsed.
+- [x] Render tags on the web page in `packages/web` (AC: 4)
+  - [x] `render.ts`: when `bookmark.tags.length > 0`, append an element with class `tags` and the text `bookmark.tags.join(", ")` right after the title link. Put the link and the tags in one wrapper so that the `li` flex layout keeps the Remove button on the right. When there are no tags, append nothing.
+  - [x] `index.html`: add a small style for `.tags` (a left margin and a muted colour) so that the tags are visually separate from the title.
+  - [x] `render.test.ts`: add `tags` to the existing fixture. Add a test that two tags render as `a, b` after the link, and a test that `tags: []` renders no `.tags` element and no extra text.
+  - [x] If the answer to Open question 1 adds a form field: add the input to `index.html`, send `tags` from `main.ts`, and add a test for how the input is parsed.
 - [ ] Update the bundle baseline (AC: 6)
   - [ ] Run `pnpm build` then `pnpm measure`. Write the printed `web_bundle_gzip_bytes` into `measure/baseline.json`.
 - [ ] Run the checks from the repository root: `pnpm test`, `pnpm lint`, and `pnpm typecheck` (AC: 5)
@@ -121,6 +121,9 @@ so that I can group my bookmarks.
 - packages/api/src/store.ts
 - packages/api/src/app.test.ts
 - packages/api/src/store.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+- packages/web/index.html
 
 ## Implementation Record
 
@@ -133,6 +136,11 @@ Task 2 — API accepts, validates, stores, and returns tags
 
 - `app.ts` passes `body.tags` unchanged; `store.add` validates after the URL check and before the duplicate-URL check. `undefined` gives `[]`; a non-array, non-string element, or empty tag throws `ValidationError("invalid tag")` (Open question 2).
 - Focused: `pnpm --filter @sample/api test` 10 passed; `pnpm --filter @sample/api typecheck` clean; `pnpm lint packages/api packages/shared` clean.
+
+Task 3 — web page renders tags
+
+- `renderList` wraps the link and an optional `span.tags` (`tags.join(", ")`) in one `span`, so the `li` flex layout keeps Remove on the right. `index.html` gets a `.tags` style. The form subtask does not apply: the user answered Open question 1 with "No", so no tags input was added.
+- Focused: `pnpm --filter @sample/web test` 4 passed; `pnpm --filter @sample/web typecheck` clean; `pnpm lint packages/web` clean.
 
 ## Validation Evidence
 
