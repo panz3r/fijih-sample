@@ -8,10 +8,10 @@ source:
   revision: 2026-11-03T13:00:33.932+0100
 lifecycle:
   status: active
-  phase: qa-review
+  phase: implementation
   checkpoint: null
   transition: quality-gate-recorded
-  attempt: 1
+  attempt: 2
 quality:
   gate: fail
 artifacts:
@@ -63,6 +63,7 @@ so that I can group my bookmarks.
   - [ ] 4.2 Vitest tests in `packages/web/src/render.test.ts`: a bookmark with tags shows `news, tech` after its title; a bookmark with `tags: []` shows no tag text or separator; the existing fixtures gain `tags`.
 - [x] 5. Bundle baseline: run `pnpm build` then `pnpm measure`, and when the delta is not 0 set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed size, then re-run `pnpm measure` to confirm `web_bundle_gzip_delta=0` (AC: 6)
 - [x] 6. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5)
+- [ ] 7. Remediate Quality Gate finding F1 (`blocking`, Re-entry 2): count the 32-code-point limit on the trimmed tag, not the lower-cased tag, in `packages/shared`, add a shared and an API test for a tag whose length changes under lower-casing (`"İ".repeat(32)`), and correct the Engineering Context approach line (AC: 2, 5)
 
 ## Engineering Context
 
@@ -183,3 +184,4 @@ Unmet required validations: none (test, lint, type-check, build, and measure pas
 - 2026-11-03: Approved: plan-approval — Approve. Answers: 1. No form input. 2. Yes. 3. 400 invalid tag. 4. Yes. 5. Yes, ", ".
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Quality gate recorded: fail (F1, AC-2 length measured after lower-casing) at acf696e.
+- 2026-11-03: Re-entry 2: quality-fail — fe0c2ec09bfcdfbcf2e32dc42bb9217dd23ddfa5 (quality gate fail, F1: AC-2 length measured after lower-casing). Task 7 appended.
