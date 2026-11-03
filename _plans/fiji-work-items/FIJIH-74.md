@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 2
 quality:
   gate: pass
@@ -177,6 +177,24 @@ Residual risks: none.
 ## Review Record
 
 - Copilot pass (2026-11-03): review PRR_kwDOVaYq_M8AAAABVm-0Wg (COMMENTED, "Approval recommended", no open issues) on head e7d1bdb; 0 review threads, 0 findings; no fixes needed.
+
+Jira handoff draft:
+FIJIH-74 is implemented and in review: pull request https://github.com/panz3r/fijih-sample/pull/20 (branch `FIJIH-74-add-tags-to-bookmarks`, reviewed head e7d1bdb). Copilot reviewed that head with no findings, and `duckyduff369` (QA Engineer) approved it. The CI run 41548979595 on e7d1bdb passed, including the required `test` job, plus `lint`, `typecheck`, `measure` and `scenarios`.
+
+What changed:
+- `packages/shared`: `Bookmark` carries `tags: string[]`, and a new `normalizeTags` trims, lower-cases and de-duplicates tags in input order.
+- `packages/api`: `POST /bookmarks` accepts an optional `tags` array (default `[]`); `GET /bookmarks` returns each bookmark's `tags`.
+- `packages/web`: the page shows a bookmark's tags after its title as comma-separated text, and renders no tag element when there are none.
+- Vitest tests added in all three packages; `measure/baseline.json` updated from 835 to 881 gzipped bytes, and a changeset was added.
+
+Decisions and constraints:
+- A tag is invalid (`400 {"error":"invalid tag"}`, nothing stored) when it is not a string, is empty after trimming, is longer than 32 characters, or contains whitespace. Leading and trailing whitespace is trimmed first, so only inner whitespace is rejected. A `tags` value that is not an array is rejected the same way. These follow the proposed defaults approved at plan approval.
+- The 32-character limit is measured on the trimmed tag before lower-casing (a follow-up request during local QA). A stored tag can therefore exceed 32 UTF-16 code units when lower-casing expands it: 32 "İ" is accepted and stored as 64 code units. Nothing reads a stored tag's length (storage is an in-memory map), so this was judged not to be a risk.
+- Duplicates are detected on the lower-cased form.
+
+Known limitations and deferred scope (per the issue and the approved plan): tags are not filterable or searchable yet, tags of an existing bookmark cannot be edited, and the web Add form has no tags input, so tags can only be set through the API. No follow-up tickets have been filed for these.
+
+Residual risks: none in the Quality Gate. No operational or documentation work is required; no (verify: ci) criteria.
 
 ## Change Log
 
