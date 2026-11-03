@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T13:00:33.932+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: fail
 artifacts:
   branch: FIJIH-77-add-tags-to-bookmarks
   base_branch: null
@@ -152,9 +152,34 @@ Task 6 — repository checks
 
 ## Quality Gate
 
+Gate: fail. AC-2 is unmet for one reproducible input (finding F1, `blocking`).
+
+Reviewed head: acf696e550acf15f04a8533d7a2e9808deaef8f3
+
+Acceptance trace:
+
+- AC-1: met. Implementation: `normalizeTags` and `parseTags` (`packages/shared/src/index.ts:14`, `:24`), `BookmarkStore.add` storing `tags` with default `[]` (`packages/api/src/store.ts`), `createApp` passing `body.tags` (`packages/api/src/app.ts:23-24`). Verification: shared `normalizeTags`/`parseTags` tests, store test "stores normalised tags and defaults to []", app tests "normalises tags on create and returns them on list" and "defaults tags to [] when omitted".
+- AC-2: unmet (F1). Implementation: `isValidTag` and `parseTags` (`packages/shared/src/index.ts:19`, `:24`), `ValidationError("invalid tag")` in `BookmarkStore.add`, mapped to `400` in `createApp`. Verification: shared `isValidTag`/`parseTags` tests, store and app invalid-tag tests (33 characters, space, tab, empty, whitespace-only, string, `null`, non-string element; `400 {"error":"invalid tag"}`, nothing listed). Wrong shapes, empty, whitespace, and the 33-character limit behave as specified; the length is measured on the lower-cased tag instead of the trimmed tag, so a 32-code-point tag is rejected when lower-casing lengthens it.
+- AC-3: met. Implementation: `store.list()` returns stored `tags`. Verification: app tests list `["news","tech"]` and `[]`.
+- AC-4: met. Implementation: `renderList` appends a `<span>` with `tags.join(", ")` as `textContent` only when `tags` is non-empty (`packages/web/src/render.ts`). Verification: render tests "shows tags after the title separated by a comma and space" and "shows no tag text for a bookmark without tags".
+- AC-5: validations met — re-run at the reviewed head: `pnpm test` (shared 11, api 22, web 4 passed), `pnpm lint` clean, `pnpm typecheck` clean. Test coverage of AC-2 misses the case in F1.
+- AC-6: met — re-run at the reviewed head: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=871`, `web_bundle_gzip_delta=0`.
+
+Findings:
+
+- F1 (`blocking`) — `packages/shared/src/index.ts:15-28`: `parseTags` lower-cases before `isValidTag` counts code points, so the 32-code-point limit is applied to the lower-cased tag, not the trimmed tag that AC-2 and the plan-approval decision 4 ("counted on the trimmed tag, in Unicode code points") name. Lower-casing U+0130 (`İ`) yields two code points (`i` + U+0307), so a trimmed tag of exactly 32 code points is rejected. Reproduced: `parseTags(["İ".repeat(32)])` returns `null`, and `POST /bookmarks` with `tags: ["İ".repeat(32)]` answers `400 {"error":"invalid tag"}` (AC-2: "A tag of exactly 32 code points is accepted"). The Engineering Context approach line ("Length is checked on the trimmed, lower-cased tag", `_plans/fiji-work-items/FIJIH-77.md:76`) records the same contradiction with AC-2. No test covers a tag whose length changes under lower-casing.
+
+Residual risks: none.
+
+Stale statements: none found. README.md's shared-package line was updated in this change; `scenarios/` notes describe other scenarios' features, not current behaviour.
+
+Unmet required validations: none (test, lint, type-check, build, and measure passed at the reviewed head).
+
 ## Review Record
 
 ## Change Log
 
 - 2026-11-03: Plan approved conditionally at `plan-approval` with the answers "Approve. Answers: 1. No form input. 2. Yes. 3. 400 invalid tag. 4. Yes. 5. Yes, \", \". Publish: yes. Notify: yes." Applied: AC 2 and 4, tasks 1-4, Product Context, and Engineering Context (open questions replaced by decisions).
 - 2026-11-03: Approved: plan-approval — Approve. Answers: 1. No form input. 2. Yes. 3. 400 invalid tag. 4. Yes. 5. Yes, ", ".
+- 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03: Quality gate recorded: fail (F1, AC-2 length measured after lower-casing) at acf696e.
