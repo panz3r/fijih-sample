@@ -62,7 +62,7 @@ so that I can group my bookmarks.
   - [x] 4.1 In `renderList`, when `bookmark.tags` is non-empty append an element (for example `<span class="tags">`) after the link whose `textContent` is `tags.join(", ")`; append nothing when it is empty. Use `textContent`, never `innerHTML`.
   - [x] 4.2 Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: a bookmark with `["news", "tech"]` shows `news, tech` after the title; a bookmark with `[]` renders no tag element and its item text is the title plus `Remove` only.
 - [ ] 5. Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 5)
-- [ ] 6. Bundle size: run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change, per `AGENTS.md` (AC: 4)
+- [x] 6. Bundle size: run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change, per `AGENTS.md` (AC: 4)
 
 ## Engineering Context
 
@@ -112,6 +112,7 @@ so that I can group my bookmarks.
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -119,6 +120,7 @@ Task 1 — shared: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`,
 Task 2 — api store: `BookmarkStore.add` validates every tag (after title/url checks, before the duplicate check and any write) and stores `normalizeTags(tags)`; store tests added (default, normalisation, 4 rejection cases leave store empty).
 Task 3 — api HTTP: POST passes `tags` through; a non-array or non-string-element `tags` (D4, including null) throws `ValidationError("invalid tag")` -> 400; integration tests added. `pnpm --filter @sample/api test`: 17 passed.
 Task 4 — web: `renderList` appends `<span class="tags">` (textContent, joined by ", ") between the title and Remove only when tags are non-empty; fixtures updated, 2 tests added. `pnpm --filter @sample/web test`: 4 passed.
+Task 6 — `pnpm build` then `pnpm measure`: web_bundle_gzip_bytes=881, web_bundle_gzip_delta=46; set `measure/baseline.json` `web_bundle_gzip_bytes` from 835 to 881.
 
 ## Validation Evidence
 
