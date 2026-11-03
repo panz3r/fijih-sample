@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 quality:
   gate: pending
@@ -60,9 +60,9 @@ so that I can group my bookmarks.
 - [x] Web page renders tags after the title (AC: 5, 6)
   - [x] In `packages/web/src/render.ts`, after the link append an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when `bookmark.tags.length > 0`.
   - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `news, tech`; no tag element when tags are `[]`; update the existing fixture with `tags: []` so it type-checks.
-- [ ] Root checks and bundle measurement (AC: 6)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
-  - [ ] Run `pnpm build` then `pnpm measure`; when the gzipped web bundle size moves from `measure/baseline.json` (835 bytes), update `web_bundle_gzip_bytes` there in this change, as `AGENTS.md` requires.
+- [x] Root checks and bundle measurement (AC: 6)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
+  - [x] Run `pnpm build` then `pnpm measure`; when the gzipped web bundle size moves from `measure/baseline.json` (835 bytes), update `web_bundle_gzip_bytes` there in this change, as `AGENTS.md` requires.
 
 ## Engineering Context
 
@@ -97,6 +97,7 @@ so that I can group my bookmarks.
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -112,11 +113,26 @@ Task 3 — web page renders tags after the title
 
 - `renderList` appends `<span class="tags">` (via `textContent`) between link and Remove only when tags exist; fixture updated; 2 new tests; `pnpm --filter @sample/web test` and `typecheck` pass.
 
+Task 4 — root checks and bundle measurement
+
+- `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` all pass from the root. `pnpm measure` reported `web_bundle_gzip_bytes=881` (delta 46 from 835); `web_bundle_gzip_bytes` in `measure/baseline.json` updated to 881, re-measure delta 0.
+
+Stale-statement sweep — `Bookmark`/`NewBookmark` shape, `POST /bookmarks` body, `createdAt`, web list rendering
+
+- none found (README, scenarios, HTML hits describe unchanged or historical behaviour).
+
 ## Validation Evidence
 
 - shared: `pnpm --filter @sample/shared test` passed (10 tests), `typecheck` passed.
 - api: `pnpm --filter @sample/api test` passed (9 tests), `typecheck` passed.
 - web: `pnpm --filter @sample/web test` passed (4 tests), `typecheck` passed.
+
+- AC-1: passed — shared `normalizeTags` tests, store tests, API test "accepts, normalizes, and lists tags" (201 body has normalized tags).
+- AC-2: passed — shared boundary/whitespace tests; API test returns 400 `{"error":"invalid tag"}`, nothing stored.
+- AC-3: passed — non-array, non-string element, and empty-after-trim cases in shared and API tests.
+- AC-4: passed — API test lists tags; default `[]` in store test.
+- AC-5: passed — web render tests (`news, tech` after the title; no `.tags` element when empty).
+- AC-6: passed — `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root; bundle 881 bytes recorded in `measure/baseline.json`.
 
 ## Quality Gate
 
@@ -129,3 +145,4 @@ Task 3 — web page renders tags after the title
 - 2026-11-03: Task 1 implemented (shared tags).
 - 2026-11-03: Task 2 implemented (API tags).
 - 2026-11-03: Task 3 implemented (web tags).
+- 2026-11-03: Task 4 done (root checks, baseline 835 -> 881 bytes); stale-statement sweep found nothing; implementation complete.
