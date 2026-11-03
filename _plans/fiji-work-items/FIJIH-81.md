@@ -63,11 +63,11 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 
 ## Tasks and Subtasks
 
-- [ ] Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 3, 5)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
-  - [ ] Add a pure, exported `normalizeTags(input)` that trims, validates (length ≤ 32, no whitespace, after trimming), lower-cases, and deduplicates (keeping first-occurrence order), returning `[]` for `undefined`, and signalling invalid input so the API can answer `invalid tag`. Empty-after-trim tags and a non-array or non-string `tags` value follow the answers to Open product decisions 2 and 3 (current choice: reject as `invalid tag`).
-  - [ ] Export the 32-character limit as a named constant.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces, default `[]`, boundary 32 vs 33 characters, inner whitespace rejected.
+- [x] Shared tag model and normalisation in `packages/shared/src/index.ts` (AC: 1, 2, 3, 5)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: readonly string[]` to `NewBookmark`.
+  - [x] Add a pure, exported `normalizeTags(input)` that trims, validates (length ≤ 32, no whitespace, after trimming), lower-cases, and deduplicates (keeping first-occurrence order), returning `[]` for `undefined`, and signalling invalid input so the API can answer `invalid tag`. Empty-after-trim tags and a non-array or non-string `tags` value follow the answers to Open product decisions 2 and 3 (current choice: reject as `invalid tag`).
+  - [x] Export the 32-character limit as a named constant.
+  - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces, default `[]`, boundary 32 vs 33 characters, inner whitespace rejected.
 - [ ] Store and HTTP handling in `packages/api` (AC: 1, 2, 3, 5)
   - [ ] `BookmarkStore.add` normalises `input.tags` with `normalizeTags` and stores them; invalid tags throw `ValidationError("invalid tag")` before anything is stored.
   - [ ] `createApp` passes `body.tags` from the POST body to `store.add`; the existing `ValidationError` → 400 path returns `{"error":"invalid tag"}`.
@@ -116,7 +116,12 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — shared tag model: `tags` on `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, and `normalizeTags` (returns `null` for invalid input; empty-after-trim and non-array/non-string input rejected per the plan's choices).
 
 ## Validation Evidence
 
