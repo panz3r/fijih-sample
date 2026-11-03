@@ -68,18 +68,18 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
   - [x] Add a pure, exported `normalizeTags(input)` that trims, validates (length ≤ 32, no whitespace, after trimming), lower-cases, and deduplicates (keeping first-occurrence order), returning `[]` for `undefined`, and signalling invalid input so the API can answer `invalid tag`. Empty-after-trim tags and a non-array or non-string `tags` value follow the answers to Open product decisions 2 and 3 (current choice: reject as `invalid tag`).
   - [x] Export the 32-character limit as a named constant.
   - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, deduplication across case and surrounding spaces, default `[]`, boundary 32 vs 33 characters, inner whitespace rejected.
-- [ ] Store and HTTP handling in `packages/api` (AC: 1, 2, 3, 5)
-  - [ ] `BookmarkStore.add` normalises `input.tags` with `normalizeTags` and stores them; invalid tags throw `ValidationError("invalid tag")` before anything is stored.
-  - [ ] `createApp` passes `body.tags` from the POST body to `store.add`; the existing `ValidationError` → 400 path returns `{"error":"invalid tag"}`.
-  - [ ] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET returns tags per bookmark; an over-long tag and a tag with inner whitespace each answer 400 `{"error":"invalid tag"}` and leave the list unchanged.
+- [x] Store and HTTP handling in `packages/api` (AC: 1, 2, 3, 5)
+  - [x] `BookmarkStore.add` normalises `input.tags` with `normalizeTags` and stores them; invalid tags throw `ValidationError("invalid tag")` before anything is stored.
+  - [x] `createApp` passes `body.tags` from the POST body to `store.add`; the existing `ValidationError` → 400 path returns `{"error":"invalid tag"}`.
+  - [x] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET returns tags per bookmark; an over-long tag and a tag with inner whitespace each answer 400 `{"error":"invalid tag"}` and leave the list unchanged.
 - [x] Render tags in `packages/web/src/render.ts` (AC: 4, 5, 6)
   - [x] After the title link, append an element whose text is the bookmark's tags joined with `", "` only when `tags` is non-empty.
   - [x] After the tags element, append a separate count element with text `(<n> tags)` (`(1 tag)` for one) only when `tags` is non-empty (AC 6).
   - [x] Tests in `packages/web/src/render.test.ts`: tags render after the title as `work, read`; a bookmark with `tags: []` renders no tags element; existing fixtures gain `tags`; a two-tag bookmark shows `(2 tags)` after the tag list, a one-tag bookmark `(1 tag)`, and a bookmark with `tags: []` shows no count.
-- [ ] Release bookkeeping (AC: 5)
-  - [ ] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` whose summary is `Add tags to bookmarks`.
-  - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in the same change (AGENTS.md).
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their output in Validation Evidence.
+- [x] Release bookkeeping (AC: 5)
+  - [x] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` whose summary is `Add tags to bookmarks`.
+  - [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in the same change (AGENTS.md).
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record their output in Validation Evidence.
 
 ## Engineering Context
 
@@ -131,9 +131,13 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 ## Implementation Record
 
 Task 1 — shared tag model: `tags` on `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, and `normalizeTags` (returns `null` for invalid input; empty-after-trim and non-array/non-string input rejected per the plan's choices).
+(commit 992600c)
 Task 2 — api: `BookmarkStore.add` normalises tags (order title, url, tags, duplicate) and throws `ValidationError("invalid tag")`; `createApp` forwards `body.tags`; store and HTTP tests added.
+(commit 49a7cd8)
 Task 3 — web: `renderList` appends a `.tags` span (`work, read`) and a separate `.tag-count` span (`(2 tags)`, `(1 tag)`) after the title only when tags exist; `li > a { margin-right: auto }` and `gap` keep the row layout. Tests cover tags, count, singular, and none.
+(commit 9399418)
 Task 4 — release bookkeeping: changeset `Add tags to bookmarks` (minor for shared, api, web); `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=923`, `web_bundle_gzip_delta=88` against baseline 835, so `measure/baseline.json` is now 923 (re-measure: delta 0). Root `pnpm test` (9 + 10 + 5 tests), `pnpm lint`, and `pnpm typecheck` pass.
+(commit 680c79a)
 
 Stale-statement sweep — `Bookmark`, `NewBookmark`, `tags`, `invalid tag`, `web_bundle_gzip_bytes`, `GET/POST /bookmarks`, list-row layout
 
@@ -161,3 +165,4 @@ AC-6: passed — web render tests: `(2 tags)`, `(1 tag)`, no count when empty
 - 2026-11-03 — Rejected: GET /bookmarks?tag=<tag> filter criterion — Jira description: "GET /bookmarks?tag=<tag> returns only the bookmarks that carry that tag (matched after the same normalisation)." Kept out of scope per the user's decision; source.revision updated to 2026-11-03T16:41:26.748+0100.
 - 2026-11-03 — Approved: plan-approval — Approve.
 - 2026-11-03 — Implementation complete: tasks 1-4 done, validations recorded; Jira FIJIH-81 moved to In Progress.
+- 2026-11-03 — Targeted repair (checkpoint-verification repair of `implementation-approval`), attempt unchanged. Contradicted evidence: "(1) your result claims every task complete, but in the committed work item at d35c54c the task "Store and HTTP handling in `packages/api`" and all three of its subtasks, and the task "Release bookkeeping" and all three of its subtasks, are still `- [ ]` (only the shared and web tasks are `- [x]`). (2) The four Implementation Record entries (`Task 1 — …` to `Task 4 — …`) carry no `(commit <short hash>)` or `(checked at <short hash>)` line below their first line, and the last commit d35c54c changes only the work-item file, so Finalize cannot match them to the commits eeecd08, 992600c, 49a7cd8, 9399418, 680c79a that made the changes". Fixed in the work item only: checked off the api and release tasks and their subtasks after re-running root `pnpm test` (9 + 10 + 5 passed), `pnpm lint` and `pnpm typecheck` (clean); added `(commit <hash>)` citations 992600c, 49a7cd8, 9399418, 680c79a to Task 1-4 entries. File List and Validation Evidence unchanged and consistent.
