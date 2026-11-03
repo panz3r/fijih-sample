@@ -11,10 +11,29 @@ describe("renderList", () => {
   it("renders one item per bookmark and wires Remove", () => {
     const list = document.createElement("ul");
     const onRemove = vi.fn();
-    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z" }], onRemove);
+    renderList(list, [{ id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z", tags: [] }], onRemove);
     expect(list.querySelectorAll("li")).toHaveLength(1);
     expect(list.querySelector("a")?.getAttribute("href")).toBe("https://example.com");
     list.querySelector("button")?.click();
     expect(onRemove).toHaveBeenCalledWith("1");
+  });
+
+  const bookmark = { id: "1", url: "https://example.com", title: "Example", createdAt: "2026-01-01T00:00:00Z" };
+
+  it("shows tags after the title, comma separated", () => {
+    const list = document.createElement("ul");
+    renderList(list, [{ ...bookmark, tags: ["news", "tech"] }], () => {});
+    const item = list.querySelector("li");
+    const tags = item?.querySelector(".tags");
+    expect(tags?.textContent).toBe("news, tech");
+    expect(tags?.previousElementSibling?.tagName).toBe("A");
+    expect(item?.querySelector("button")).not.toBeNull();
+  });
+
+  it("renders no tag element or text when there are no tags", () => {
+    const list = document.createElement("ul");
+    renderList(list, [{ ...bookmark, tags: [] }], () => {});
+    expect(list.querySelector(".tags")).toBeNull();
+    expect(list.querySelector("li")?.textContent).toBe("ExampleRemove");
   });
 });

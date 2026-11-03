@@ -69,9 +69,9 @@ so that I can group related bookmarks.
   - [x] `app.ts`: forward `body.tags` from the POST body to the store.
   - [x] `store.ts`: normalise tags with the shared functions, throw `ValidationError("invalid tag")` for invalid input before storing, and store `tags` (default `[]`) on the bookmark.
   - [x] Vitest tests in `packages/api/src/app.test.ts` (and `store.test.ts` where simpler): normalised tags in the 201 body and in `GET /bookmarks`; omitted `tags` gives `[]`; a 33-character tag and a tag with inner whitespace answer 400 `{"error":"invalid tag"}` and are not listed afterwards; the D1 cases as decided.
-- [ ] T3 — Web page shows tags after the title in `packages/web` (AC: 4, 5)
-  - [ ] `render.ts`: after the link, append an element holding `bookmark.tags.join(", ")` only when the bookmark has tags.
-  - [ ] Vitest tests in `packages/web/src/render.test.ts`: tags shown after the title, comma separated; no tag element or text when `tags` is `[]`. Update existing fixtures to include `tags`.
+- [x] T3 — Web page shows tags after the title in `packages/web` (AC: 4, 5)
+  - [x] `render.ts`: after the link, append an element holding `bookmark.tags.join(", ")` only when the bookmark has tags.
+  - [x] Vitest tests in `packages/web/src/render.test.ts`: tags shown after the title, comma separated; no tag element or text when `tags` is `[]`. Update existing fixtures to include `tags`.
 - [ ] T4 — Bundle-size baseline (AC: 6)
   - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in this change, and record both values under Validation Evidence.
 - [ ] T5 — Changeset (AC: 6)
@@ -117,16 +117,20 @@ so that I can group related bookmarks.
 - packages/api/src/store.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
 Task T1 — shared tag model: `Bookmark.tags`, optional `NewBookmark.tags` (unknown), `isValidTag`, `normalizeTags` (returns `null` for invalid input, `[]` for undefined) with Vitest tests.
 Task T2 — api accepts, validates, stores, and returns tags: `app.ts` forwards `body.tags`; `store.ts` normalises with `normalizeTags`, throws `ValidationError("invalid tag")` before storing; HTTP tests cover normalised tags, default `[]`, 32/33 characters, inner whitespace, and the D1 cases.
+Task T3 — web page shows tags after the title: `render.ts` appends a `span.tags` (textContent `tags.join(", ")`) between the link and Remove only when the bookmark has tags; tests cover shown, comma separated, and absent for `[]`.
 
 ## Validation Evidence
 
 - AC-1/AC-2/AC-3 (shared part): `pnpm --filter @sample/shared test` 12 passed; shared typecheck and lint passed.
 - AC-1/AC-2/AC-3 (api part): `pnpm --filter @sample/api test` 14 passed; api typecheck and lint passed.
+- AC-4: `pnpm --filter @sample/web test` 4 passed; web typecheck and lint passed.
 
 ## Quality Gate
 
@@ -138,3 +142,4 @@ Task T2 — api accepts, validates, stores, and returns tags: `app.ts` forwards 
 - 2026-11-03 — Approved: plan-approval — Approve. D1: yes, as proposed. D2: no. D3: no. 4: all four readings confirmed. Publish: yes. Notify: yes.
 - 2026-11-03 — T1 implemented.
 - 2026-11-03 — T2 implemented.
+- 2026-11-03 — T3 implemented.
