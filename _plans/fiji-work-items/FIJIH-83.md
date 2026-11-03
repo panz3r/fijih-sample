@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T18:59:24.934+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: pass
 artifacts:
   branch: FIJIH-83-add-tags-to-bookmarks
   base_branch: null
@@ -155,8 +155,31 @@ AC-8: passed — pnpm build then pnpm measure prints web_bundle_gzip_bytes=881, 
 
 ## Quality Gate
 
+Gate: pass
+
+Acceptance trace (main 8d4f0ec...42c76f1; root checks re-run at 42c76f1: `pnpm test` exit 0 with shared 10, api 15, web 4 passed; `pnpm lint` exit 0 with no findings; `pnpm typecheck` exit 0 in shared, api, web; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`):
+- AC-1: implementation `normalizeTags` in `packages/shared/src/index.ts` (trim, lower-case, `Set` dedup keeps first-occurrence order) called from `BookmarkStore.add` in `packages/api/src/store.ts`; `app.ts` passes `body.tags`. Verification: shared "trims, lower-cases, and deduplicates keeping first occurrence order"; api "stores normalized tags and returns them on GET" (`["Work"," work ","Read"]` -> 201 `["work","read"]`).
+- AC-2: implementation `normalizeTags(undefined)` returns `[]`. Verification: shared "defaults a missing value to an empty array"; api "defaults tags to an empty array".
+- AC-3: implementation trimmed value rejected when empty, `Array.from(trimmed).length > 32`, or `/\s/`; `InvalidTagError` mapped to `ValidationError("invalid tag")` before the insert. Verification: shared 32/33 boundary (ASCII and emoji), whitespace, empty, whitespace-only; api "accepts a 32 character tag and a padded tag" and `rejects an invalid tag` cases too long, whitespace, empty, whitespace only, each 400 `{"error":"invalid tag"}` with `GET /bookmarks` unchanged.
+- AC-4: implementation non-array (including `null`) and non-string element throw `InvalidTagError`. Verification: shared "rejects a non-array value, null, and a non-string element"; api cases not an array, a number, null, non-string element, each 400 `{"error":"invalid tag"}` with the list unchanged.
+- AC-5: implementation `tags` stored on the `Bookmark`, `store.list()` returns it. Verification: api "stores normalized tags and returns them on GET".
+- AC-6: implementation `renderList` in `packages/web/src/render.ts` appends `span.tags` with `tags.join(", ")` after the link only when non-empty; `.tags` margin rule in `packages/web/index.html` keeps it next to the title. Verification: web "shows tags after the title joined with a comma and a space" (link's next sibling is `work, read`); "renders no tag element or text when tags is empty" (no `.tags`, item text `ExampleRemove`).
+- AC-7: Vitest tests added in all three packages for AC 1-6; `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 from the root at 42c76f1.
+- AC-8: `measure/baseline.json` `web_bundle_gzip_bytes` 835 -> 881 (8983579); `pnpm measure` at 42c76f1 prints `web_bundle_gzip_delta=0`.
+
+Product decisions checked against the criteria (Q1 no tags input, Q2 a-d, Q3, defaults for whitespace, `null`, validation order, length before lower-casing): none contradicts a criterion.
+
+Findings: none.
+
+Residual risks: none.
+
+Stale-statement sweep (`Bookmark`, `NewBookmark`, `normalizeTags`, `InvalidTagError`, `invalid tag`, `POST /bookmarks`, `GET /bookmarks`, `tags`, `web_bundle_gzip_bytes`, `835` across README.md, AGENTS.md, scenarios/, packages/, code comments and test names): no statement the change makes untrue.
+
+Reviewed head: 42c76f1fb8d204db0c59bace04433be7dc1c3212
+
 ## Review Record
 
 ## Change Log
 - 2026-11-03 — Plan approval request (targeted repair, attempt 1): "Approve. Answers: Q1 no tags input. Q2 a yes, b reject with 400 invalid tag, c yes, d yes. Q3 yes to both." Applied: recorded Q1–Q3 decisions in Product Context; AC 3 now includes empty tags and code-point counting; new AC 4 for non-array and non-string values (AC 4–7 renumbered to 5–8); removed the conditional tags-input task; updated tasks and Testing Strategy; added defaults.
 - 2026-11-03 — Approved: plan-approval — Approve this plan.
+- 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
