@@ -8,9 +8,9 @@ source:
   revision: 2026-11-03T13:00:33.932+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 2
 quality:
   gate: pass
@@ -202,3 +202,5 @@ Copilot pass (attempt 2): Copilot review 5751987036 (COMMENTED, commit 7ebb905, 
 - 2026-11-03: Local QA review: evidence checked against the branch range main..87d6e8c; tasks 1-7 cited in-range commits (3206c6d, 982b1fd, acf696e, bd7a975, a85b419), no discrepancies, no missing AC evidence; `(commit <hash>)` lines added under the Implementation Record entries of tasks 1-5, routine reconciliation. Subtask checkboxes (1.1 to 4.2) left unchecked as they were; parent tasks are checked. Checkpoint set to local-qa-review.
 - 2026-11-03: Approved: local-qa-review — Approve.
 - 2026-11-03: Delivery: change intent `.changeset/fijih-77-add-tags.md` added and pushed on `FIJIH-77-add-tags-to-bookmarks` (7ebb905); draft pull request #22 opened (base `main`, label `enhancement`, assignee `panz3r`), Copilot review requested (`review_requested` event confirmed on the timeline).
+- 2026-11-03: Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Publish: yes. Notify: yes."; verified at ac34291245c14910425fa3caaa9d3a1af0f97d7f)
+- 2026-11-03: Ready for review: pull request #22 marked ready; review requested from `duckyduff369` (QA Engineer, the owning team's only other member; the pull request author is excluded).
