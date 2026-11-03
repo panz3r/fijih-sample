@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T17:09:49.462+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-82-add-tags-to-bookmarks
   base_branch: null
@@ -166,9 +166,36 @@ Stale-statement sweep — Bookmark, NewBookmark, tags, normalizeTags, isValidTag
 
 ## Quality Gate
 
+Gate: concerns. Every criterion is evidenced and every required validation passed. One minor finding remains.
+
+Reviewed head: 52235260c0833e265233f84bba16a497bfa29fde
+
+### Acceptance trace
+
+| AC | Implementation | Verification |
+|---|---|---|
+| 1 | `packages/shared/src/index.ts` `normalizeTags` (trim, lower-case, `Set` dedupe in first-occurrence order); `packages/api/src/store.ts` `checkTags` returns `[]` for `undefined` and stores `normalizeTags(tags)`; `packages/api/src/app.ts` passes `body.tags` through. | `index.test.ts` `normalizeTags`; `store.test.ts` "defaults tags to an empty array and normalises given tags"; `app.test.ts` "normalises tags and returns them from POST and GET" (`["  Work ", "work", "Read"]` gives `["work", "read"]`) and "defaults tags to an empty array". |
+| 2 | `isValidTag` (non-empty, `length <= 32`, no `/\s/` on the trimmed, lower-cased tag); `checkTags` throws `ValidationError("invalid tag")` for invalid tags, non-arrays, and non-string elements, before the bookmark is built; `app.ts` maps it to 400 `{ error }`. | `index.test.ts` `isValidTag` (32 and padded 32 accepted; 33, space, tab, newline, empty rejected); `app.test.ts` "accepts a 32 character tag" and "rejects a 33 character tag and a tag with whitespace without storing the bookmark"; `store.test.ts` "rejects invalid tags and stores nothing" (includes the Open question 2 inputs `""`, `"   "`, `1`, `"a"`, `null`). |
+| 3 | `Bookmark.tags: string[]` required; `store.list()` returns stored bookmarks. | `app.test.ts`: GET returns `["work", "read"]` for the tagged bookmark and `[]` for the untagged one. |
+| 4 | `packages/web/src/render.ts` wraps the link and an optional `span.tags` (`tags.join(", ")`) in one `span`; `index.html` `.tags` style. | `render.test.ts` "shows tags after the title separated by a comma and a space" (`a, b`, previous sibling is the link) and "shows no tag text when there are no tags" (no `.tags`, `li` text `ExampleRemove`). |
+| 5 | Tests in all three packages. | Re-run at the reviewed head from the repository root: `pnpm test` exit 0 (shared 10, api 10, web 4 passed); `pnpm lint` exit 0; `pnpm typecheck` exit 0 in all three packages. |
+| 6 | `measure/baseline.json` `web_bundle_gzip_bytes: 890`. | Re-run at the reviewed head: `pnpm build` exit 0, `pnpm measure` printed `web_bundle_gzip_bytes=890`, `web_bundle_gzip_delta=0`. |
+
+### Findings
+
+- minor — `packages/shared/src/index.ts:50` (`isValidTag`): the 32-character limit is measured in UTF-16 code units of the lower-cased tag, not in characters of the trimmed tag as AC-2 states ("longer than 32 characters after trimming"). Reproduced at the reviewed head: `isValidTag("😀".repeat(17))` is `false` (17 characters, length 34), and `isValidTag("İ".repeat(32))` is `false` (32 characters after trimming, 64 after `toLowerCase()`). The Engineering Context decision to check the "trimmed, lower-cased tag" contradicts AC-2 only for such inputs. ASCII tags, the only kind the issue and the tests use, behave as specified. Follow-up: count code points (`[...normalized].length`) or record a product decision on how "characters" are counted.
+
+### Residual risks
+
+- None.
+
+Stale-statement check: searched the repository outside the changed files for `tags`, `NewBookmark`, `createdAt`, `POST /bookmarks`, and the request-body shape. Nothing the change makes untrue. `README.md`'s `packages/shared` description stays as is per the user's answer to Open question 4 ("No").
+
 ## Review Record
 
 ## Change Log
 
 - Approved: plan-approval — Approve. 1. No. 2. Yes, as proposed. 3. Yes. 4. No.
 - Implementation: tasks 1 to 5 completed in four commits; Jira FIJIH-82 moved from To Do to In Progress.
+- Approved: implementation-approval — automatic (no risk triggers)
+- Quality review: gate concerns at 5223526 (one minor finding: tag length counted in UTF-16 code units of the lower-cased tag).
