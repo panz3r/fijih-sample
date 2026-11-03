@@ -5,12 +5,12 @@ workflow: fiji/orchestrate-development/v1
 source:
   provider: jira
   key: FIJIH-81
-  revision: 2026-11-03T16:37:21.007+0100
+  revision: 2026-11-03T16:39:56.659+0100
 lifecycle:
   status: draft
   phase: plan
   checkpoint: plan-approval
-  transition: plan-complete
+  transition: source-reconciled
   attempt: 1
 quality:
   gate: pending
@@ -59,6 +59,7 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 3. `GET /bookmarks` returns each bookmark with its `tags` array (`[]` for a bookmark created without tags), alongside the existing `id`, `url`, `title`, and `createdAt` fields.
 4. The web page shows each bookmark's tags after its title as a single comma-separated text (for example `work, read`), and renders no tags element and no extra text when the bookmark's `tags` array is empty.
 5. Vitest unit tests in `packages/shared`, `packages/api`, and `packages/web` cover the behaviour of criteria 1–4, and `pnpm test`, `pnpm lint`, and `pnpm typecheck` pass from the repository root.
+6. The web page shows, on each bookmark row after the tag list, how many tags the bookmark has in the form `(<n> tags)` (for example `(2 tags)`), and shows nothing for that count when the bookmark has no tags. A Vitest test in `packages/web` covers it. Interpretation: the count is its own element after the tags element, so criterion 4's comma-separated text stays exactly the tag list; one tag reads `(1 tag)`. Confirm at plan approval.
 
 ## Tasks and Subtasks
 
@@ -71,9 +72,10 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
   - [ ] `BookmarkStore.add` normalises `input.tags` with `normalizeTags` and stores them; invalid tags throw `ValidationError("invalid tag")` before anything is stored.
   - [ ] `createApp` passes `body.tags` from the POST body to `store.add`; the existing `ValidationError` → 400 path returns `{"error":"invalid tag"}`.
   - [ ] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET returns tags per bookmark; an over-long tag and a tag with inner whitespace each answer 400 `{"error":"invalid tag"}` and leave the list unchanged.
-- [ ] Render tags in `packages/web/src/render.ts` (AC: 4, 5)
+- [ ] Render tags in `packages/web/src/render.ts` (AC: 4, 5, 6)
   - [ ] After the title link, append an element whose text is the bookmark's tags joined with `", "` only when `tags` is non-empty.
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags render after the title as `work, read`; a bookmark with `tags: []` renders no tags element; existing fixtures gain `tags`.
+  - [ ] After the tags element, append a separate count element with text `(<n> tags)` (`(1 tag)` for one) only when `tags` is non-empty (AC 6).
+  - [ ] Tests in `packages/web/src/render.test.ts`: tags render after the title as `work, read`; a bookmark with `tags: []` renders no tags element; existing fixtures gain `tags`; a two-tag bookmark shows `(2 tags)` after the tag list, a one-tag bookmark `(1 tag)`, and a bookmark with `tags: []` shows no count.
 - [ ] Release bookkeeping (AC: 5)
   - [ ] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` whose summary is `Add tags to bookmarks`.
   - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in the same change (AGENTS.md).
@@ -125,3 +127,4 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 ## Change Log
 
 - 2026-11-03 — Plan drafted from FIJIH-81 at revision 2026-11-03T16:37:21.007+0100; issue assigned to Mattia Panzeri.
+- 2026-11-03 — Source reconciliation: Jira description changed at 2026-11-03T16:39:56.659+0100 (changelog 10289); adopted additive difference: new Jira criterion 6, `Each bookmark row shows how many tags it has, for example "(2 tags)", after the tag list; nothing when it has none.`, recorded as AC 6 with subtasks under the web render task (AC 6). Interpretation to confirm at plan-approval: count is a separate element after the tags element; `(1 tag)` for one. source.revision updated; no existing criterion or task changed.
