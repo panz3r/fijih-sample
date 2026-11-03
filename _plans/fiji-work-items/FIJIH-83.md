@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: pass
@@ -125,12 +125,15 @@ so that I can group my bookmarks.
 
 ## Implementation Record
 Task 1 — shared tag normalization and validation
+(commit 18ac643)
 - Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, `InvalidTagError`, and `normalizeTags` (validate every tag, then trim/lower-case/dedupe via Set, code-point length).
 - shared test 10 passed, typecheck and lint clean.
 Task 2 — API accepts and returns tags
+(commit 7368cab)
 - `app.ts` passes `body.tags` to the store; `store.ts` normalizes before any insert and maps InvalidTagError to `ValidationError("invalid tag")`.
 - api test 15 passed (new cases in app.test.ts covering create, default, boundary, 8 invalid shapes with list unchanged), typecheck and lint clean.
 Task 3 — web page shows tags
+(commit 1a115a8)
 - `render.ts` appends a `span.tags` after the title link only when `tags` is non-empty; `index.html` gets a one-line `.tags` rule so it sits after the title; fixtures updated.
 - web test 4 passed, typecheck and lint clean.
 Task 4 — repository checks from the root
@@ -183,3 +186,4 @@ Reviewed head: 42c76f1fb8d204db0c59bace04433be7dc1c3212
 - 2026-11-03 — Plan approval request (targeted repair, attempt 1): "Approve. Answers: Q1 no tags input. Q2 a yes, b reject with 400 invalid tag, c yes, d yes. Q3 yes to both." Applied: recorded Q1–Q3 decisions in Product Context; AC 3 now includes empty tags and code-point counting; new AC 4 for non-array and non-string values (AC 4–7 renumbered to 5–8); removed the conditional tags-input task; updated tasks and Testing Strategy; added defaults.
 - 2026-11-03 — Approved: plan-approval — Approve this plan.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03 — Local QA finalize: all tasks and AC 1–8 have committed evidence; added `(commit <hash>)` citations to the Implementation Record entries of Tasks 1–3 (routine reconciliation); File List already covers every branch file change; no task/evidence discrepancies. Checkpoint local-qa-review, transition qa-reviewed.
