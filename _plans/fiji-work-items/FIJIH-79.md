@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -125,10 +125,15 @@ so that I can group related bookmarks.
 ## Implementation Record
 
 Task T1 — shared tag model: `Bookmark.tags`, optional `NewBookmark.tags` (unknown), `isValidTag`, `normalizeTags` (returns `null` for invalid input, `[]` for undefined) with Vitest tests.
+(commit 6c5b9ea)
 Task T2 — api accepts, validates, stores, and returns tags: `app.ts` forwards `body.tags`; `store.ts` normalises with `normalizeTags`, throws `ValidationError("invalid tag")` before storing; HTTP tests cover normalised tags, default `[]`, 32/33 characters, inner whitespace, and the D1 cases.
+(commit affc7dd)
 Task T3 — web page shows tags after the title: `render.ts` appends a `span.tags` (textContent `tags.join(", ")`) between the link and Remove only when the bookmark has tags; tests cover shown, comma separated, and absent for `[]`.
+(commit 51e7ab1)
 Task T4 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46` against 835; `measure/baseline.json` set to 881.
+(commit ad43dd0)
 Task T5 — changeset `.changeset/add-bookmark-tags.md`: summary `Add tags to bookmarks`, minor for @sample/shared, @sample/api, @sample/web.
+(commit b0d3dc5)
 Task T6 — repository checks: `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root all passed.
 (checked at b0d3dc5)
 
@@ -187,3 +192,4 @@ Reviewed head: 4f0a2dc744fccf76f8f3d9c8acb23780df00a621
 - 2026-11-03 — T5 implemented.
 - 2026-11-03 — T6 checks passed; stale-statement sweep found nothing to correct.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03 — Local QA review: routine reconciliation added `(commit <hash>)` citations under the T1–T5 Implementation Record entries, each matched to its task's own commit. Every task and acceptance criterion has committed evidence; no discrepancies. File List matches the branch diff. Quality gate concerns (two minor findings) carried forward unchanged.
