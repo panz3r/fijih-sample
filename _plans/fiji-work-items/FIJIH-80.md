@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T15:01:02.875+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-80-add-tags-to-bookmarks
   base_branch: null
@@ -136,6 +136,30 @@ Stale-statement sweep — `Bookmark`/`NewBookmark` shape, `POST /bookmarks` body
 
 ## Quality Gate
 
+Gate: concerns. Every criterion has evidence and every required validation passed. Two minor findings remain, and there is no residual risk.
+
+Acceptance trace:
+
+- AC-1: implementation `normalizeTags` in `packages/shared/src/index.ts:47-58` (`[]` for `undefined`; trim, lower-case, first-occurrence dedupe via insertion-ordered `Set`); `BookmarkStore.add` stores it in `packages/api/src/store.ts:21-23`; `POST /bookmarks` passes `body.tags` in `packages/api/src/app.ts:23-24`. Verification: shared "defaults to an empty list" and "trims, lower-cases, and dedupes keeping the first position"; store "defaults tags to an empty list" and "stores normalized tags"; API "accepts, normalizes, and lists tags" (201 body `tags` is `["news","tech"]`).
+- AC-2: implementation is the `tag.length > MAX_TAG_LENGTH || /\s/.test(tag)` check in `packages/shared/src/index.ts:54`; `ValidationError("invalid tag")` in `packages/api/src/store.ts:22`, thrown before `items.set`, so nothing is stored. Verification: shared "accepts 32 characters and rejects 33", "applies the length limit after trimming", "rejects inner whitespace" (space, tab); store "rejects an invalid tag and stores nothing"; API "rejects an invalid tag with 400 and stores nothing" (`["a b"]`, 33 characters, then `GET` does not list it). See finding 1 for a boundary case.
+- AC-3: implementation is in `packages/shared/src/index.ts:49-54` (non-array, non-string element, empty after trim all return `null`). Verification: shared "rejects non-arrays, non-string elements, and empty tags" (`"news"`, `null`, `{}`, `[1]`, `["ok", null]`, `[""]`, `["   "]`); API test with `"news"`, `[1]`, `[" "]` answers 400 `{"error":"invalid tag"}` and stores nothing. Plan approval confirmed this criterion (Change Log); see finding 2.
+- AC-4: `GET /bookmarks` returns the stored `Bookmark` objects, which now always carry `tags` (`packages/api/src/store.ts:23`). Verification: API "accepts, normalizes, and lists tags" (the tagged bookmark lists `["news","tech"]`, and every listed bookmark has an array); store "defaults tags to an empty list".
+- AC-5: `renderList` adds `<span class="tags">` after the link, using `textContent` and `", "`, only when `tags.length > 0` (`packages/web/src/render.ts:21-28`). Verification: web "shows tags after the title, joined with a comma and space" (`news, tech`, the next sibling of the link); "renders no tag element when there are no tags" (no `.tags`, item text `ExampleRemove`).
+- AC-6: new Vitest tests in all three packages. Re-run at the reviewed head: `pnpm test` passed (shared 10, api 9, web 4), `pnpm lint` passed, `pnpm typecheck` passed. `pnpm build` then `pnpm measure` gave `web_bundle_gzip_bytes=881`, delta 0 against `measure/baseline.json` (881).
+
+Findings:
+
+1. minor — `packages/shared/src/index.ts:54`: the tag length is measured after `toLowerCase()`, not "after trimming" as AC-2 says. When lower-casing makes a tag longer, a valid tag is rejected. Reproduced: `normalizeTags(["İ".repeat(32)])` (32 characters after trimming) returns `null`, so `POST /bookmarks` would answer 400 `invalid tag`, because `"İ".toLowerCase()` is 2 UTF-16 units. Supplementary-plane characters (for example emoji) also count as 2 each, because `.length` counts UTF-16 code units. ASCII tags are not affected. Fix: measure `item.trim()` before lower-casing, and say whether "characters" means code points. Add a test.
+2. minor — `_plans/fiji-work-items/FIJIH-80.md:44` and `:38`: AC-3 still reads "Proposed, pending the user's confirmation", and Product Context still says that a tags input on the add form is "not yet decided … until the user decides otherwise". The Change Log entry `Approved: plan-approval — Approve. 1. No form input. 2. Yes, as proposed. 3. All three readings confirmed.` settled both. Fix: remove the pending wording, and record the "no form input" decision under Decisions.
+
+Stale-statement sweep (README, `AGENTS.md`, scenarios, code comments, test descriptions; for `Bookmark`/`NewBookmark`, `POST`/`GET /bookmarks`, list rendering): nothing the change made untrue. The README's `packages/shared` summary does not name tag normalization, but it does not claim to be a complete list.
+
+Residual risks: none.
+
+Required validations not passed: none.
+
+Reviewed head: d3dc1b46cadcb47042c2047118dc79aeb4115ec4
+
 ## Review Record
 
 ## Change Log
@@ -146,3 +170,5 @@ Stale-statement sweep — `Bookmark`/`NewBookmark` shape, `POST /bookmarks` body
 - 2026-11-03: Task 2 implemented (API tags).
 - 2026-11-03: Task 3 implemented (web tags).
 - 2026-11-03: Task 4 done (root checks, baseline 835 -> 881 bytes); stale-statement sweep found nothing; implementation complete.
+- Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03: Quality gate `concerns` recorded at d3dc1b4 (two minor findings, no residual risk).
