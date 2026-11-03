@@ -8,16 +8,16 @@ source:
   revision: "2026-11-03T14:32:45.535+0100"
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 quality:
   gate: concerns
 artifacts:
   branch: FIJIH-79-add-tags-to-bookmarks
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/24
   jira_context_comment_id: null
 ---
 
@@ -193,3 +193,5 @@ Reviewed head: 4f0a2dc744fccf76f8f3d9c8acb23780df00a621
 - 2026-11-03 — T6 checks passed; stale-statement sweep found nothing to correct.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03 — Local QA review: routine reconciliation added `(commit <hash>)` citations under the T1–T5 Implementation Record entries, each matched to its task's own commit. Every task and acceptance criterion has committed evidence; no discrepancies. File List matches the branch diff. Quality gate concerns (two minor findings) carried forward unchanged.
+- 2026-11-03 — Approved: local-qa-review — Approve, accepting both findings as follow-ups (no Jira issue for now).
+- 2026-11-03 — Delivery: pushed `FIJIH-79-add-tags-to-bookmarks`, opened draft pull request #24 (`[FIJIH-79] Add tags to bookmarks`, label `enhancement`, base `main`), and requested a Copilot automated review (confirmed on the timeline). The change intent `.changeset/add-bookmark-tags.md` already matches the pull request title; no new change intent was needed. No `(verify: ci)` criteria.
