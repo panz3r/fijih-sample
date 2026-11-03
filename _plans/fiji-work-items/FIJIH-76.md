@@ -63,9 +63,9 @@ so that I can group my bookmarks.
   - [x] 4.2 Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: a bookmark with `["news", "tech"]` shows `news, tech` after the title; a bookmark with `[]` renders no tag element and its item text is the title plus `Remove` only.
 - [x] 5. Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 5)
 - [x] 6. Bundle size: run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change, per `AGENTS.md` (AC: 4)
-- [ ] 7. Validate the normalised tag in `BookmarkStore.add` and add a regression test (AC: 2, 5; Re-entry 2)
-  - [ ] 7.1 In `BookmarkStore.add`, normalise first (`normalizeTags`) and run `isValidTag` on each normalised tag, so lower-casing cannot push a stored tag past 32 characters; still throw `ValidationError("invalid tag")` before anything is stored.
-  - [ ] 7.2 Regression tests in `packages/api/src/store.test.ts` (and an `app.test.ts` 400 case): `"İ".repeat(32)` is rejected with `invalid tag` and stores nothing; an accepted tag's stored value always satisfies `isValidTag`.
+- [x] 7. Validate the normalised tag in `BookmarkStore.add` and add a regression test (AC: 2, 5; Re-entry 2)
+  - [x] 7.1 In `BookmarkStore.add`, normalise first (`normalizeTags`) and run `isValidTag` on each normalised tag, so lower-casing cannot push a stored tag past 32 characters; still throw `ValidationError("invalid tag")` before anything is stored.
+  - [x] 7.2 Regression tests in `packages/api/src/store.test.ts` (and an `app.test.ts` 400 case): `"İ".repeat(32)` is rejected with `invalid tag` and stores nothing; an accepted tag's stored value always satisfies `isValidTag`.
 
 ## Engineering Context
 
@@ -133,16 +133,19 @@ Task 5 — repository checks from the root
 (checked at 0eacf5c)
 `pnpm test`: shared 12, api 17, web 4 passed. `pnpm lint`: clean. `pnpm typecheck`: clean. `pnpm measure` after the baseline update: delta 0.
 
+Task 7 — api store: `BookmarkStore.add` now calls `normalizeTags` first and validates each normalised tag with `isValidTag`, so a tag that lower-cases past 32 code points (`"İ".repeat(32)`) is rejected with `invalid tag` before anything is stored. Regression tests: store.test.ts (rejection case `"İ".repeat(32)`, and stored tags all satisfy `isValidTag`), app.test.ts (400 `invalid tag`, absent from GET). Both failed before the fix (5 failures incl. leaked bookmark), pass after. `pnpm test`: shared 12, api 20, web 4 passed; `pnpm lint` clean; `pnpm typecheck` clean; `pnpm build` then `pnpm measure`: delta 0 (881).
+(commit PENDING)
+
 Stale-statement sweep — Bookmark, NewBookmark, POST /bookmarks, createdAt, tags (git grep over docs, html, json)
 none found (README.md api row only names routes, which are unchanged).
 
 ## Validation Evidence
 
 AC-1: passed — api store and app tests: normalised tags, [] default, 201 body includes tags (packages/api/src/store.test.ts, app.test.ts; packages/shared index.test.ts).
-AC-2: passed — app.test.ts: 33-char, whitespace, empty, and malformed tags return 400 {"error":"invalid tag"} and are absent from GET /bookmarks.
+AC-2: passed — app.test.ts: 33-char, lower-casing-lengthened (`"İ".repeat(32)`), whitespace, empty, and malformed tags return 400 {"error":"invalid tag"} and are absent from GET /bookmarks.
 AC-3: passed — app.test.ts: GET /bookmarks returns each bookmark's tags ([] when none).
 AC-4: passed — packages/web/src/render.test.ts: `news, tech` in span.tags after the title; no tag element and item text `ExampleRemove` for [].
-AC-5: passed — pnpm test (12+17+4), pnpm lint, pnpm typecheck all pass from the repository root; bundle baseline updated to 881.
+AC-5: passed — pnpm test (12+20+4), pnpm lint, pnpm typecheck all pass from the repository root; bundle baseline updated to 881.
 
 ## Quality Gate
 

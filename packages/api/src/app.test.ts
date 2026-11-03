@@ -63,6 +63,7 @@ describe("bookmarks api", () => {
       ["too long", ["a".repeat(33)]],
       ["whitespace", ["two words"]],
       ["empty", [""]],
+      ["longer than 32 characters once lower-cased", ["İ".repeat(32)]],
       ["a string instead of an array", "news"],
       ["a non-string element", [1]],
       ["null", null],

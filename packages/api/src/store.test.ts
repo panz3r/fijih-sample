@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isValidTag } from "@sample/shared";
 import { BookmarkStore } from "./store.ts";
 
 describe("BookmarkStore", () => {
@@ -23,9 +24,15 @@ describe("BookmarkStore", () => {
     expect(store.list()[0].tags).toEqual(["news", "tech"]);
   });
 
-  it.each([["a".repeat(33)], ["two words"], [""], ["   "]])("rejects tag %j and stores nothing", (tag) => {
+  it.each([["a".repeat(33)], ["two words"], [""], ["   "], ["İ".repeat(32)]])("rejects tag %j and stores nothing", (tag) => {
     const store = new BookmarkStore();
     expect(() => store.add({ url: "https://example.com/a", title: "A", tags: ["ok", tag] })).toThrow("invalid tag");
     expect(store.list()).toEqual([]);
+  });
+
+  it("stores only tags that are valid after normalisation", () => {
+    const store = new BookmarkStore();
+    const added = store.add({ url: "https://example.com/a", title: "A", tags: ["İ".repeat(16), "Ab"] });
+    expect(added.tags.every(isValidTag)).toBe(true);
   });
 });

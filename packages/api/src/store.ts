@@ -14,7 +14,8 @@ export class BookmarkStore {
   add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
-    const tags = input.tags ?? [];
+    // Validate the normalised tags: lower-casing can lengthen a tag past the limit.
+    const tags = normalizeTags(input.tags ?? []);
     if (!tags.every(isValidTag)) throw new ValidationError("invalid tag");
     const url = normalizeUrl(input.url);
     for (const existing of this.items.values()) {
@@ -23,7 +24,7 @@ export class BookmarkStore {
     const bookmark: Bookmark = {
       id: randomUUID(), url, title: input.title.trim(),
       createdAt: now().toISOString(),
-      tags: normalizeTags(tags),
+      tags,
     };
     this.items.set(bookmark.id, bookmark);
     return bookmark;
