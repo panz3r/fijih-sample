@@ -76,8 +76,8 @@ so that I can group my bookmarks.
   - [x] `index.html`: add a small style for `.tags` (a left margin and a muted colour) so that the tags are visually separate from the title.
   - [x] `render.test.ts`: add `tags` to the existing fixture. Add a test that two tags render as `a, b` after the link, and a test that `tags: []` renders no `.tags` element and no extra text.
   - [x] If the answer to Open question 1 adds a form field: add the input to `index.html`, send `tags` from `main.ts`, and add a test for how the input is parsed.
-- [ ] Update the bundle baseline (AC: 6)
-  - [ ] Run `pnpm build` then `pnpm measure`. Write the printed `web_bundle_gzip_bytes` into `measure/baseline.json`.
+- [x] Update the bundle baseline (AC: 6)
+  - [x] Run `pnpm build` then `pnpm measure`. Write the printed `web_bundle_gzip_bytes` into `measure/baseline.json`.
 - [ ] Run the checks from the repository root: `pnpm test`, `pnpm lint`, and `pnpm typecheck` (AC: 5)
 
 ## Engineering Context
@@ -124,6 +124,7 @@ so that I can group my bookmarks.
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/web/index.html
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -141,6 +142,10 @@ Task 3 — web page renders tags
 
 - `renderList` wraps the link and an optional `span.tags` (`tags.join(", ")`) in one `span`, so the `li` flex layout keeps Remove on the right. `index.html` gets a `.tags` style. The form subtask does not apply: the user answered Open question 1 with "No", so no tags input was added.
 - Focused: `pnpm --filter @sample/web test` 4 passed; `pnpm --filter @sample/web typecheck` clean; `pnpm lint packages/web` clean.
+
+Task 4 — bundle baseline
+
+- `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=890` (baseline was 835, delta 55); wrote 890 to `measure/baseline.json`; re-run printed `web_bundle_gzip_delta=0`.
 
 ## Validation Evidence
 
