@@ -7,9 +7,9 @@ source:
   key: FIJIH-76
   revision: 2026-11-03T12:22:07.636+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -115,3 +115,4 @@ so that I can group my bookmarks.
 ## Change Log
 
 - 2026-11-03 — Plan: drafted from FIJIH-76 at source revision 2026-11-03T12:22:07.636+0100; issue assigned to Mattia Panzeri.
+- 2026-11-03 — Approved: plan-approval — Approve with the proposed answers: 1. No to both. 2. Yes. 3. 400. 4. Yes. Publish: yes. Notify: no.
