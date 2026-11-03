@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T13:00:33.932+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 2
 quality:
-  gate: fail
+  gate: pass
 artifacts:
   branch: FIJIH-77-add-tags-to-bookmarks
   base_branch: null
@@ -160,26 +160,24 @@ Stale-statement sweep — `parseTags`, `isValidTag`, "lower-cased", "code point"
 
 ## Quality Gate
 
-Gate: fail. AC-2 is unmet for one reproducible input (finding F1, `blocking`).
+Gate: pass. Every criterion is evidenced; no findings and no residual risk remain. F1 from the previous gate (at acf696e) is fixed.
 
-Reviewed head: acf696e550acf15f04a8533d7a2e9808deaef8f3
+Reviewed head: bd7a9758675c5921d8391842fb8a8d5beefc2e98
 
 Acceptance trace:
 
-- AC-1: met. Implementation: `normalizeTags` and `parseTags` (`packages/shared/src/index.ts:14`, `:24`), `BookmarkStore.add` storing `tags` with default `[]` (`packages/api/src/store.ts`), `createApp` passing `body.tags` (`packages/api/src/app.ts:23-24`). Verification: shared `normalizeTags`/`parseTags` tests, store test "stores normalised tags and defaults to []", app tests "normalises tags on create and returns them on list" and "defaults tags to [] when omitted".
-- AC-2: unmet (F1). Implementation: `isValidTag` and `parseTags` (`packages/shared/src/index.ts:19`, `:24`), `ValidationError("invalid tag")` in `BookmarkStore.add`, mapped to `400` in `createApp`. Verification: shared `isValidTag`/`parseTags` tests, store and app invalid-tag tests (33 characters, space, tab, empty, whitespace-only, string, `null`, non-string element; `400 {"error":"invalid tag"}`, nothing listed). Wrong shapes, empty, whitespace, and the 33-character limit behave as specified; the length is measured on the lower-cased tag instead of the trimmed tag, so a 32-code-point tag is rejected when lower-casing lengthens it.
+- AC-1: met. Implementation: `normalizeTags` and `parseTags` (`packages/shared/src/index.ts:14`, `:24`), `BookmarkStore.add` storing `tags` with default `[]` (`packages/api/src/store.ts:17-18`, `:28`), `createApp` passing `body.tags` (`packages/api/src/app.ts:23-24`). Verification: shared tests "trims, lower-cases, and deduplicates across case and whitespace, keeping order", "gives [] for empty input", "returns normalised tags"; store test "stores normalised tags and defaults to []"; app tests "normalises tags on create and returns them on list" and "defaults tags to [] when omitted".
+- AC-2: met. Implementation: `parseTags` trims, rejects a non-array or a non-string element, validates each trimmed tag with `isValidTag` (non-empty, no `\s`, at most 32 code points via `[...tag].length`), and only then lower-cases and deduplicates (`packages/shared/src/index.ts:19-31`); `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing (`packages/api/src/store.ts:17-18`), mapped to `400` by `createApp`. Verification: shared tests "accepts 32 characters and rejects 33", "counts Unicode code points, not UTF-16 units", "rejects empty tags and tags with inner whitespace", "returns null for wrong shapes and invalid tags", "applies the 32-code-point limit to the trimmed tag, not the lower-cased tag" (`"İ".repeat(32)` accepted with and without padding, 33 rejected); store tests "rejects invalid tag" and "rejects wrong-shaped tags" (store left empty); app test "accepts a tag of exactly 32 code points whose lower-case form is longer" (`201`) and the eight "rejects invalid tags" cases (33 characters, space, empty, whitespace-only, tab, string, `null`, non-string element: `400 {"error":"invalid tag"}`, not listed afterwards).
 - AC-3: met. Implementation: `store.list()` returns stored `tags`. Verification: app tests list `["news","tech"]` and `[]`.
-- AC-4: met. Implementation: `renderList` appends a `<span>` with `tags.join(", ")` as `textContent` only when `tags` is non-empty (`packages/web/src/render.ts`). Verification: render tests "shows tags after the title separated by a comma and space" and "shows no tag text for a bookmark without tags".
-- AC-5: validations met — re-run at the reviewed head: `pnpm test` (shared 11, api 22, web 4 passed), `pnpm lint` clean, `pnpm typecheck` clean. Test coverage of AC-2 misses the case in F1.
+- AC-4: met. Implementation: `renderList` appends a `<span>` with `tags.join(", ")` as `textContent` between the title link and Remove, only when `tags` is non-empty (`packages/web/src/render.ts:22-26`). Verification: render tests "shows tags after the title separated by a comma and space" (`Examplenews, techRemove`) and "shows no tag text for a bookmark without tags" (no `<span>`).
+- AC-5: met — re-run at the reviewed head: `pnpm test` (shared 12, api 23, web 4 passed), `pnpm lint` clean, `pnpm typecheck` clean.
 - AC-6: met — re-run at the reviewed head: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=871`, `web_bundle_gzip_delta=0`.
 
-Findings:
-
-- F1 (`blocking`) — `packages/shared/src/index.ts:15-28`: `parseTags` lower-cases before `isValidTag` counts code points, so the 32-code-point limit is applied to the lower-cased tag, not the trimmed tag that AC-2 and the plan-approval decision 4 ("counted on the trimmed tag, in Unicode code points") name. Lower-casing U+0130 (`İ`) yields two code points (`i` + U+0307), so a trimmed tag of exactly 32 code points is rejected. Reproduced: `parseTags(["İ".repeat(32)])` returns `null`, and `POST /bookmarks` with `tags: ["İ".repeat(32)]` answers `400 {"error":"invalid tag"}` (AC-2: "A tag of exactly 32 code points is accepted"). The Engineering Context approach line ("Length is checked on the trimmed, lower-cased tag", `_plans/fiji-work-items/FIJIH-77.md:76`) records the same contradiction with AC-2. No test covers a tag whose length changes under lower-casing.
+Findings: none. F1 (`blocking`, previous gate) is fixed at a85b419: the length limit is applied to the trimmed tag before lower-casing, and the Engineering Context approach line now matches AC-2.
 
 Residual risks: none.
 
-Stale statements: none found. README.md's shared-package line was updated in this change; `scenarios/` notes describe other scenarios' features, not current behaviour.
+Stale statements: none found. Searched documentation, scenarios, agent instructions, and source comments for `Bookmark`/`NewBookmark` fields, `POST /bookmarks`, `invalid tag`, "lower-case", and "code point"; README.md's shared-package line was updated in this change, and `scenarios/` notes describe their own scenarios' inputs, not current behaviour.
 
 Unmet required validations: none (test, lint, type-check, build, and measure passed at the reviewed head).
 
@@ -192,3 +190,5 @@ Unmet required validations: none (test, lint, type-check, build, and measure pas
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Quality gate recorded: fail (F1, AC-2 length measured after lower-casing) at acf696e.
 - 2026-11-03: Re-entry 2: quality-fail — fe0c2ec09bfcdfbcf2e32dc42bb9217dd23ddfa5 (quality gate fail, F1: AC-2 length measured after lower-casing). Task 7 appended.
+- 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03: Quality gate recorded: pass at bd7a975 (F1 fixed).
