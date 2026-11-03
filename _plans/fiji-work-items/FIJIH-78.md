@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -111,15 +111,19 @@ so that I can group my bookmarks.
 ## Implementation Record
 
 Task 1 — shared tags model and normalizeTags
+(commit 254cc1d)
 Added `tags: string[]` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH` and a pure `normalizeTags` (null when invalid; length by code points). Shared tests: 11 passed.
 
 Task 2 — API stores, validates, and returns tags
+(commit 54aaa05)
 `BookmarkStore.add` normalizes tags before the duplicate-URL check (omitted → `[]`, `null` → invalid); `createApp` passes `body.tags` through. Hypothesis `null` reaches validation was falsified first by `?? []`, fixed with an `=== undefined` check. API tests: 9 passed.
 
 Task 3 — web page shows tags after the title
+(commit aa0cdea)
 `renderList` appends a `span.tags` with tags joined by `, ` only when non-empty; fixtures updated. Web tests: 4 passed.
 
 Task 4 — bundle size baseline
+(commit 496b269)
 `pnpm build` then `pnpm measure` gave web_bundle_gzip_bytes=881, delta 46; set `measure/baseline.json` to 881; re-measure gives delta 0.
 
 Task 5 — repository checks
@@ -175,3 +179,4 @@ Unmet required validations: none.
 - Implementation complete: tasks 1-5 done; baseline moved 835 -> 881 bytes.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Quality gate recorded: concerns at e818db9 (one minor finding: U+0085 not treated as whitespace).
+- Local QA review, attempt 1: reconciled records. Added `(commit <hash>)` lines to the Implementation Record entries for tasks 1-4 (routine reconciliation; task 5 already cites 496b269). File List already matches the branch diff. All tasks and acceptance criteria have committed evidence; no discrepancies. Checkpoint set to local-qa-review; quality gate remains concerns.
