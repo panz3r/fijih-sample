@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: pass
@@ -187,3 +187,4 @@ Reviewed head: 08b67201b1f8d180c1afb97006a535f5bdd7330e
 - 2026-11-03 — Targeted repair (checkpoint-verification repair of `implementation-approval`), attempt unchanged. Contradicted evidence: "(1) your result claims every task complete, but in the committed work item at d35c54c the task "Store and HTTP handling in `packages/api`" and all three of its subtasks, and the task "Release bookkeeping" and all three of its subtasks, are still `- [ ]` (only the shared and web tasks are `- [x]`). (2) The four Implementation Record entries (`Task 1 — …` to `Task 4 — …`) carry no `(commit <short hash>)` or `(checked at <short hash>)` line below their first line, and the last commit d35c54c changes only the work-item file, so Finalize cannot match them to the commits eeecd08, 992600c, 49a7cd8, 9399418, 680c79a that made the changes". Fixed in the work item only: checked off the api and release tasks and their subtasks after re-running root `pnpm test` (9 + 10 + 5 passed), `pnpm lint` and `pnpm typecheck` (clean); added `(commit <hash>)` citations 992600c, 49a7cd8, 9399418, 680c79a to Task 1-4 entries. File List and Validation Evidence unchanged and consistent.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03 — Quality gate recorded: pass at 08b6720 (no findings, no residual risks).
+- 2026-11-03 — Finalize run: checked tasks 1-4 and their subtasks and AC 1-6 against commits 992600c, 49a7cd8, 9399418, 680c79a on FIJIH-81-add-tags-to-bookmarks since main; File List matches the 11 files the branch changes outside the work item; Implementation Record citations and Validation Evidence already current; no discrepancies or blocking items. Checkpoint local-qa-review.
