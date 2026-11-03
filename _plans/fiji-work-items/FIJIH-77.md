@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 quality:
   gate: pass
@@ -125,14 +125,19 @@ User's answers at `plan-approval`, applied above:
 ## Implementation Record
 
 Task 1 — shared tag model and normaliser: `Bookmark.tags`, `NewBookmark.tags?: unknown`, `normalizeTags`, `isValidTag` (code-point length via `[...tag].length`, `\s` whitespace), `parseTags`; 8 new shared tests pass.
+(commit 3206c6d)
 
 Task 2 — store validates and stores tags: `BookmarkStore.add` runs the tag check after the title and URL checks and throws `ValidationError("invalid tag")`; store tests cover normalised storage, default `[]`, invalid and wrong-shaped tags with the store unchanged.
+(commit 3206c6d)
 
 Task 3 — HTTP accepts and returns tags: `createApp` passes `body.tags` to `store.add`; app tests cover normalised create, default `[]`, eight invalid cases answering `400 {"error":"invalid tag"}` with nothing listed, and `GET` returning tags.
+(commit 3206c6d)
 
 Task 4 — web shows tags after the title: `renderList` appends a `<span>` with `tags.join(", ")` as text content only when tags exist; render tests cover `news, tech` and the empty case; the existing fixture gains `tags`.
+(commit 3206c6d)
 
 Task 5 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=871`, `web_bundle_gzip_delta=36` against 835; `measure/baseline.json` set to 871 and `pnpm measure` re-run printed `web_bundle_gzip_delta=0`.
+(commit 982b1fd)
 
 Stale-statement sweep — `Bookmark`, `NewBookmark`, `normalizeUrl`/`isValidBookmarkUrl`, `POST /bookmarks`, `createdAt`, "validation and normalisation", `ValidationError` messages, `measure/baseline.json`.
 - Corrected: README.md (shared package description now names tag validation and normalisation).
@@ -192,3 +197,4 @@ Unmet required validations: none (test, lint, type-check, build, and measure pas
 - 2026-11-03: Re-entry 2: quality-fail — fe0c2ec09bfcdfbcf2e32dc42bb9217dd23ddfa5 (quality gate fail, F1: AC-2 length measured after lower-casing). Task 7 appended.
 - 2026-11-03: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03: Quality gate recorded: pass at bd7a975 (F1 fixed).
+- 2026-11-03: Local QA review: evidence checked against the branch range main..87d6e8c; tasks 1-7 cited in-range commits (3206c6d, 982b1fd, acf696e, bd7a975, a85b419), no discrepancies, no missing AC evidence; `(commit <hash>)` lines added under the Implementation Record entries of tasks 1-5, routine reconciliation. Subtask checkboxes (1.1 to 4.2) left unchecked as they were; parent tasks are checked. Checkpoint set to local-qa-review.
