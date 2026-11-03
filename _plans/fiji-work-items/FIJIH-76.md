@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 quality:
   gate: concerns
@@ -117,10 +117,15 @@ so that I can group my bookmarks.
 ## Implementation Record
 
 Task 1 — shared: added `tags` to `Bookmark`, optional `tags` on `NewBookmark`, pure `isValidTag` (trim, non-empty, <=32 code points, no whitespace) and `normalizeTags`; tests added. `pnpm --filter @sample/shared test`: 12 passed.
+(commit 855b349)
 Task 2 — api store: `BookmarkStore.add` validates every tag (after title/url checks, before the duplicate check and any write) and stores `normalizeTags(tags)`; store tests added (default, normalisation, 4 rejection cases leave store empty).
+(commit dfa8b2e)
 Task 3 — api HTTP: POST passes `tags` through; a non-array or non-string-element `tags` (D4, including null) throws `ValidationError("invalid tag")` -> 400; integration tests added. `pnpm --filter @sample/api test`: 17 passed.
+(commit dfa8b2e)
 Task 4 — web: `renderList` appends `<span class="tags">` (textContent, joined by ", ") between the title and Remove only when tags are non-empty; fixtures updated, 2 tests added. `pnpm --filter @sample/web test`: 4 passed.
+(commit 06bf444)
 Task 6 — `pnpm build` then `pnpm measure`: web_bundle_gzip_bytes=881, web_bundle_gzip_delta=46; set `measure/baseline.json` `web_bundle_gzip_bytes` from 835 to 881.
+(commit 0eacf5c)
 Task 5 — repository checks from the root
 (checked at 0eacf5c)
 `pnpm test`: shared 12, api 17, web 4 passed. `pnpm lint`: clean. `pnpm typecheck`: clean. `pnpm measure` after the baseline update: delta 0.
@@ -168,3 +173,4 @@ Reviewed head: 5ccdbfc17f5de20d7cc8c5ffc84661b1fe49bc37
 - 2026-11-03 — Approved: plan-approval — Approve with the proposed answers: 1. No to both. 2. Yes. 3. 400. 4. Yes. Publish: yes. Notify: no.
 - 2026-11-03 — Implementation: tasks 1-6 done. Decisions applied: D1 no web form input or README change; D2 trim before checks; D3 empty tag rejected 400; D4 malformed tags rejected 400 invalid tag. Jira FIJIH-76 moved to In Progress.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03 — Finalize: checked every task and acceptance criterion against branch commits 855b349..af4faee; all have evidence (Task 5 cites 0eacf5c). Added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1-4 and 6 (routine reconciliation). File List and Validation Evidence match the branch diff; no bookkeeping slips. Open follow-up from the Quality Gate minor finding: validate the normalised tag so lower-casing cannot push a stored tag past 32 characters.
