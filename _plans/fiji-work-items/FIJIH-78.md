@@ -55,9 +55,9 @@ so that I can group my bookmarks.
   - [x] `BookmarkStore.add` normalizes `input.tags` (default `[]`) with `normalizeTags`, throws `ValidationError("invalid tag")` for invalid tags before any duplicate-URL check or insert, and stores the normalized tags on the bookmark.
   - [x] `createApp` passes `body.tags` from the `POST /bookmarks` body to the store unchanged, so a non-array value reaches validation.
   - [x] Unit tests in `store.test.ts` (normalized tags stored, default `[]`, invalid tag throws and stores nothing, empty tag dropped) and `app.test.ts` (`POST` with tags returns `201` with normalized tags, `POST` with an empty tag returns `201` without it, `POST` with an invalid tag, a non-array `tags`, or a non-string element returns `400 {"error":"invalid tag"}`, `GET /bookmarks` returns each bookmark's tags, `POST` without tags returns `tags: []`).
-- [ ] Web page shows tags in `packages/web` (AC: 4, 5)
-  - [ ] `renderList` appends, after the title link, an element whose text is the bookmark's tags joined by `, `, only when the bookmark has at least one tag.
-  - [ ] Unit tests in `render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is `[]`. Update the existing fixtures to include `tags`.
+- [x] Web page shows tags in `packages/web` (AC: 4, 5)
+  - [x] `renderList` appends, after the title link, an element whose text is the bookmark's tags joined by `, `, only when the bookmark has at least one tag.
+  - [x] Unit tests in `render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is `[]`. Update the existing fixtures to include `tags`.
 - [ ] Bundle size baseline (AC: 4)
   - [ ] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is not `0`, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in this change, per `AGENTS.md`.
 - [ ] Repository checks (AC: 5)
@@ -104,6 +104,8 @@ so that I can group my bookmarks.
 - packages/api/src/app.ts
 - packages/api/src/store.test.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
@@ -112,6 +114,9 @@ Added `tags: string[]` to `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG
 
 Task 2 — API stores, validates, and returns tags
 `BookmarkStore.add` normalizes tags before the duplicate-URL check (omitted → `[]`, `null` → invalid); `createApp` passes `body.tags` through. Hypothesis `null` reaches validation was falsified first by `?? []`, fixed with an `=== undefined` check. API tests: 9 passed.
+
+Task 3 — web page shows tags after the title
+`renderList` appends a `span.tags` with tags joined by `, ` only when non-empty; fixtures updated. Web tests: 4 passed.
 
 ## Validation Evidence
 
