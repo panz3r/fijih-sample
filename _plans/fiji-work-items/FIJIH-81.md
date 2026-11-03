@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T16:41:26.748+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 quality:
-  gate: pending
+  gate: pass
 artifacts:
   branch: FIJIH-81-add-tags-to-bookmarks
   base_branch: null
@@ -154,6 +154,25 @@ AC-6: passed — web render tests: `(2 tags)`, `(1 tag)`, no count when empty
 
 ## Quality Gate
 
+Gate: pass
+
+Acceptance trace:
+
+- AC-1 — implementation: `normalizeTags` in `packages/shared/src/index.ts` (trim, validate, lower-case, dedupe keeping first occurrence, `[]` for `undefined`); `BookmarkStore.add` in `packages/api/src/store.ts` stores the normalised `tags`; `createApp` in `packages/api/src/app.ts` forwards `body.tags`. Verification: `packages/shared/src/index.test.ts` (`normalizeTags` default, trim/lower-case/dedupe), `packages/api/src/store.test.ts` ("stores normalised tags and defaults to none"), `packages/api/src/app.test.ts` ("returns normalised tags on POST and GET, and [] by default": `["  Work ", "work", "READ"]` → `["work", "read"]`); root `pnpm test` passed (shared 9, api 10, web 5).
+- AC-2 — implementation: `normalizeTags` returns `null` for a trimmed tag longer than `MAX_TAG_LENGTH` (32) or matching `\s`; `add` throws `ValidationError("invalid tag")` before the duplicate check and before storing; the existing `ValidationError` → 400 path. Verification: shared boundary tests (32 accepted, 33 rejected, space and tab rejected); `store.test.ts` "rejects an invalid tag and stores nothing"; `app.test.ts` "accepts a 32-character tag" and the two `400 {"error":"invalid tag"}` cases that compare the list before and after.
+- AC-3 — implementation: `Bookmark.tags` in `packages/shared/src/index.ts`, stored on every bookmark, returned by `store.list()` through `GET /bookmarks`. Verification: `app.test.ts` checks GET returns `["work", "read"]` and `[]` per bookmark alongside the existing fields.
+- AC-4 — implementation: `renderList` in `packages/web/src/render.ts` appends a `.tags` span with `tags.join(", ")` after the title link only when `tags` is non-empty. Verification: `packages/web/src/render.test.ts` ("shows tags after the title…": children `A, SPAN, SPAN, BUTTON`, text `work, read`; "renders no tags element and no count without tags": no `.tags`, row text `ExampleRemove`).
+- AC-5 — Vitest tests added in all three packages (above); re-run at the reviewed head: `pnpm test` exit 0 (shared 9, api 10, web 5 passed), `pnpm lint` exit 0 (`eslint .` printed no problems), `pnpm typecheck` exit 0 (tsc for shared, web, api `Done`). Bundle: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=923`, `web_bundle_gzip_delta=0` against the updated `measure/baseline.json`.
+- AC-6 — implementation: `renderList` appends a separate `.tag-count` span after the tags span, `(<n> tags)` and `(1 tag)` for one, only when `tags` is non-empty. Verification: `render.test.ts` `(2 tags)`, `(1 tag)`, and no count without tags.
+
+Findings: none.
+
+Adversarial review notes: validation order stays title → URL → tags → duplicate URL, so existing error answers are unchanged; non-array, non-string, `null`, and empty-after-trim `tags` answer `invalid tag` as Open product decisions 2 and 3 chose (approved at plan-approval), and no recorded decision contradicts a criterion; the add form stays without a tags input per Open product decision 1; the changeset summary matches the pull request title without the Jira key; the CSS change keeps the Remove button at the row end. Stale-statement search (README.md, AGENTS.md, scenarios, workflows, package sources and tests for `NewBookmark`, `Bookmark`, `tags`, `invalid tag`, `/bookmarks`, the baseline value, and the row layout) found no statement the change makes untrue.
+
+Residual risks: none. Operational Requirements entries all carry evidence; no `pending-ci` or `deferred` Validation Evidence line.
+
+Reviewed head: 08b67201b1f8d180c1afb97006a535f5bdd7330e
+
 ## Review Record
 
 ## Change Log
@@ -166,3 +185,5 @@ AC-6: passed — web render tests: `(2 tags)`, `(1 tag)`, no count when empty
 - 2026-11-03 — Approved: plan-approval — Approve.
 - 2026-11-03 — Implementation complete: tasks 1-4 done, validations recorded; Jira FIJIH-81 moved to In Progress.
 - 2026-11-03 — Targeted repair (checkpoint-verification repair of `implementation-approval`), attempt unchanged. Contradicted evidence: "(1) your result claims every task complete, but in the committed work item at d35c54c the task "Store and HTTP handling in `packages/api`" and all three of its subtasks, and the task "Release bookkeeping" and all three of its subtasks, are still `- [ ]` (only the shared and web tasks are `- [x]`). (2) The four Implementation Record entries (`Task 1 — …` to `Task 4 — …`) carry no `(commit <short hash>)` or `(checked at <short hash>)` line below their first line, and the last commit d35c54c changes only the work-item file, so Finalize cannot match them to the commits eeecd08, 992600c, 49a7cd8, 9399418, 680c79a that made the changes". Fixed in the work item only: checked off the api and release tasks and their subtasks after re-running root `pnpm test` (9 + 10 + 5 passed), `pnpm lint` and `pnpm typecheck` (clean); added `(commit <hash>)` citations 992600c, 49a7cd8, 9399418, 680c79a to Task 1-4 entries. File List and Validation Evidence unchanged and consistent.
+- 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-03 — Quality gate recorded: pass at 08b6720 (no findings, no residual risks).
