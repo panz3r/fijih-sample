@@ -8,10 +8,10 @@ source:
   revision: 2026-11-03T12:22:07.636+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
+  phase: implementation
+  checkpoint: null
   transition: qa-reviewed
-  attempt: 1
+  attempt: 2
 quality:
   gate: concerns
 artifacts:
@@ -63,6 +63,9 @@ so that I can group my bookmarks.
   - [x] 4.2 Update existing fixtures in `packages/web/src/render.test.ts` for the new required `tags` field, and add tests: a bookmark with `["news", "tech"]` shows `news, tech` after the title; a bookmark with `[]` renders no tag element and its item text is the title plus `Remove` only.
 - [x] 5. Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 5)
 - [x] 6. Bundle size: run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, set `measure/baseline.json` `web_bundle_gzip_bytes` to the new value in this change, per `AGENTS.md` (AC: 4)
+- [ ] 7. Validate the normalised tag in `BookmarkStore.add` and add a regression test (AC: 2, 5; Re-entry 2)
+  - [ ] 7.1 In `BookmarkStore.add`, normalise first (`normalizeTags`) and run `isValidTag` on each normalised tag, so lower-casing cannot push a stored tag past 32 characters; still throw `ValidationError("invalid tag")` before anything is stored.
+  - [ ] 7.2 Regression tests in `packages/api/src/store.test.ts` (and an `app.test.ts` 400 case): `"İ".repeat(32)` is rejected with `invalid tag` and stores nothing; an accepted tag's stored value always satisfies `isValidTag`.
 
 ## Engineering Context
 
@@ -174,3 +177,4 @@ Reviewed head: 5ccdbfc17f5de20d7cc8c5ffc84661b1fe49bc37
 - 2026-11-03 — Implementation: tasks 1-6 done. Decisions applied: D1 no web form input or README change; D2 trim before checks; D3 empty tag rejected 400; D4 malformed tags rejected 400 invalid tag. Jira FIJIH-76 moved to In Progress.
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03 — Finalize: checked every task and acceptance criterion against branch commits 855b349..af4faee; all have evidence (Task 5 cites 0eacf5c). Added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1-4 and 6 (routine reconciliation). File List and Validation Evidence match the branch diff; no bookkeeping slips. Open follow-up from the Quality Gate minor finding: validate the normalised tag so lower-casing cannot push a stored tag past 32 characters.
+- 2026-11-03 — Re-entry 2: user-request — checkpoint local-qa-review at branch tip 9cb4c3e; user decision: "Request more work: fix the finding first, as you recommend. Validate the normalised tag in BookmarkStore.add and add a regression test." Task 7 appended.
