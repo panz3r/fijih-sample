@@ -61,10 +61,10 @@ so that I can group related bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] T1 — Shared tag model and normalisation in `packages/shared` (AC: 1, 2, 3, 5)
-  - [ ] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags`.
-  - [ ] Add pure, exported tag functions (for example `isValidTag(tag)` and `normalizeTags(value)`) that trim, check length (≤ 32) and whitespace, lower-case, and deduplicate in first-occurrence order, and report invalid input (including the D1 cases as decided) without throwing a package-specific error.
-  - [ ] Vitest tests in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe order, default `[]`, 32 vs 33 characters, inner whitespace, and the D1 cases.
+- [x] T1 — Shared tag model and normalisation in `packages/shared` (AC: 1, 2, 3, 5)
+  - [x] Add `tags: string[]` to `Bookmark`; make `NewBookmark` accept an optional `tags`.
+  - [x] Add pure, exported tag functions (for example `isValidTag(tag)` and `normalizeTags(value)`) that trim, check length (≤ 32) and whitespace, lower-case, and deduplicate in first-occurrence order, and report invalid input (including the D1 cases as decided) without throwing a package-specific error.
+  - [x] Vitest tests in `packages/shared/src/index.test.ts`: trim, lower-case, dedupe order, default `[]`, 32 vs 33 characters, inner whitespace, and the D1 cases.
 - [ ] T2 — API accepts, validates, stores, and returns tags in `packages/api` (AC: 1, 2, 3, 5)
   - [ ] `app.ts`: forward `body.tags` from the POST body to the store.
   - [ ] `store.ts`: normalise tags with the shared functions, throw `ValidationError("invalid tag")` for invalid input before storing, and store `tags` (default `[]`) on the bookmark.
@@ -112,9 +112,16 @@ so that I can group related bookmarks.
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
 
+Task T1 — shared tag model: `Bookmark.tags`, optional `NewBookmark.tags` (unknown), `isValidTag`, `normalizeTags` (returns `null` for invalid input, `[]` for undefined) with Vitest tests.
+
 ## Validation Evidence
+
+- AC-1/AC-2/AC-3 (shared part): `pnpm --filter @sample/shared test` 12 passed; shared typecheck and lint passed.
 
 ## Quality Gate
 
@@ -124,3 +131,4 @@ so that I can group related bookmarks.
 
 - 2026-11-03 — Plan drafted from FIJIH-79 revision `2026-11-03T14:32:45.535+0100`; issue assigned to the current user.
 - 2026-11-03 — Approved: plan-approval — Approve. D1: yes, as proposed. D2: no. D3: no. 4: all four readings confirmed. Publish: yes. Notify: yes.
+- 2026-11-03 — T1 implemented.
