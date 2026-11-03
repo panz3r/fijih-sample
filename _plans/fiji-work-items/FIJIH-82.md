@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 quality:
   gate: concerns
@@ -196,6 +196,10 @@ Reviewed head: 52235260c0833e265233f84bba16a497bfa29fde
 Stale-statement check: searched the repository outside the changed files for `tags`, `NewBookmark`, `createdAt`, `POST /bookmarks`, and the request-body shape. Nothing the change makes untrue. `README.md`'s `packages/shared` description stays as is per the user's answer to Open question 4 ("No").
 
 ## Review Record
+
+Copilot pass (review 5755764165 at b786ba8; one thread):
+
+- PRRT_kwDOVaYq_M6zOOpG (`packages/shared/src/index.ts:50`, tag length counts UTF-16 code units): deferred, follow-up not filed yet. Repeats the Quality Gate finding the user accepted at local-qa-review ("Approve, accepting the finding as a follow-up."). Reply posted (https://github.com/panz3r/fijih-sample/pull/27#discussion_r4457449559) quoting that decision; thread resolved. No fix, no re-review request. Copilot raised no other findings.
 
 ## Change Log
 
