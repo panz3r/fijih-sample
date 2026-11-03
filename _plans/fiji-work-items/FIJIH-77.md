@@ -119,6 +119,7 @@ User's answers at `plan-approval`, applied above:
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - measure/baseline.json
+- README.md
 
 ## Implementation Record
 
@@ -131,6 +132,10 @@ Task 3 — HTTP accepts and returns tags: `createApp` passes `body.tags` to `sto
 Task 4 — web shows tags after the title: `renderList` appends a `<span>` with `tags.join(", ")` as text content only when tags exist; render tests cover `news, tech` and the empty case; the existing fixture gains `tags`.
 
 Task 5 — bundle baseline: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=871`, `web_bundle_gzip_delta=36` against 835; `measure/baseline.json` set to 871 and `pnpm measure` re-run printed `web_bundle_gzip_delta=0`.
+
+Stale-statement sweep — `Bookmark`, `NewBookmark`, `normalizeUrl`/`isValidBookmarkUrl`, `POST /bookmarks`, `createdAt`, "validation and normalisation", `ValidationError` messages, `measure/baseline.json`.
+- Corrected: README.md (shared package description now names tag validation and normalisation).
+- Skipped: none; AGENTS.md and TEAMS.md hold no statement the change makes untrue.
 
 ## Validation Evidence
 
