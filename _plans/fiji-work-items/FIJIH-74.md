@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 2
 quality:
   gate: pass
@@ -18,7 +18,7 @@ artifacts:
   branch: FIJIH-74-add-tags-to-bookmarks
   base_branch: main
   pull_request: https://github.com/panz3r/fijih-sample/pull/20
-  jira_context_comment_id: null
+  jira_context_comment_id: "10011"
 ---
 
 # Work Item FIJIH-74: Add tags to bookmarks
@@ -210,3 +210,4 @@ Residual risks: none in the Quality Gate. No operational or documentation work i
 - 2026-11-03: Delivery: changeset .changeset/fijih-74-add-tags-to-bookmarks.md (commit e7d1bdb) pushed; draft pull request #20 opened with title `[FIJIH-74] Add tags to bookmarks`, label enhancement, assignee panz3r; Copilot review requested (review_requested event confirmed); no reviewers requested (Ready-for-review pending); no (verify: ci) criterion.
 - 2026-11-03: Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Approve with the proposed defaults. Publish: yes. Notify: yes."; verified at 4e56e2e)
 - 2026-11-03: Ready-for-review: pull request #20 marked ready for review; review requested from `duckyduff369` (QA Engineer, Bookmarks team); `panz3r` is the author and is not requested. Confirmed by the timeline `review_requested` event and `requested_reviewers`.
+- 2026-11-03: Approved: jira-handoff — Approve.
