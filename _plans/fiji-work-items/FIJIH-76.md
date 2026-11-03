@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: qa-reviewed
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 quality:
   gate: concerns
@@ -134,7 +134,10 @@ Task 5 — repository checks from the root
 `pnpm test`: shared 12, api 17, web 4 passed. `pnpm lint`: clean. `pnpm typecheck`: clean. `pnpm measure` after the baseline update: delta 0.
 
 Task 7 — api store: `BookmarkStore.add` now calls `normalizeTags` first and validates each normalised tag with `isValidTag`, so a tag that lower-cases past 32 code points (`"İ".repeat(32)`) is rejected with `invalid tag` before anything is stored. Regression tests: store.test.ts (rejection case `"İ".repeat(32)`, and stored tags all satisfy `isValidTag`), app.test.ts (400 `invalid tag`, absent from GET). Both failed before the fix (5 failures incl. leaked bookmark), pass after. `pnpm test`: shared 12, api 20, web 4 passed; `pnpm lint` clean; `pnpm typecheck` clean; `pnpm build` then `pnpm measure`: delta 0 (881).
-(commit PENDING)
+(commit f30d831)
+
+Stale-statement sweep — BookmarkStore.add validation order, isValidTag, normalizeTags, `invalid tag` (git grep over *.md excluding _plans since 5ccdbfc)
+none found (scenarios/S1.md and S7.md state only the 400 `invalid tag` behaviour, unchanged).
 
 Stale-statement sweep — Bookmark, NewBookmark, POST /bookmarks, createdAt, tags (git grep over docs, html, json)
 none found (README.md api row only names routes, which are unchanged).
@@ -181,3 +184,4 @@ Reviewed head: 5ccdbfc17f5de20d7cc8c5ffc84661b1fe49bc37
 - 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-03 — Finalize: checked every task and acceptance criterion against branch commits 855b349..af4faee; all have evidence (Task 5 cites 0eacf5c). Added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1-4 and 6 (routine reconciliation). File List and Validation Evidence match the branch diff; no bookkeeping slips. Open follow-up from the Quality Gate minor finding: validate the normalised tag so lower-casing cannot push a stored tag past 32 characters.
 - 2026-11-03 — Re-entry 2: user-request — checkpoint local-qa-review at branch tip 9cb4c3e; user decision: "Request more work: fix the finding first, as you recommend. Validate the normalised tag in BookmarkStore.add and add a regression test." Task 7 appended.
+- 2026-11-03 — Implementation (Re-entry 2): task 7 done (commit f30d831); checks pass, bundle delta 0.
