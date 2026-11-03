@@ -14,7 +14,7 @@ export class BookmarkStore {
   add(input: NewBookmark, now: () => Date = () => new Date()): Bookmark {
     if (!input.title?.trim()) throw new ValidationError("title is required");
     if (!isValidBookmarkUrl(input.url)) throw new ValidationError("url must be http or https");
-    const tags = this.checkTags(input.tags);
+    const tags = this.parseTags(input.tags);
     const url = normalizeUrl(input.url);
     for (const existing of this.items.values()) {
       if (existing.url === url) throw new ValidationError("url already bookmarked");
@@ -25,7 +25,7 @@ export class BookmarkStore {
   }
 
   /** Returns the normalised tags; `undefined` means none. Anything else that is not an array of valid tags is rejected. */
-  private checkTags(tags: unknown): string[] {
+  private parseTags(tags: unknown): string[] {
     if (tags === undefined) return [];
     if (!Array.isArray(tags) || !tags.every((tag) => typeof tag === "string" && isValidTag(tag))) {
       throw new ValidationError("invalid tag");
