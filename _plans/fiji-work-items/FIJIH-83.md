@@ -70,8 +70,8 @@ so that I can group my bookmarks.
 - [x] Show tags in `packages/web` (AC: 6, 7)
   - [x] `render.ts`: after the title link, append an element holding `bookmark.tags.join(", ")` only when `tags` is non-empty.
   - [x] Tests in `packages/web/src/render.test.ts`: tags shown after the title as `work, read`; no tag element or text when `tags` is `[]`; update existing fixtures to the new `Bookmark` shape.
-- [ ] Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 7)
-- [ ] Run `pnpm build` then `pnpm measure` and update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value so `web_bundle_gzip_delta=0` (AC: 8)
+- [x] Run the repository checks from the root: `pnpm test`, `pnpm lint`, `pnpm typecheck` (AC: 7)
+- [x] Run `pnpm build` then `pnpm measure` and update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value so `web_bundle_gzip_delta=0` (AC: 8)
 
 ## Engineering Context
 
@@ -121,6 +121,7 @@ so that I can group my bookmarks.
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/web/index.html
+- measure/baseline.json
 
 ## Implementation Record
 Task 1 — shared tag normalization and validation
@@ -132,6 +133,12 @@ Task 2 — API accepts and returns tags
 Task 3 — web page shows tags
 - `render.ts` appends a `span.tags` after the title link only when `tags` is non-empty; `index.html` gets a one-line `.tags` rule so it sits after the title; fixtures updated.
 - web test 4 passed, typecheck and lint clean.
+Task 4 — repository checks from the root
+(checked at 1a115a8)
+- `pnpm test` exit 0 (shared 10, api 15, web 4 tests), `pnpm lint` clean, `pnpm typecheck` clean in all three packages.
+
+Task 5 — bundle baseline moved to the measured size
+- `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46`; baseline.json updated from 835 to 881; re-run printed `web_bundle_gzip_delta=0`.
 
 ## Validation Evidence
 
