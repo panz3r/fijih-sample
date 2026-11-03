@@ -7,9 +7,9 @@ source:
   key: FIJIH-78
   revision: 2026-11-03T13:41:58.714+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
 quality:
@@ -110,3 +110,4 @@ so that I can group my bookmarks.
 
 - Drafted from Jira FIJIH-78 at revision 2026-11-03T13:41:58.714+0100.
 - Plan approval repair, attempt 1: user answered "Approve. Answers: 1. No form input. 2. Yes, 400 invalid tag. 3. Drop an empty tag silently instead of rejecting it. 4. Yes, limits after trimming, but count the 32 in Unicode code points, not string length. Publish: yes. Notify: yes." AC 1 now drops empty tags; AC 2 now covers non-array and non-string `tags` and counts code points; the web form stays unchanged and is recorded as out of scope; open decisions replaced by the answers.
+- Approved: plan-approval — Approve.
