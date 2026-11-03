@@ -8,12 +8,12 @@ source:
   revision: 2026-11-03T12:22:07.636+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 2
 quality:
-  gate: concerns
+  gate: pass
 artifacts:
   branch: FIJIH-76-add-bookmark-tags
   base_branch: null
@@ -152,27 +152,29 @@ AC-5: passed — pnpm test (12+20+4), pnpm lint, pnpm typecheck all pass from th
 
 ## Quality Gate
 
-Gate: concerns — every criterion is evidenced; one minor finding remains.
+Gate: pass — every criterion is evidenced; the previous minor finding is resolved; no finding or residual risk remains.
+
+Scope: Re-entry 2 (`user-request`) review of the commits since the previous Reviewed head 5ccdbfc (f30d831 changes packages/api/src/store.ts, store.test.ts, app.test.ts; 2cc1111 and e760c28 change the work item only). In scope: AC-2 and AC-5 (Task 7 mapping; both Validation Evidence lines changed). AC-1, AC-3, and AC-4 are traced from their current Validation Evidence lines and carried forward; all checks were also re-run at e760c28.
 
 Acceptance trace:
 
-- AC-1 — implementation: `normalizeTags` (packages/shared/src/index.ts:49), `BookmarkStore.add` defaults to `[]` and stores `normalizeTags(tags)` (packages/api/src/store.ts:17-26), POST passes `tags` (packages/api/src/app.ts:23-28). Verification: packages/shared/src/index.test.ts (trim, lower-case, dedupe, order, immutability), packages/api/src/store.test.ts (default `[]`, normalisation), packages/api/src/app.test.ts (`["News", " news ", "Tech"]` → 201 `["news", "tech"]`; omitted → `[]`). Re-run at 5ccdbfc: passed.
-- AC-2 — implementation: `isValidTag` (packages/shared/src/index.ts:43-46) checked for every tag before any write (packages/api/src/store.ts:18); D4 malformed `tags` guard (packages/api/src/app.ts:25-27). Verification: app.test.ts 400 `{"error":"invalid tag"}` and absent from `GET /bookmarks` for 33 characters, a space, empty, a string, a non-string element, and `null`; store.test.ts rejection leaves the store empty; index.test.ts 32 vs 33 boundary, space, tab, empty, blank. Re-run at 5ccdbfc: passed.
-- AC-3 — implementation: stored bookmarks carry `tags`, returned by `store.list()`. Verification: app.test.ts `GET /bookmarks` returns `["news", "tech"]` and `[]`; store.test.ts `list()` includes tags. Re-run at 5ccdbfc: passed.
-- AC-4 — implementation: `renderList` appends `span.tags` with `textContent = tags.join(", ")` between the link and Remove only when tags are non-empty (packages/web/src/render.ts:21-28). Verification: render.test.ts children `A, SPAN, BUTTON` with `news, tech`; no `.tags` and item text `ExampleRemove` for `[]`. Re-run at 5ccdbfc: passed.
-- AC-5 — Vitest tests in all three packages; re-run from the repository root at 5ccdbfc: `pnpm test` exit 0 (shared 12, api 17, web 4), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Also `pnpm build` then `pnpm measure`: `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against the updated `measure/baseline.json`.
+- AC-1 (carried forward) — Validation Evidence: passed — api store and app tests (normalised tags, `[]` default, 201 body includes tags). Implementation: `normalizeTags` (packages/shared/src/index.ts:49-51); `BookmarkStore.add` now normalises first and stores the normalised array (packages/api/src/store.ts:17-28); POST passes `tags` (packages/api/src/app.ts:23-28). Verification re-run at e760c28: packages/api/src/app.test.ts:51 and store.test.ts:14,20 passed.
+- AC-2 (in scope) — implementation: `BookmarkStore.add` runs `isValidTag` on every normalised tag before the duplicate-URL check and any write (packages/api/src/store.ts:17-19), so a tag lower-cased past 32 code points is rejected; D4 malformed `tags` guard (packages/api/src/app.ts:25-27). Verification: app.test.ts:62-76 400 `{"error":"invalid tag"}` and absent from `GET /bookmarks` for 33 characters, a space, empty, `"İ".repeat(32)` (lower-cased to 64 code points), a string, a non-string element, and `null`; store.test.ts:27 rejection (including `"İ".repeat(32)`) leaves the store empty; store.test.ts:33 accepted `"İ".repeat(16)` (32 code points after lower-casing) is stored and every stored tag satisfies `isValidTag`; shared index.test.ts 32/33 boundary, space, tab, empty, blank. Re-run at e760c28: passed. Exhaustive probe over every Unicode code point (Node 24 `toLowerCase`): only U+0130 lengthens (1 → 2 code points), none shortens, and none maps to whitespace, so validating the normalised tag enforces AC-2 on both the submitted and the stored value.
+- AC-3 (carried forward) — Validation Evidence: passed — app.test.ts `GET /bookmarks` returns each bookmark's tags (`[]` when none). Implementation unchanged since 5ccdbfc apart from the stored array now being the validated normalised one. Re-run at e760c28: app.test.ts:51, store.test.ts:14 passed.
+- AC-4 (carried forward) — Validation Evidence: passed — packages/web/src/render.test.ts (`news, tech` in `span.tags` after the title; no tag element and item text `ExampleRemove` for `[]`). packages/web unchanged since 5ccdbfc. Re-run at e760c28: render.test.ts:21,30 passed.
+- AC-5 (in scope) — Vitest tests in all three packages; re-run from the repository root at e760c28: `pnpm test` exit 0 (shared 12, api 20, web 4), `pnpm lint` exit 0, `pnpm typecheck` exit 0. Also `pnpm build` then `pnpm measure`: `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against `measure/baseline.json`.
 
-Findings:
+Findings: none.
 
-- minor — packages/shared/src/index.ts:43-51 (used by packages/api/src/store.ts:18,26): validation runs on the submitted tag but `normalizeTags` lower-cases afterwards, and `toLowerCase()` can lengthen a string, so a stored tag can exceed the 32-character limit of AC-2 and fail `isValidTag` itself. Reproduced at 5ccdbfc: `isValidTag("İ".repeat(32))` is `true`, `normalizeTags(["İ".repeat(32)])[0]` has 64 code points, and `isValidTag` of that stored value is `false`. Fix by validating the normalised tag (or checking the length after lower-casing) and adding a test.
+Carried forward from the previous gate (5ccdbfc): the minor finding (validation before lower-casing lets a stored tag exceed 32 characters) is resolved at e760c28 by f30d831 (packages/api/src/store.ts:17-19) with regression tests (store.test.ts:27,33; app.test.ts:66). No previous residual risk to carry.
 
 Residual risks: none.
 
 Unmet required validations: none.
 
-Stale-statement sweep: README.md, AGENTS.md, TEAMS.md, scenarios/README.md, .changeset/, and the comments and test descriptions in the changed packages hold no statement the change makes untrue (README's `packages/api` row names only routes, which are unchanged; D1 leaves the web form without a tags input).
+Stale-statement sweep: searched README.md, AGENTS.md, scenarios/, .changeset/, and the comments and test descriptions in packages/ for the changed behaviour (tag validation order in `BookmarkStore.add`, `isValidTag`, `normalizeTags`, `invalid tag`, lower-casing). None is made untrue: scenarios/S1.md:12-13 and S7.md:19 state only the 400 `invalid tag` rule; S18.md:19 still holds (the change edits the stored-bookmark construction in `add()`); `isValidTag`'s doc comment (packages/shared/src/index.ts:42) and the new store comment (store.ts:17) are accurate.
 
-Reviewed head: 5ccdbfc17f5de20d7cc8c5ffc84661b1fe49bc37
+Reviewed head: e760c28790ef85998e1d59b3c6eb834d6c2bf2a6
 
 ## Review Record
 
@@ -185,3 +187,4 @@ Reviewed head: 5ccdbfc17f5de20d7cc8c5ffc84661b1fe49bc37
 - 2026-11-03 — Finalize: checked every task and acceptance criterion against branch commits 855b349..af4faee; all have evidence (Task 5 cites 0eacf5c). Added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1-4 and 6 (routine reconciliation). File List and Validation Evidence match the branch diff; no bookkeeping slips. Open follow-up from the Quality Gate minor finding: validate the normalised tag so lower-casing cannot push a stored tag past 32 characters.
 - 2026-11-03 — Re-entry 2: user-request — checkpoint local-qa-review at branch tip 9cb4c3e; user decision: "Request more work: fix the finding first, as you recommend. Validate the normalised tag in BookmarkStore.add and add a regression test." Task 7 appended.
 - 2026-11-03 — Implementation (Re-entry 2): task 7 done (commit f30d831); checks pass, bundle delta 0.
+- 2026-11-03 — Approved: implementation-approval — automatic (no risk triggers)
