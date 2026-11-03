@@ -58,8 +58,8 @@ so that I can group my bookmarks.
 - [x] Web page shows tags in `packages/web` (AC: 4, 5)
   - [x] `renderList` appends, after the title link, an element whose text is the bookmark's tags joined by `, `, only when the bookmark has at least one tag.
   - [x] Unit tests in `render.test.ts`: tags shown comma separated after the title; no tag element when `tags` is `[]`. Update the existing fixtures to include `tags`.
-- [ ] Bundle size baseline (AC: 4)
-  - [ ] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is not `0`, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in this change, per `AGENTS.md`.
+- [x] Bundle size baseline (AC: 4)
+  - [x] Run `pnpm build` then `pnpm measure`; if `web_bundle_gzip_delta` is not `0`, set `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in this change, per `AGENTS.md`.
 - [ ] Repository checks (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence.
 
@@ -106,6 +106,7 @@ so that I can group my bookmarks.
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -117,6 +118,9 @@ Task 2 — API stores, validates, and returns tags
 
 Task 3 — web page shows tags after the title
 `renderList` appends a `span.tags` with tags joined by `, ` only when non-empty; fixtures updated. Web tests: 4 passed.
+
+Task 4 — bundle size baseline
+`pnpm build` then `pnpm measure` gave web_bundle_gzip_bytes=881, delta 46; set `measure/baseline.json` to 881; re-measure gives delta 0.
 
 ## Validation Evidence
 
