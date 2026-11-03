@@ -72,10 +72,10 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
   - [ ] `BookmarkStore.add` normalises `input.tags` with `normalizeTags` and stores them; invalid tags throw `ValidationError("invalid tag")` before anything is stored.
   - [ ] `createApp` passes `body.tags` from the POST body to `store.add`; the existing `ValidationError` → 400 path returns `{"error":"invalid tag"}`.
   - [ ] Tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET returns tags per bookmark; an over-long tag and a tag with inner whitespace each answer 400 `{"error":"invalid tag"}` and leave the list unchanged.
-- [ ] Render tags in `packages/web/src/render.ts` (AC: 4, 5, 6)
-  - [ ] After the title link, append an element whose text is the bookmark's tags joined with `", "` only when `tags` is non-empty.
-  - [ ] After the tags element, append a separate count element with text `(<n> tags)` (`(1 tag)` for one) only when `tags` is non-empty (AC 6).
-  - [ ] Tests in `packages/web/src/render.test.ts`: tags render after the title as `work, read`; a bookmark with `tags: []` renders no tags element; existing fixtures gain `tags`; a two-tag bookmark shows `(2 tags)` after the tag list, a one-tag bookmark `(1 tag)`, and a bookmark with `tags: []` shows no count.
+- [x] Render tags in `packages/web/src/render.ts` (AC: 4, 5, 6)
+  - [x] After the title link, append an element whose text is the bookmark's tags joined with `", "` only when `tags` is non-empty.
+  - [x] After the tags element, append a separate count element with text `(<n> tags)` (`(1 tag)` for one) only when `tags` is non-empty (AC 6).
+  - [x] Tests in `packages/web/src/render.test.ts`: tags render after the title as `work, read`; a bookmark with `tags: []` renders no tags element; existing fixtures gain `tags`; a two-tag bookmark shows `(2 tags)` after the tag list, a one-tag bookmark `(1 tag)`, and a bookmark with `tags: []` shows no count.
 - [ ] Release bookkeeping (AC: 5)
   - [ ] Add a changeset in `.changeset/` for `@sample/shared`, `@sample/api`, and `@sample/web` whose summary is `Add tags to bookmarks`.
   - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is non-zero, update `measure/baseline.json` `web_bundle_gzip_bytes` to the measured value in the same change (AGENTS.md).
@@ -118,10 +118,15 @@ Each is also asked under the Plan result's risks; the plan's current choice is s
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/store.test.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task 1 — shared tag model: `tags` on `Bookmark`, optional `tags` on `NewBookmark`, `MAX_TAG_LENGTH`, and `normalizeTags` (returns `null` for invalid input; empty-after-trim and non-array/non-string input rejected per the plan's choices).
+Task 2 — api: `BookmarkStore.add` normalises tags (order title, url, tags, duplicate) and throws `ValidationError("invalid tag")`; `createApp` forwards `body.tags`; store and HTTP tests added.
 
 ## Validation Evidence
 
