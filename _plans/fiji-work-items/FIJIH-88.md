@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 2
 routing:
   class: standard
@@ -155,6 +155,7 @@ Task 6 — Root checks
 `pnpm test`: shared 11, api 13, web 4 passed. `pnpm lint`: exit 0. `pnpm typecheck`: exit 0. Per-package `pnpm lint packages/{shared,api,web}`: exit 0.
 
 Task 7 — De-duplicate tags with a `Set`
+(commit 307e30b)
 
 `normalizeTags` now tracks seen tags in a `Set` (insertion order keeps the first occurrence), removing the quadratic `includes`. New shared test de-duplicates 50,000 distinct tags plus upper-case repeats, expecting the distinct list in order in under 1 s. `pnpm test`: shared 12, api 13, web 4 passed; `pnpm lint` and `pnpm typecheck`: exit 0; `pnpm build` then `pnpm measure`: 895 bytes, delta 0, baseline unchanged.
 
@@ -231,3 +232,4 @@ Notes: none.
 - 2026-11-04 — Implementation: re-entry 2 task done; `normalizeTags` de-duplicates with a Set, test added, all checks pass.
 - 2026-11-04 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-04 — Quality review: gate `pass` at 307e30b (scoped re-review after Re-entry 2); the quadratic de-duplication finding is resolved.
+- 2026-11-04 — Finalize: checked tasks 1–7 and AC-1–AC-6 against commits 5fa0c28, d3c2a50, 6da6425, fbf0513, ba735f8, the `(checked at ba735f8)` citation on task 6, and 307e30b (task 7); no discrepancies. Added the `(commit 307e30b)` line to the Task 7 Implementation Record entry (routine reconciliation); File List already matched the branch diff. Set checkpoint `local-qa-review`, transition `qa-reviewed`. No follow-ups.
