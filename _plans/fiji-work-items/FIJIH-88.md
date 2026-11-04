@@ -75,8 +75,8 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
   - [x] Tests in `packages/web/src/render.test.ts`: a bookmark with tags renders `work, reading` after the link; a bookmark with `tags: []` renders no tags element and the item text is unchanged; update existing fixtures for the new required `tags` field.
 - [x] Bundle size baseline (AC: 5)
   - [x] Run `pnpm build` then `pnpm measure`; the web change moves the gzipped bundle, so set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change (AGENTS.md).
-- [ ] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
-  - [ ] Add tag normalisation to the `packages/shared` row in `README.md`.
+- [x] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
+  - [x] Add tag normalisation to the `packages/shared` row in `README.md`.
 - [ ] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` and record the output in Validation Evidence (AC: 5)
 
 ## Engineering Context
@@ -121,6 +121,7 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 - packages/web/src/render.test.ts
 - packages/web/index.html
 - measure/baseline.json
+- README.md
 
 ## Implementation Record
 
@@ -136,6 +137,9 @@ Task 3 — Web shows tags after the title
 Task 4 — Bundle size baseline
 
 `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=895` (delta 60 from 835); baseline set to 895.
+Task 5 — README row
+
+Added "tag normalisation" to the `packages/shared` row, as D4 was approved.
 
 ## Validation Evidence
 
@@ -152,3 +156,4 @@ Task 4 — Bundle size baseline
 - 2026-11-04 — Implementation: API tags added.
 - 2026-11-04 — Implementation: web tags display added.
 - 2026-11-04 — Implementation: baseline updated to 895 bytes.
+- 2026-11-04 — Implementation: README row updated (D4).

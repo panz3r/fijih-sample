@@ -6,7 +6,7 @@ A deliberately small bookmarks application whose only job is to give [FIJIₕ](h
 
 | Path | What it is |
 |---|---|
-| `packages/shared` | Types and pure functions (URL validation and normalisation, sorting). Tests with Vitest. |
+| `packages/shared` | Types and pure functions (URL validation and normalisation, tag normalisation, sorting). Tests with Vitest. |
 | `packages/api` | A Node `http` service with an in-memory store: `GET/POST /bookmarks`, `DELETE /bookmarks/:id`, `GET /health`. |
 | `packages/web` | A Vite + vanilla TypeScript page that lists, adds, and removes bookmarks through the API. Its gzipped bundle size is the value CI measures. |
 | `scripts/measure` | Prints the gzipped web bundle size and its delta against `measure/baseline.json`. |
