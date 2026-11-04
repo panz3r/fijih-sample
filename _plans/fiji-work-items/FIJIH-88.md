@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: qa-reviewed
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 2
 routing:
   class: standard
@@ -78,10 +78,10 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 - [x] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
   - [x] Add tag normalisation to the `packages/shared` row in `README.md`.
 - [x] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` and record the output in Validation Evidence (AC: 5)
-- [ ] De-duplicate tags with a `Set` in `normalizeTags` and add a test (re-entry 2; AC: 1, 5)
-  - [ ] In `packages/shared/src/index.ts`, replace `out.includes(lower)` with a `Set` lookup, keeping first-occurrence order.
-  - [ ] Add a Vitest test in `packages/shared/src/index.test.ts` that de-duplicates a large input (for example 50,000 distinct tags plus repeats) correctly and quickly.
-  - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` then `pnpm measure` (baseline moves only if the bundle size does).
+- [x] De-duplicate tags with a `Set` in `normalizeTags` and add a test (re-entry 2; AC: 1, 5)
+  - [x] In `packages/shared/src/index.ts`, replace `out.includes(lower)` with a `Set` lookup, keeping first-occurrence order.
+  - [x] Add a Vitest test in `packages/shared/src/index.test.ts` that de-duplicates a large input (for example 50,000 distinct tags plus repeats) correctly and quickly.
+  - [x] Run `pnpm test`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` then `pnpm measure` (baseline moves only if the bundle size does).
 
 ## Engineering Context
 
@@ -154,9 +154,17 @@ Task 6 — Root checks
 
 `pnpm test`: shared 11, api 13, web 4 passed. `pnpm lint`: exit 0. `pnpm typecheck`: exit 0. Per-package `pnpm lint packages/{shared,api,web}`: exit 0.
 
+Task 7 — De-duplicate tags with a `Set`
+
+`normalizeTags` now tracks seen tags in a `Set` (insertion order keeps the first occurrence), removing the quadratic `includes`. New shared test de-duplicates 50,000 distinct tags plus upper-case repeats, expecting the distinct list in order in under 1 s. `pnpm test`: shared 12, api 13, web 4 passed; `pnpm lint` and `pnpm typecheck`: exit 0; `pnpm build` then `pnpm measure`: 895 bytes, delta 0, baseline unchanged.
+
 Stale-statement sweep — `Bookmark`, `NewBookmark`, `POST /bookmarks`, `createdAt`, bundle baseline `835`, `tags`
 
 none found (README api row lists routes only; the shared row was updated by task 5; scenarios and `_plans` are historical).
+
+Stale-statement sweep (re-entry 2) — `normalizeTags`, `includes`, de-duplication wording
+
+none found (the doc comment on `normalizeTags` stays true).
 
 ## Validation Evidence
 
@@ -164,7 +172,7 @@ none found (README api row lists routes only; the shared row was updated by task
 - AC-2: passed — API `it.each` rejects over-long (33) and inner-whitespace tags with 400 `{"error":"invalid tag"}`, nothing stored; 32 characters accepted.
 - AC-3: passed — API tests assert GET lists `tags` (`[]` when none).
 - AC-4: passed — `packages/web/src/render.test.ts`: `work, reading` after the link; no `.tags` element for `[]`.
-- AC-5: passed — `pnpm test` (shared 11, api 13, web 4), `pnpm lint`, `pnpm typecheck` all exit 0 at ba735f8.
+- AC-5: passed — `pnpm test` (shared 12, api 13, web 4), `pnpm lint`, `pnpm typecheck` all exit 0 after the Set de-duplication change.
 - AC-6: passed — D1 (empty) and D2 (non-array, null, non-string) answer 400 `invalid tag`, covered in shared and API tests.
 - Bundle: `pnpm build` then `pnpm measure`: 895 gzip bytes (baseline updated from 835).
 
@@ -213,3 +221,4 @@ Notes: none.
 - 2026-11-04 — Quality review: gate `concerns` at 85801ab; one minor finding (quadratic tag de-duplication).
 - 2026-11-04 — Finalize: checked tasks 1–6 and AC-1–AC-6 against commits 5fa0c28, d3c2a50, 6da6425, fbf0513, ba735f8 and the `(checked at ba735f8)` citation on task 6; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries of tasks 1–5 (routine reconciliation); File List already matched the branch diff. Set checkpoint `local-qa-review`, transition `qa-reviewed`. Follow-up: the quality gate minor finding (quadratic de-duplication in `normalizeTags`) is carried to the result for the local QA checkpoint.
 - 2026-11-04 — Re-entry 2: user-request — checkpoint `local-qa-review`, branch tip 54646d0, user decision: "Fix now: de-duplicate with a Set and add a test, then re-review." Appended one task for the quality gate minor finding.
+- 2026-11-04 — Implementation: re-entry 2 task done; `normalizeTags` de-duplicates with a Set, test added, all checks pass.

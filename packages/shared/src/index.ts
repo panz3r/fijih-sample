@@ -47,13 +47,13 @@ export function sortByCreatedDesc<T extends { createdAt: string }>(items: readon
 export function normalizeTags(tags: unknown): string[] | null {
   if (tags === undefined) return [];
   if (!Array.isArray(tags)) return null;
-  const out: string[] = [];
+  const seen = new Set<string>();
   for (const tag of tags) {
     if (typeof tag !== "string") return null;
     const trimmed = tag.trim();
     if (!trimmed || [...trimmed].length > MAX_TAG_LENGTH || /\s/.test(trimmed)) return null;
     const lower = trimmed.toLowerCase();
-    if (!out.includes(lower)) out.push(lower);
+    seen.add(lower);
   }
-  return out;
+  return [...seen];
 }

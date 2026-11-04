@@ -42,6 +42,13 @@ describe("normalizeTags", () => {
     expect(normalizeTags([" Work", "work "])).toEqual(["work"]);
     expect(normalizeTags(["b", "a", "B", "c", "a"])).toEqual(["b", "a", "c"]);
   });
+  it("de-duplicates a large input correctly and quickly", () => {
+    const distinct = Array.from({ length: 50_000 }, (_, i) => `t${i}`);
+    const input = [...distinct, ...distinct.map((t) => t.toUpperCase())];
+    const start = performance.now();
+    expect(normalizeTags(input)).toEqual(distinct);
+    expect(performance.now() - start).toBeLessThan(1000);
+  });
   it("accepts 32 characters and rejects 33", () => {
     expect(normalizeTags(["a".repeat(32)])).toEqual(["a".repeat(32)]);
     expect(normalizeTags(["a".repeat(33)])).toBeNull();
