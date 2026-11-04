@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 routing:
   class: standard
@@ -126,18 +126,23 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 ## Implementation Record
 
 Task 1 — Shared tag model and `normalizeTags`
+(commit 5fa0c28)
 
 Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, and pure `normalizeTags(unknown): string[] | null` (trim, validate, lower-case, de-duplicate; null for D1/D2/invalid). Tests cover trimming, case, de-dup, order, default, 32/33, inner whitespace, empty, malformed. `pnpm --filter @sample/shared test`: 11 passed.
 Task 2 — API accepts, stores, and returns tags
+(commit d3c2a50)
 
 `BookmarkStore.add` normalises tags after the URL check and throws `ValidationError("invalid tag")`; `createApp` passes `body.tags` through. HTTP tests cover tags normalised, none -> `[]`, GET lists tags, 32 accepted, and 400 `{"error":"invalid tag"}` with nothing stored for too long, inner whitespace, empty (D1), non-array, null, and non-string (D2). `pnpm --filter @sample/api test`: 13 passed.
 Task 3 — Web shows tags after the title
+(commit 6da6425)
 
 `renderList` groups the link and an optional `<span class="tags">` (tags joined with ", ") in a `.title` span, only when tags exist; CSS adds a small gap. Tests cover tags after the link, no element for `[]`, and updated fixtures. `pnpm --filter @sample/web test`: 4 passed.
 Task 4 — Bundle size baseline
+(commit fbf0513)
 
 `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=895` (delta 60 from 835); baseline set to 895.
 Task 5 — README row
+(commit ba735f8)
 
 Added "tag normalisation" to the `packages/shared` row, as D4 was approved.
 Task 6 — Root checks
@@ -202,3 +207,4 @@ Notes: none.
 - 2026-11-04 — Implementation: all tasks complete; root checks pass; stale-statement sweep found nothing.
 - 2026-11-04 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-04 — Quality review: gate `concerns` at 85801ab; one minor finding (quadratic tag de-duplication).
+- 2026-11-04 — Finalize: checked tasks 1–6 and AC-1–AC-6 against commits 5fa0c28, d3c2a50, 6da6425, fbf0513, ba735f8 and the `(checked at ba735f8)` citation on task 6; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries of tasks 1–5 (routine reconciliation); File List already matched the branch diff. Set checkpoint `local-qa-review`, transition `qa-reviewed`. Follow-up: the quality gate minor finding (quadratic de-duplication in `normalizeTags`) is carried to the result for the local QA checkpoint.
