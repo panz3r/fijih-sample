@@ -61,10 +61,10 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 
 ## Tasks and Subtasks
 
-- [ ] Shared: tag model and normalisation (AC: 1, 2, 5, 6)
-  - [ ] Add `tags: string[]` to `Bookmark` and optional `tags?: string[]` to `NewBookmark` in `packages/shared/src/index.ts`.
-  - [ ] Add a pure function that normalises a tags input: trim, validate (length ≤ 32, no whitespace, plus D1/D2 as decided), lower-case, de-duplicate keeping first occurrence; report an invalid tag so the API can answer `invalid tag`.
-  - [ ] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, de-duplication across case and padding (`[" Work", "work "]` → `["work"]`), order kept, `undefined` → `[]`, 32 characters accepted, 33 rejected, inner whitespace rejected, D1 and D2 cases.
+- [x] Shared: tag model and normalisation (AC: 1, 2, 5, 6)
+  - [x] Add `tags: string[]` to `Bookmark` and optional `tags?: string[]` to `NewBookmark` in `packages/shared/src/index.ts`.
+  - [x] Add a pure function that normalises a tags input: trim, validate (length ≤ 32, no whitespace, plus D1/D2 as decided), lower-case, de-duplicate keeping first occurrence; report an invalid tag so the API can answer `invalid tag`.
+  - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, de-duplication across case and padding (`[" Work", "work "]` → `["work"]`), order kept, `undefined` → `[]`, 32 characters accepted, 33 rejected, inner whitespace rejected, D1 and D2 cases.
 - [ ] API: accept, store, and return tags (AC: 1, 2, 3, 5, 6)
   - [ ] In `packages/api/src/store.ts`, normalise `input.tags` with the shared function in `BookmarkStore.add`, throw `ValidationError("invalid tag")` for an invalid tag before storing, and store `tags` on the bookmark.
   - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` (widen the body type; validation stays in the store/shared function).
@@ -112,7 +112,14 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — Shared tag model and `normalizeTags`
+
+Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, and pure `normalizeTags(unknown): string[] | null` (trim, validate, lower-case, de-duplicate; null for D1/D2/invalid). Tests cover trimming, case, de-dup, order, default, 32/33, inner whitespace, empty, malformed. `pnpm --filter @sample/shared test`: 11 passed.
 
 ## Validation Evidence
 
@@ -125,3 +132,4 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 - 2026-11-04 — Plan: drafted from FIJIH-88 revision `2026-11-04T15:55:12.410+0100`; issue assigned to Mattia Panzeri. Open decisions D1–D4 await `plan-approval`.
 - 2026-11-04 — Approved: plan-approval — Approve with the proposed answers: D1 400 {"error":"invalid tag"}; D2 400 {"error":"invalid tag"}; D3 out of scope; D4 yes, update the README row. Nothing to defer or grant. class standard. Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review.
 - 2026-11-04 — Routed: implementation — standard (score 6; source user; binding inherit)
+- 2026-11-04 — Implementation: shared tag normalisation added.
