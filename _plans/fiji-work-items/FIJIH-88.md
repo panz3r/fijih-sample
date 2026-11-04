@@ -65,10 +65,10 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
   - [x] Add `tags: string[]` to `Bookmark` and optional `tags?: string[]` to `NewBookmark` in `packages/shared/src/index.ts`.
   - [x] Add a pure function that normalises a tags input: trim, validate (length ≤ 32, no whitespace, plus D1/D2 as decided), lower-case, de-duplicate keeping first occurrence; report an invalid tag so the API can answer `invalid tag`.
   - [x] Unit tests in `packages/shared/src/index.test.ts`: trimming, lower-casing, de-duplication across case and padding (`[" Work", "work "]` → `["work"]`), order kept, `undefined` → `[]`, 32 characters accepted, 33 rejected, inner whitespace rejected, D1 and D2 cases.
-- [ ] API: accept, store, and return tags (AC: 1, 2, 3, 5, 6)
-  - [ ] In `packages/api/src/store.ts`, normalise `input.tags` with the shared function in `BookmarkStore.add`, throw `ValidationError("invalid tag")` for an invalid tag before storing, and store `tags` on the bookmark.
-  - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` (widen the body type; validation stays in the store/shared function).
-  - [ ] Tests in `packages/api/src/app.test.ts` and/or `store.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET lists tags; an over-long tag and a tag with inner whitespace answer 400 `{"error":"invalid tag"}` and the list is unchanged; D1 and D2 cases.
+- [x] API: accept, store, and return tags (AC: 1, 2, 3, 5, 6)
+  - [x] In `packages/api/src/store.ts`, normalise `input.tags` with the shared function in `BookmarkStore.add`, throw `ValidationError("invalid tag")` for an invalid tag before storing, and store `tags` on the bookmark.
+  - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` (widen the body type; validation stays in the store/shared function).
+  - [x] Tests in `packages/api/src/app.test.ts` and/or `store.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET lists tags; an over-long tag and a tag with inner whitespace answer 400 `{"error":"invalid tag"}` and the list is unchanged; D1 and D2 cases.
 - [ ] Web: show tags after the title (AC: 4, 5)
   - [ ] In `packages/web/src/render.ts`, after the title link, render an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when the bookmark has at least one tag.
   - [ ] Keep the tags next to the title under the existing `li { display: flex; justify-content: space-between }` rule in `packages/web/index.html` (for example by grouping the link and the tags element, with a small gap before the tags).
@@ -114,12 +114,18 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
 Task 1 — Shared tag model and `normalizeTags`
 
 Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, and pure `normalizeTags(unknown): string[] | null` (trim, validate, lower-case, de-duplicate; null for D1/D2/invalid). Tests cover trimming, case, de-dup, order, default, 32/33, inner whitespace, empty, malformed. `pnpm --filter @sample/shared test`: 11 passed.
+Task 2 — API accepts, stores, and returns tags
+
+`BookmarkStore.add` normalises tags after the URL check and throws `ValidationError("invalid tag")`; `createApp` passes `body.tags` through. HTTP tests cover tags normalised, none -> `[]`, GET lists tags, 32 accepted, and 400 `{"error":"invalid tag"}` with nothing stored for too long, inner whitespace, empty (D1), non-array, null, and non-string (D2). `pnpm --filter @sample/api test`: 13 passed.
 
 ## Validation Evidence
 
@@ -133,3 +139,4 @@ Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, and pure `normaliz
 - 2026-11-04 — Approved: plan-approval — Approve with the proposed answers: D1 400 {"error":"invalid tag"}; D2 400 {"error":"invalid tag"}; D3 out of scope; D4 yes, update the README row. Nothing to defer or grant. class standard. Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review.
 - 2026-11-04 — Routed: implementation — standard (score 6; source user; binding inherit)
 - 2026-11-04 — Implementation: shared tag normalisation added.
+- 2026-11-04 — Implementation: API tags added.
