@@ -69,10 +69,10 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
   - [x] In `packages/api/src/store.ts`, normalise `input.tags` with the shared function in `BookmarkStore.add`, throw `ValidationError("invalid tag")` for an invalid tag before storing, and store `tags` on the bookmark.
   - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` (widen the body type; validation stays in the store/shared function).
   - [x] Tests in `packages/api/src/app.test.ts` and/or `store.test.ts`: POST with tags returns normalised tags; POST without tags returns `tags: []`; GET lists tags; an over-long tag and a tag with inner whitespace answer 400 `{"error":"invalid tag"}` and the list is unchanged; D1 and D2 cases.
-- [ ] Web: show tags after the title (AC: 4, 5)
-  - [ ] In `packages/web/src/render.ts`, after the title link, render an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when the bookmark has at least one tag.
-  - [ ] Keep the tags next to the title under the existing `li { display: flex; justify-content: space-between }` rule in `packages/web/index.html` (for example by grouping the link and the tags element, with a small gap before the tags).
-  - [ ] Tests in `packages/web/src/render.test.ts`: a bookmark with tags renders `work, reading` after the link; a bookmark with `tags: []` renders no tags element and the item text is unchanged; update existing fixtures for the new required `tags` field.
+- [x] Web: show tags after the title (AC: 4, 5)
+  - [x] In `packages/web/src/render.ts`, after the title link, render an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when the bookmark has at least one tag.
+  - [x] Keep the tags next to the title under the existing `li { display: flex; justify-content: space-between }` rule in `packages/web/index.html` (for example by grouping the link and the tags element, with a small gap before the tags).
+  - [x] Tests in `packages/web/src/render.test.ts`: a bookmark with tags renders `work, reading` after the link; a bookmark with `tags: []` renders no tags element and the item text is unchanged; update existing fixtures for the new required `tags` field.
 - [ ] Bundle size baseline (AC: 5)
   - [ ] Run `pnpm build` then `pnpm measure`; the web change moves the gzipped bundle, so set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change (AGENTS.md).
 - [ ] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
@@ -117,6 +117,9 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 - packages/api/src/store.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+- packages/web/index.html
 
 ## Implementation Record
 
@@ -126,6 +129,9 @@ Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, and pure `normaliz
 Task 2 — API accepts, stores, and returns tags
 
 `BookmarkStore.add` normalises tags after the URL check and throws `ValidationError("invalid tag")`; `createApp` passes `body.tags` through. HTTP tests cover tags normalised, none -> `[]`, GET lists tags, 32 accepted, and 400 `{"error":"invalid tag"}` with nothing stored for too long, inner whitespace, empty (D1), non-array, null, and non-string (D2). `pnpm --filter @sample/api test`: 13 passed.
+Task 3 — Web shows tags after the title
+
+`renderList` groups the link and an optional `<span class="tags">` (tags joined with ", ") in a `.title` span, only when tags exist; CSS adds a small gap. Tests cover tags after the link, no element for `[]`, and updated fixtures. `pnpm --filter @sample/web test`: 4 passed.
 
 ## Validation Evidence
 
@@ -140,3 +146,4 @@ Task 2 — API accepts, stores, and returns tags
 - 2026-11-04 — Routed: implementation — standard (score 6; source user; binding inherit)
 - 2026-11-04 — Implementation: shared tag normalisation added.
 - 2026-11-04 — Implementation: API tags added.
+- 2026-11-04 — Implementation: web tags display added.
