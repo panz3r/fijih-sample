@@ -8,16 +8,16 @@ source:
   revision: 2026-11-04T15:55:12.410+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 routing:
   class: standard
   source: user
   implementation_tier: standard
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-88-add-bookmark-tags
   base_branch: null
@@ -161,6 +161,32 @@ none found (README api row lists routes only; the shared row was updated by task
 
 ## Quality Gate
 
+Gate: `concerns` — every criterion is evidenced and every required validation passed; one `minor` finding remains as a follow-up.
+
+Reviewed head: 85801ab6555055ed079860e9ad5666f24d3baa24 (full branch diff against `main`; no re-entry, so the review is not scoped).
+
+Acceptance trace (validations re-run by this review at 85801ab: `pnpm test` exit 0 with shared 11, api 13, web 4 passed; `pnpm lint` exit 0; `pnpm typecheck` exit 0; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=895`, `web_bundle_gzip_delta=0`):
+
+- AC-1 — implementation: `normalizeTags` in `packages/shared/src/index.ts` (trim → validate → lower-case → de-duplicate keeping first position, `undefined` → `[]`); `BookmarkStore.add` in `packages/api/src/store.ts` stores the normalised `tags`; `createApp` in `packages/api/src/app.ts` passes `body.tags`. Verification: `packages/api/src/app.test.ts` "accepts tags, normalises them, and lists them" (`[" Work", "work ", "Reading"]` → `["work", "reading"]` in the 201 body) and "gives an empty tags list without tags"; shared `normalizeTags` tests for default, trim, lower-case, de-duplication and order.
+- AC-2 — implementation: `normalizeTags` returns `null` for a tag longer than 32 code points or containing `/\s/` after trimming; `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing, mapped to 400 by `createApp`. Verification: API `it.each` "rejects an invalid tag (too long / inner whitespace) and stores nothing" (400 `{"error":"invalid tag"}`, list unchanged) and "accepts a 32-character tag"; shared "accepts 32 characters and rejects 33" and "rejects a tag with inner whitespace".
+- AC-3 — implementation: `store.list()` returns stored bookmarks, each carrying the required `tags`. Verification: API tests assert the GET list holds `["work", "reading"]` and `[]`.
+- AC-4 — implementation: `renderList` in `packages/web/src/render.ts` appends `<span class="tags">` with `tags.join(", ")` after the link inside `.title`, only when tags exist; `.tags` margin in `packages/web/index.html`. Verification: `packages/web/src/render.test.ts` "shows tags after the title, joined with a comma" (`work, reading`, next sibling of the link) and "renders no tags element when the bookmark has no tags" (item text `ExampleRemove`).
+- AC-5 — Vitest tests in all three packages cover AC 1–4; `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 from the root (re-run at 85801ab).
+- AC-6 — D1 (empty after trimming) and D2 (non-array, `null`, non-string element) return 400 `{"error":"invalid tag"}` per the `plan-approval` decision; covered by shared "rejects an empty tag" / "rejects a malformed value" and the API `it.each` cases `empty`, `not an array`, `null`, `not a string`.
+- Bundle: 895 gzip bytes at 85801ab, matching `measure/baseline.json` (updated from 835 in the same change).
+
+Product decisions D1–D4 are consistent with the acceptance criteria. Stale-statement sweep (`Bookmark`, `NewBookmark`, `POST /bookmarks` body, `createdAt`, baseline `835`, list item markup, `tags`) across docs, scenarios, agent instructions, comments and test descriptions: none found (`README.md` shared row updated; the api row lists routes only).
+
+Findings:
+
+- `minor` — `packages/shared/src/index.ts` (`normalizeTags`, `out.includes(lower)`): de-duplication is quadratic in the number of distinct tags, and the issue sets no tag-count limit while `readJson` in `packages/api/src/app.ts` reads bodies of any size. Repro: a separate `createApp` server, `POST /bookmarks` with 100,000 distinct tags (888,946-byte body) answered 201 after 2.84 s, and a `GET /health` sent 0.3 s into it waited 2.54 s, so one sub-1 MB request stalls every other request; `normalizeTags` alone took 69 ms for 10,000, 1,461 ms for 50,000 and 6,549 ms for 100,000 tags. Follow-up: de-duplicate with a `Set` (and optionally cap the tag count or body size).
+
+Residual risks: none.
+
+Unmet required validations: none.
+
+Notes: none.
+
 ## Review Record
 
 ## Change Log
@@ -174,3 +200,5 @@ none found (README api row lists routes only; the shared row was updated by task
 - 2026-11-04 — Implementation: baseline updated to 895 bytes.
 - 2026-11-04 — Implementation: README row updated (D4).
 - 2026-11-04 — Implementation: all tasks complete; root checks pass; stale-statement sweep found nothing.
+- 2026-11-04 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-04 — Quality review: gate `concerns` at 85801ab; one minor finding (quadratic tag de-duplication).
