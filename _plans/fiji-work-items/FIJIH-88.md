@@ -73,8 +73,8 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
   - [x] In `packages/web/src/render.ts`, after the title link, render an element (for example `<span class="tags">`) whose text is the tags joined with `", "`, only when the bookmark has at least one tag.
   - [x] Keep the tags next to the title under the existing `li { display: flex; justify-content: space-between }` rule in `packages/web/index.html` (for example by grouping the link and the tags element, with a small gap before the tags).
   - [x] Tests in `packages/web/src/render.test.ts`: a bookmark with tags renders `work, reading` after the link; a bookmark with `tags: []` renders no tags element and the item text is unchanged; update existing fixtures for the new required `tags` field.
-- [ ] Bundle size baseline (AC: 5)
-  - [ ] Run `pnpm build` then `pnpm measure`; the web change moves the gzipped bundle, so set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change (AGENTS.md).
+- [x] Bundle size baseline (AC: 5)
+  - [x] Run `pnpm build` then `pnpm measure`; the web change moves the gzipped bundle, so set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change (AGENTS.md).
 - [ ] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
   - [ ] Add tag normalisation to the `packages/shared` row in `README.md`.
 - [ ] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` and record the output in Validation Evidence (AC: 5)
@@ -120,6 +120,7 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 - packages/web/index.html
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -132,6 +133,9 @@ Task 2 — API accepts, stores, and returns tags
 Task 3 — Web shows tags after the title
 
 `renderList` groups the link and an optional `<span class="tags">` (tags joined with ", ") in a `.title` span, only when tags exist; CSS adds a small gap. Tests cover tags after the link, no element for `[]`, and updated fixtures. `pnpm --filter @sample/web test`: 4 passed.
+Task 4 — Bundle size baseline
+
+`pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=895` (delta 60 from 835); baseline set to 895.
 
 ## Validation Evidence
 
@@ -147,3 +151,4 @@ Task 3 — Web shows tags after the title
 - 2026-11-04 — Implementation: shared tag normalisation added.
 - 2026-11-04 — Implementation: API tags added.
 - 2026-11-04 — Implementation: web tags display added.
+- 2026-11-04 — Implementation: baseline updated to 895 bytes.
