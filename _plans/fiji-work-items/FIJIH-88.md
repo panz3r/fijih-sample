@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 routing:
   class: standard
@@ -77,7 +77,7 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
   - [x] Run `pnpm build` then `pnpm measure`; the web change moves the gzipped bundle, so set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed value in the same change (AGENTS.md).
 - [x] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
   - [x] Add tag normalisation to the `packages/shared` row in `README.md`.
-- [ ] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` and record the output in Validation Evidence (AC: 5)
+- [x] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` and record the output in Validation Evidence (AC: 5)
 
 ## Engineering Context
 
@@ -140,8 +140,24 @@ Task 4 — Bundle size baseline
 Task 5 — README row
 
 Added "tag normalisation" to the `packages/shared` row, as D4 was approved.
+Task 6 — Root checks
+(checked at ba735f8)
+
+`pnpm test`: shared 11, api 13, web 4 passed. `pnpm lint`: exit 0. `pnpm typecheck`: exit 0. Per-package `pnpm lint packages/{shared,api,web}`: exit 0.
+
+Stale-statement sweep — `Bookmark`, `NewBookmark`, `POST /bookmarks`, `createdAt`, bundle baseline `835`, `tags`
+
+none found (README api row lists routes only; the shared row was updated by task 5; scenarios and `_plans` are historical).
 
 ## Validation Evidence
+
+- AC-1: passed — `packages/api/src/app.test.ts` "accepts tags, normalises them, and lists them" and "gives an empty tags list without tags"; shared `normalizeTags` tests.
+- AC-2: passed — API `it.each` rejects over-long (33) and inner-whitespace tags with 400 `{"error":"invalid tag"}`, nothing stored; 32 characters accepted.
+- AC-3: passed — API tests assert GET lists `tags` (`[]` when none).
+- AC-4: passed — `packages/web/src/render.test.ts`: `work, reading` after the link; no `.tags` element for `[]`.
+- AC-5: passed — `pnpm test` (shared 11, api 13, web 4), `pnpm lint`, `pnpm typecheck` all exit 0 at ba735f8.
+- AC-6: passed — D1 (empty) and D2 (non-array, null, non-string) answer 400 `invalid tag`, covered in shared and API tests.
+- Bundle: `pnpm build` then `pnpm measure`: 895 gzip bytes (baseline updated from 835).
 
 ## Quality Gate
 
@@ -157,3 +173,4 @@ Added "tag normalisation" to the `packages/shared` row, as D4 was approved.
 - 2026-11-04 — Implementation: web tags display added.
 - 2026-11-04 — Implementation: baseline updated to 895 bytes.
 - 2026-11-04 — Implementation: README row updated (D4).
+- 2026-11-04 — Implementation: all tasks complete; root checks pass; stale-statement sweep found nothing.
