@@ -8,16 +8,16 @@ source:
   revision: 2026-11-04T15:55:12.410+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 2
 routing:
   class: standard
   source: user
   implementation_tier: standard
 quality:
-  gate: concerns
+  gate: pass
 artifacts:
   branch: FIJIH-88-add-bookmark-tags
   base_branch: null
@@ -178,25 +178,32 @@ none found (the doc comment on `normalizeTags` stays true).
 
 ## Quality Gate
 
-Gate: `concerns` — every criterion is evidenced and every required validation passed; one `minor` finding remains as a follow-up.
+Gate: `pass` — every criterion is evidenced, every required validation passed, and no finding or residual risk remains.
 
-Reviewed head: 85801ab6555055ed079860e9ad5666f24d3baa24 (full branch diff against `main`; no re-entry, so the review is not scoped).
+Reviewed head: 307e30bda7852307effcb4bc198bffab17e1c129 (scoped review: the latest Change Log `Re-entry` is `user-request` (Re-entry 2), so the scope is the commits since the previous `Reviewed head` 85801ab — ab60fe7, 54646d0 and 2f9866e (work item only) and 307e30b (`packages/shared/src/index.ts`, `packages/shared/src/index.test.ts`) — plus AC-1 and AC-5, named by task 7's `(AC: 1, 5)` mapping; the AC-5 Validation Evidence line also changed. No `Scope change:` entry.)
 
-Acceptance trace (validations re-run by this review at 85801ab: `pnpm test` exit 0 with shared 11, api 13, web 4 passed; `pnpm lint` exit 0; `pnpm typecheck` exit 0; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=895`, `web_bundle_gzip_delta=0`):
+Validations re-run by this review at 307e30b: `pnpm test` exit 0 (shared 12, api 13, web 4 passed); `pnpm lint` exit 0; `pnpm typecheck` exit 0; `pnpm build` exit 0 then `pnpm measure` printed `web_bundle_gzip_bytes=895`, `web_bundle_gzip_delta=0` (matches `measure/baseline.json`).
 
-- AC-1 — implementation: `normalizeTags` in `packages/shared/src/index.ts` (trim → validate → lower-case → de-duplicate keeping first position, `undefined` → `[]`); `BookmarkStore.add` in `packages/api/src/store.ts` stores the normalised `tags`; `createApp` in `packages/api/src/app.ts` passes `body.tags`. Verification: `packages/api/src/app.test.ts` "accepts tags, normalises them, and lists them" (`[" Work", "work ", "Reading"]` → `["work", "reading"]` in the 201 body) and "gives an empty tags list without tags"; shared `normalizeTags` tests for default, trim, lower-case, de-duplication and order.
-- AC-2 — implementation: `normalizeTags` returns `null` for a tag longer than 32 code points or containing `/\s/` after trimming; `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing, mapped to 400 by `createApp`. Verification: API `it.each` "rejects an invalid tag (too long / inner whitespace) and stores nothing" (400 `{"error":"invalid tag"}`, list unchanged) and "accepts a 32-character tag"; shared "accepts 32 characters and rejects 33" and "rejects a tag with inner whitespace".
-- AC-3 — implementation: `store.list()` returns stored bookmarks, each carrying the required `tags`. Verification: API tests assert the GET list holds `["work", "reading"]` and `[]`.
-- AC-4 — implementation: `renderList` in `packages/web/src/render.ts` appends `<span class="tags">` with `tags.join(", ")` after the link inside `.title`, only when tags exist; `.tags` margin in `packages/web/index.html`. Verification: `packages/web/src/render.test.ts` "shows tags after the title, joined with a comma" (`work, reading`, next sibling of the link) and "renders no tags element when the bookmark has no tags" (item text `ExampleRemove`).
-- AC-5 — Vitest tests in all three packages cover AC 1–4; `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 from the root (re-run at 85801ab).
-- AC-6 — D1 (empty after trimming) and D2 (non-array, `null`, non-string element) return 400 `{"error":"invalid tag"}` per the `plan-approval` decision; covered by shared "rejects an empty tag" / "rejects a malformed value" and the API `it.each` cases `empty`, `not an array`, `null`, `not a string`.
-- Bundle: 895 gzip bytes at 85801ab, matching `measure/baseline.json` (updated from 835 in the same change).
+Acceptance trace, in scope:
 
-Product decisions D1–D4 are consistent with the acceptance criteria. Stale-statement sweep (`Bookmark`, `NewBookmark`, `POST /bookmarks` body, `createdAt`, baseline `835`, list item markup, `tags`) across docs, scenarios, agent instructions, comments and test descriptions: none found (`README.md` shared row updated; the api row lists routes only).
+- AC-1 — implementation: `normalizeTags` in `packages/shared/src/index.ts` now de-duplicates through a `Set` (`seen.add(lower)`, returns `[...seen]`); `Set` iteration follows insertion order, so the first occurrence keeps its position; trim, validation, lower-casing and `undefined` → `[]` are unchanged. `BookmarkStore.add` (`packages/api/src/store.ts`) and `createApp` (`packages/api/src/app.ts`) are unchanged since 85801ab. Verification at 307e30b: shared "de-duplicates across case and padding" (`[" Work", "work "]` → `["work"]`, `["b","a","B","c","a"]` → `["b","a","c"]`), new "de-duplicates a large input correctly and quickly" (50,000 distinct tags plus their upper-case repeats → the distinct list in order, under 1 s), and API "accepts tags, normalises them, and lists them" / "gives an empty tags list without tags".
+- AC-5 — Vitest tests in all three packages cover AC 1–4; `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 from the root, re-run by this review at 307e30b.
 
-Findings:
+Acceptance trace, carried forward (out of scope; traced from the current Validation Evidence lines, whose code and tests the reviewed commits do not change):
 
-- `minor` — `packages/shared/src/index.ts` (`normalizeTags`, `out.includes(lower)`): de-duplication is quadratic in the number of distinct tags, and the issue sets no tag-count limit while `readJson` in `packages/api/src/app.ts` reads bodies of any size. Repro: a separate `createApp` server, `POST /bookmarks` with 100,000 distinct tags (888,946-byte body) answered 201 after 2.84 s, and a `GET /health` sent 0.3 s into it waited 2.54 s, so one sub-1 MB request stalls every other request; `normalizeTags` alone took 69 ms for 10,000, 1,461 ms for 50,000 and 6,549 ms for 100,000 tags. Follow-up: de-duplicate with a `Set` (and optionally cap the tag count or body size).
+- AC-2 — passed: API `it.each` rejects over-long (33) and inner-whitespace tags with 400 `{"error":"invalid tag"}`, nothing stored; 32 characters accepted (re-run green at 307e30b).
+- AC-3 — passed: API tests assert GET lists `tags` (`[]` when none).
+- AC-4 — passed: `packages/web/src/render.test.ts` shows `work, reading` after the link; no `.tags` element for `[]`.
+- AC-6 — passed: D1 (empty) and D2 (non-array, `null`, non-string) answer 400 `invalid tag`, covered in shared and API tests.
+- Bundle: 895 gzip bytes at 307e30b, delta 0.
+
+Previous finding resolved: the `minor` quadratic de-duplication finding in `normalizeTags` (Reviewed head 85801ab) no longer reproduces at 307e30b. The same repro on a separate `createApp` server: `POST /bookmarks` with 100,000 distinct tags (888,940-byte body) answered 201 after 31 ms, and a `GET /health` sent 0.3 s into it answered in 7 ms; `normalizeTags` alone took 1.9 ms for 10,000, 6.2 ms for 50,000 and 13.4 ms for 100,000 tags (was 69 ms, 1,461 ms and 6,549 ms). The optional tag-count or body-size cap was not added; it was optional in the finding, and the issue sets no tag-count limit.
+
+Adversarial review of 307e30b: the doc comment on `normalizeTags` stays true; invalid inputs still return `null` before any result is built; the new test's 1 s bound has wide headroom (the whole shared suite ran its tests in 31 ms). Stale-statement sweep (`normalizeTags`, `includes`, de-duplication wording) across `README.md`, `scenarios/`, agent instructions, comments and test descriptions: none found.
+
+Carried forward from the previous review: no residual risks and no notes; its only finding is resolved above.
+
+Findings: none.
 
 Residual risks: none.
 
@@ -222,3 +229,5 @@ Notes: none.
 - 2026-11-04 — Finalize: checked tasks 1–6 and AC-1–AC-6 against commits 5fa0c28, d3c2a50, 6da6425, fbf0513, ba735f8 and the `(checked at ba735f8)` citation on task 6; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries of tasks 1–5 (routine reconciliation); File List already matched the branch diff. Set checkpoint `local-qa-review`, transition `qa-reviewed`. Follow-up: the quality gate minor finding (quadratic de-duplication in `normalizeTags`) is carried to the result for the local QA checkpoint.
 - 2026-11-04 — Re-entry 2: user-request — checkpoint `local-qa-review`, branch tip 54646d0, user decision: "Fix now: de-duplicate with a Set and add a test, then re-review." Appended one task for the quality gate minor finding.
 - 2026-11-04 — Implementation: re-entry 2 task done; `normalizeTags` de-duplicates with a Set, test added, all checks pass.
+- 2026-11-04 — Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-04 — Quality review: gate `pass` at 307e30b (scoped re-review after Re-entry 2); the quadratic de-duplication finding is resolved.
