@@ -7,11 +7,15 @@ source:
   key: FIJIH-88
   revision: 2026-11-04T15:55:12.410+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
+routing:
+  class: standard
+  source: user
+  implementation_tier: standard
 quality:
   gate: pending
 artifacts:
@@ -119,3 +123,5 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 ## Change Log
 
 - 2026-11-04 — Plan: drafted from FIJIH-88 revision `2026-11-04T15:55:12.410+0100`; issue assigned to Mattia Panzeri. Open decisions D1–D4 await `plan-approval`.
+- 2026-11-04 — Approved: plan-approval — Approve with the proposed answers: D1 400 {"error":"invalid tag"}; D2 400 {"error":"invalid tag"}; D3 out of scope; D4 yes, update the README row. Nothing to defer or grant. class standard. Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review.
+- 2026-11-04 — Routed: implementation — standard (score 6; source user; binding inherit)
