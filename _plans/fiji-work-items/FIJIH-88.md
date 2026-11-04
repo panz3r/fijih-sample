@@ -8,10 +8,10 @@ source:
   revision: 2026-11-04T15:55:12.410+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
+  phase: implementation
+  checkpoint: null
   transition: qa-reviewed
-  attempt: 1
+  attempt: 2
 routing:
   class: standard
   source: user
@@ -78,6 +78,10 @@ Open product decisions (asked under the Plan result's `risks`; each has a propos
 - [x] README (D4, only if the `plan-approval` decision accepts it) (AC: 5)
   - [x] Add tag normalisation to the `packages/shared` row in `README.md`.
 - [x] Run the root checks `pnpm test`, `pnpm lint`, `pnpm typecheck` and record the output in Validation Evidence (AC: 5)
+- [ ] De-duplicate tags with a `Set` in `normalizeTags` and add a test (re-entry 2; AC: 1, 5)
+  - [ ] In `packages/shared/src/index.ts`, replace `out.includes(lower)` with a `Set` lookup, keeping first-occurrence order.
+  - [ ] Add a Vitest test in `packages/shared/src/index.test.ts` that de-duplicates a large input (for example 50,000 distinct tags plus repeats) correctly and quickly.
+  - [ ] Run `pnpm test`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` then `pnpm measure` (baseline moves only if the bundle size does).
 
 ## Engineering Context
 
@@ -208,3 +212,4 @@ Notes: none.
 - 2026-11-04 — Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-04 — Quality review: gate `concerns` at 85801ab; one minor finding (quadratic tag de-duplication).
 - 2026-11-04 — Finalize: checked tasks 1–6 and AC-1–AC-6 against commits 5fa0c28, d3c2a50, 6da6425, fbf0513, ba735f8 and the `(checked at ba735f8)` citation on task 6; no discrepancies. Added `(commit <hash>)` lines to the Implementation Record entries of tasks 1–5 (routine reconciliation); File List already matched the branch diff. Set checkpoint `local-qa-review`, transition `qa-reviewed`. Follow-up: the quality gate minor finding (quadratic de-duplication in `normalizeTags`) is carried to the result for the local QA checkpoint.
+- 2026-11-04 — Re-entry 2: user-request — checkpoint `local-qa-review`, branch tip 54646d0, user decision: "Fix now: de-duplicate with a Set and add a test, then re-review." Appended one task for the quality gate minor finding.
