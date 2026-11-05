@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 routing:
   class: deep
@@ -22,7 +22,7 @@ artifacts:
   branch: FIJIH-103-add-tags-to-bookmarks
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/33
-  jira_context_comment_id: null
+  jira_context_comment_id: "10016"
 ---
 
 # Work Item FIJIH-103: Add tags to bookmarks
@@ -224,3 +224,5 @@ Task 4 done
 - Review requests: by the project's process — "Mark the pull request ready with no reviewers requested. The pull request author then runs the pre-review step `scripts/check-scenarios`. When it passes, the author requests review from the owning team's QA Engineer; when it fails, the author fixes it first."; next: the user (author) runs `scripts/check-scenarios`, then requests review from `duckyduff369` (QA Engineer, TEAMS.md)
 - Ready-for-review: pull request #33 marked ready (`gh pr ready`); Copilot review 5787343598 clean; CI on 9facfbb all pass. Note: GitHub shows `duckyduff369` as a requested reviewer, requested one second after the ready event under actor panz3r (not requested by FIJIₕ); left in place, to be confirmed by the user against the project process.
 - Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Grant Notify: when Copilot's review needs no change and every required check passes, mark the pull request ready without stopping at ready-for-review."; verified at 83668df9d45360cbd5ba019b6584f3b12ba3ecd1)
+- Approved: jira-handoff — Approve, post the comment as drafted.
+- Jira handoff recorded: comment 10016 posted on FIJIH-103 and read back with the marker first line and the drafted text.
