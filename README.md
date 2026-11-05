@@ -13,6 +13,10 @@ A deliberately small bookmarks application whose only job is to give [FIJIₕ](h
 | `scenarios/` | One note per FIJIₕ scenario: the Jira issue to create, the repository precondition, and the checkpoints to expect. |
 | `scripts/` | `seed-jira`, `reset`, and `review-as-qa` support the scenarios. |
 
+## Bookmark tags
+
+`POST /bookmarks` accepts an optional `tags` array of strings. Each tag is trimmed, lower-cased, and deduplicated, and the response and `GET /bookmarks` return the normalized `tags` (`[]` when omitted). A tag longer than 32 characters or containing whitespace is rejected with `400 {"error":"invalid tag"}` and nothing is stored. Tags cannot be filtered or edited yet.
+
 ## Develop
 
 Node 24 and pnpm 12 (`corepack enable` picks the pinned version).
