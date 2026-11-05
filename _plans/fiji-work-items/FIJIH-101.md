@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 routing:
   class: standard
@@ -231,3 +231,26 @@ Review remediation (2026-11-05): human review 5784956756 by duckyduff369 (APPROV
 - 2026-11-05: Ready for review: pull request #31 marked ready and review requested from duckyduff369 (QA Engineer, Bookmarks team per TEAMS.md); timeline review_requested at 2026-11-05T12:31:52Z. Required checks on 61b7e58 passed (test, lint, typecheck, measure, scenarios).
 - 2026-11-05: Review remediation: addressed review-body request 5784956756#1 with README tag limits (ce69839, pushed); no open findings.
 - 2026-11-05: Quality gate recorded (review-fix re-review): concerns (finding 1 carried forward; new minor finding: README tag rules omit blank, non-string, and non-array rejections) at 4239db2.
+
+Jira handoff draft:
+Tags for bookmarks are implemented and in review in pull request #31 (https://github.com/panz3r/fijih-sample/pull/31, `[FIJIH-101] Add tags to bookmarks`, ready for review, base `main`).
+
+Outcome
+- `POST /bookmarks` accepts an optional `tags` array; tags are trimmed, lower-cased, and deduplicated in first-occurrence order, and omitted tags are stored as `[]`. `GET /bookmarks` returns each bookmark's `tags`. The page shows tags after the title as `news, tech` and nothing when there are none. The add form has no tags input, so tags can only be set through the API (approved plan default).
+- Invalid tags answer `400 {"error":"invalid tag"}` and store nothing: a tag over 32 characters, a tag with whitespace, a blank tag, a non-string entry, or a `tags` value that is not an array.
+- Created `.changeset/add-tags-to-bookmarks.md` (minor for `@sample/shared`, `@sample/api`, `@sample/web`), added a "Bookmark tags" section to `README.md`, and raised `measure/baseline.json` `web_bundle_gzip_bytes` from 835 to 891 (the gzipped web bundle grew by 56 bytes).
+
+Validation
+- `pnpm test` (shared 8, api 8, web 4), `pnpm lint`, and `pnpm typecheck` pass from the repository root.
+- CI run 42028184473 (`ci`, on pull request head ce69839): jobs `test`, `lint`, `typecheck`, `measure`, and `scenarios` all succeeded.
+- Reviews: Copilot review 5784923435 (COMMENTED, no findings) and duckyduff369's approval (review 5784956756). Its one request, to mention the tag limits in the README, was fixed in ce69839 and answered on the pull request.
+
+Decisions
+- The length check runs after lower-casing, so the limit counts the normalized tag (approved plan question 5). Validation lives in a shared pure function, `normalizeTags` in `packages/shared/src/index.ts`, and `BookmarkStore.add` turns its `null` result into `ValidationError("invalid tag")`, which the existing handler already maps to the 400 body.
+
+Follow-ups and known limitations (the quality gate recorded both as minor; no follow-up issue is filed or linked to FIJIH-101 yet)
+- A tag whose lower-case form is longer than its trimmed form is measured after lower-casing, which differs from the acceptance criterion's "checked after trimming": `"a".repeat(31) + "İ"` (U+0130) is 32 characters after trimming but is rejected with 400. Fix by measuring before lower-casing, or amend the criterion and README to say the check follows lower-casing. Accepted as a follow-up at the local QA review.
+- The README "Bookmark tags" section names only the over-32-characters and whitespace rejections; it does not list blank tags, non-string entries, or a non-array `tags` value, which the API also rejects. Not yet fixed in the pull request.
+
+Remaining work
+- None operational: no configuration, secret, or workflow change is needed. Filtering, searching, and editing tags are out of scope in this issue.
