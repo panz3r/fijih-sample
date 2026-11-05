@@ -63,7 +63,7 @@ so that I can group my bookmarks.
 - [x] Show tags on the page in `packages/web/src/render.ts` (AC: 4, 5)
   - [x] After the title link, append an element (for example `<span class="tags">`) holding the tags joined by `", "` only when the bookmark has at least one tag (Open question 3).
   - [x] Update the fixture in `packages/web/src/render.test.ts` for the new required `tags` field and add tests: tags shown after the title, comma separated; no tags element and no extra text when `tags` is `[]`.
-- [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5).
+- [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5).
 - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in this change, per `AGENTS.md` (AC: 4).
 
 ## Engineering Context
@@ -139,6 +139,10 @@ Task 4 — web page shows tags after the title
 - `renderList` appends `<span class="tags">` with the tags joined by `", "` between the title link and Remove only when the bookmark has tags. Tests cover the shown tags after the title, no element for `tags: []`, and the updated fixture.
 - Focused: `pnpm --filter @sample/web test` 4 passed; `pnpm lint packages/web` and `pnpm --filter @sample/web typecheck` clean.
 
+Task 5 — root checks
+(checked at 899d31a)
+- `pnpm test`: shared 8, api 8, web 4 tests passed. `pnpm lint`: eslint clean. `pnpm typecheck`: shared, api, web tsc clean.
+
 ## Validation Evidence
 
 ## Quality Gate
@@ -154,3 +158,4 @@ Task 4 — web page shows tags after the title
 - 2026-11-05: Task 2 done: store keeps normalized tags.
 - 2026-11-05: Task 3 done: tags accepted and returned over HTTP.
 - 2026-11-05: Task 4 done: page renders tags.
+- 2026-11-05: Task 5 done: root test, lint, typecheck pass.
