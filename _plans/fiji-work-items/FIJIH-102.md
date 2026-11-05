@@ -5,7 +5,7 @@ workflow: fiji/orchestrate-development/v1
 source:
   provider: jira
   key: FIJIH-102
-  revision: 2026-11-05T15:02:12.721+0100
+  revision: 2026-11-05T15:11:00.116+0100
 lifecycle:
   status: active
   phase: automated-review
@@ -200,3 +200,6 @@ Copilot pass (review 5786298785 on 8e36bd3, 2026-11-05): one inline finding, no 
 - 2026-11-05: Approved: local-qa-review — Approve, accept both minor findings as follow-ups.
 - 2026-11-05: Delivery: added changeset `.changeset/add-tags-to-bookmarks.md` and pushed it; opened draft pull request #32 (https://github.com/panz3r/fijih-sample/pull/32) with label `enhancement`, base `main`, and requested a Copilot automated review (`review_requested` for Copilot on the timeline). Pull request stays draft; human reviewers not requested yet.
 - 2026-11-05: Copilot pass: 1 finding, deferred (repeats accepted Quality Gate finding 1); no fix commits; Copilot raised nothing else.
+- 2026-11-05: Late drift decision (ready-for-review): "Jira question 1: keep the 24-character limit as a follow-up."
+- 2026-11-05: Late drift adopted: New Jira comment 10014 (Mattia Panzeri) asks whether tags could be in a future CSV export; states no requirement for this change and no CSV export exists. Possible follow-up only.
+- 2026-11-05: Late drift kept: Acceptance criterion 2 tag length limit changed from 32 to 24 characters (Jira changelog 10395) — Jira description: "A tag longer than 24 characters or containing whitespace answers 400 with {\"error\":\"invalid tag\"}." Implementation, tests and the Open question 3 default stay at 32; the 24-character limit is a follow-up.
