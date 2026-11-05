@@ -7,11 +7,15 @@ source:
   key: FIJIH-102
   revision: 2026-11-05T15:02:12.721+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
+routing:
+  class: standard
+  source: rubric
+  implementation_tier: standard
 quality:
   gate: pending
 artifacts:
@@ -115,3 +119,5 @@ None — this change needs no configuration outside the repository added, change
 ## Change Log
 
 - 2026-11-05: Plan drafted from FIJIH-102 at revision `2026-11-05T15:02:12.721+0100`. Issue assigned to the current user.
+- 2026-11-05: Approved: plan-approval — Approve with the proposed defaults for all six questions. Nothing to defer or grant. (answering: planned-check question: the plan has no manual, live-app or end-to-end check tasks) (answering: outside-write question: the plan names no writes outside the repository)
+- 2026-11-05: Routed: implementation — standard (score 4; source rubric; binding inherit; signals tasks 5, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work true, figma false, open_risks 0, plan_estimate standard, recorded_floor null)
