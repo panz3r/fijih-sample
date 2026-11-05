@@ -67,9 +67,9 @@ so that I can group my bookmarks.
   - [x] In `packages/api/src/store.ts` `add`, call `normalizeTags(input.tags)` and throw `ValidationError("invalid tag")` on `null`, after the existing title and URL checks and before the bookmark is stored; save the normalised `tags` on the bookmark.
   - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` unchanged (the body type gains `tags?: unknown`).
   - [x] Vitest cases in `packages/api/src/store.test.ts` (default `[]`, normalisation, rejection leaves the list unchanged) and `packages/api/src/app.test.ts` (201 body with normalised tags, `GET /bookmarks` returns them, 400 `{"error":"invalid tag"}` for a 33-character tag, a tag with inner whitespace, and a non-array `tags`).
-- [ ] Render tags on the web page in `packages/web/src/render.ts` (AC: 6)
-  - [ ] When `bookmark.tags.length > 0`, append after the link a `<span class="tags">` whose `textContent` is `tags.join(", ")`; render nothing extra when the list is empty. Use `textContent`, never `innerHTML`.
-  - [ ] Vitest cases in `packages/web/src/render.test.ts`: tags shown after the title and before Remove, joined by `", "`; no `.tags` element for an empty list. Add `tags` to the existing fixture so it type-checks.
+- [x] Render tags on the web page in `packages/web/src/render.ts` (AC: 6)
+  - [x] When `bookmark.tags.length > 0`, append after the link a `<span class="tags">` whose `textContent` is `tags.join(", ")`; render nothing extra when the list is empty. Use `textContent`, never `innerHTML`.
+  - [x] Vitest cases in `packages/web/src/render.test.ts`: tags shown after the title and before Remove, joined by `", "`; no `.tags` element for an empty list. Add `tags` to the existing fixture so it type-checks.
 - [ ] Run the root checks `pnpm test`, `pnpm lint`, and `pnpm typecheck` and fix what they report (AC: 7)
 - [ ] Run `pnpm build` then `pnpm measure`, and set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` when the delta is not 0, in the same change (AC: 8)
 
@@ -117,6 +117,8 @@ None — this change needs no configuration outside the repository added, change
 - `packages/api/src/app.ts`
 - `packages/api/src/store.test.ts`
 - `packages/api/src/app.test.ts`
+- `packages/web/src/render.ts`
+- `packages/web/src/render.test.ts`
 
 ## Implementation Record
 
@@ -124,6 +126,8 @@ Task 1 — shared tags model and normalizeTags
 Added `tags: string[]` to `Bookmark`, `tags?: unknown` to `NewBookmark`, `MAX_TAG_LENGTH = 32`, and `normalizeTags` with 7 Vitest cases. Shared test (11 passed), typecheck, and lint pass.
 Task 2 — API stores and validates tags
 `BookmarkStore.add` normalises tags after title/URL/duplicate checks and throws `ValidationError("invalid tag")`; `POST /bookmarks` forwards `body.tags`. API test (19 passed), typecheck, and lint pass.
+Task 3 — web page renders tags
+`renderList` appends a `span.tags` (textContent `tags.join(", ")`) between the title link and Remove when tags exist. Web test (4 passed), typecheck, and lint pass.
 
 ## Validation Evidence
 
