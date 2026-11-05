@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 routing:
   class: deep
@@ -22,7 +22,7 @@ artifacts:
   branch: FIJIH-100-add-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/30
-  jira_context_comment_id: null
+  jira_context_comment_id: "10012"
 ---
 
 # Work Item FIJIH-100: Add tags to bookmarks
@@ -205,3 +205,5 @@ Out of scope per the issue and not done: filtering or searching by tag, and edit
 - Delivered: automated-review — draft pull request #30 opened (https://github.com/panz3r/fijih-sample/pull/30) with changeset commit 2c83e21 pushed; Copilot review requested. No (verify: ci) criteria in this work item.
 - Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review."; verified at 9202a01f770a065c91aad2498c10e8302482e883)
 - Ready for review: pull request #30 marked ready and review requested from duckyduff369 (QA Engineer; the only team member besides the author panz3r). Copilot review 5783865284 needed no change; required check `test` passed on 2c83e21.
+- Approved: jira-handoff — Approve, post the comment as drafted.
+- Recorded: jira-handoff — Jira comment 10012 posted on FIJIH-100 with marker FIJI-CONTEXT:FIJIH-100:fiji/orchestrate-development/v1; read back matches the drafted text.
