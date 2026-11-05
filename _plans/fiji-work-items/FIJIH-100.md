@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T11:53:51.680+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 routing:
   class: deep
@@ -21,7 +21,7 @@ quality:
 artifacts:
   branch: FIJIH-100-add-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/30
   jira_context_comment_id: null
 ---
 
@@ -188,3 +188,5 @@ Reviewed head: f0875c43475fa081a54239c2e2ce2e16fb00b53f
 - Routed: implementation — deep (score 5; source rubric; binding inherit)
 - Approved: implementation-approval — automatic (no risk triggers)
 - Reconciled: finalize — commit citations added to the Implementation Record entries of Tasks 1, 2, 3, and 5 (their own commits 597cf74, bffe1e6, a6087da, e2b4ad8); File List matches the branch diff; no task or evidence discrepancies; checkpoint local-qa-review.
+- Approved: local-qa-review — Approve, accept the İ length finding as a follow-up.
+- Delivered: automated-review — draft pull request #30 opened (https://github.com/panz3r/fijih-sample/pull/30) with changeset commit 2c83e21 pushed; Copilot review requested. No (verify: ci) criteria in this work item.
