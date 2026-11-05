@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 routing:
   class: deep
@@ -135,7 +135,19 @@ Task 4 — root checks
 Task 5 — bundle baseline
 `pnpm build && pnpm measure` printed web_bundle_gzip_bytes=881 (delta 46 against 835); baseline set to 881, re-measure prints delta 0.
 
+Stale-statement sweep — Bookmark shape, NewBookmark, POST /bookmarks, renderList, web_bundle_gzip_bytes, createdAt
+none found (README.md route list is still accurate).
+
 ## Validation Evidence
+
+AC-1: passed — api store.test.ts and app.test.ts default `tags: []`.
+AC-2: passed — shared normalizeTags and api tests: `[" Work ", "work", "Read"]` gives `["work","read"]`.
+AC-3: passed — shared, store, and app tests: 33 characters and inner whitespace give 400 `invalid tag`; 32 accepted.
+AC-4: passed — non-array, null, number entry, and empty-after-trim give 400 `invalid tag`.
+AC-5: passed — app.test.ts GET /bookmarks returns tags.
+AC-6: passed — web render.test.ts: order A, SPAN, BUTTON, text `work, read`; no `.tags` when empty.
+AC-7: passed — root `pnpm test`, `pnpm lint`, `pnpm typecheck` exit 0 at e2b4ad8.
+AC-8: passed — `pnpm measure` prints web_bundle_gzip_bytes=881, web_bundle_gzip_delta=0.
 
 ## Quality Gate
 
