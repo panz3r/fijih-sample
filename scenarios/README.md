@@ -42,4 +42,5 @@ Install the FIJIₕ build under test from a local checkout so the sample follows
 | [S19](S19.md) | Model routing shadow report and retrospective | `AI-MODELS.md` present |
 | [S20](S20.md) | Held work-item-only pushes | baseline |
 | [S21](S21.md) | Post-cleanup reverification watches a running check | baseline + repository variable `CI_DELAY_SECONDS` |
+| [S22](S22.md) | Source drift after Local QA review | baseline |
 <!-- catalogue:end -->
