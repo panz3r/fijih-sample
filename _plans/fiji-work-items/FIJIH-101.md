@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 routing:
   class: standard
@@ -126,18 +126,22 @@ None — this change needs no configuration outside the repository added, change
 ## Implementation Record
 
 Task 1 — shared tag model and `normalizeTags`
+(commit ae152ad)
 - Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, `MAX_TAG_LENGTH = 32`, and `normalizeTags` (defaults `[]`, trim, lower-case, dedup in first-occurrence order, `null` for non-array, non-string, blank, over 32 code points, or whitespace-containing entries).
 - Focused: `pnpm --filter @sample/shared test` 8 passed; `pnpm lint packages/shared` clean; `pnpm --filter @sample/shared typecheck` clean. Root typecheck of the dependents is covered by tasks 2-4.
 
 Task 2 — `BookmarkStore.add` normalizes and stores tags
+(commit 53e64aa)
 - After the title and URL checks and before the duplicate-URL check, `normalizeTags(input.tags)`; `null` throws `ValidationError("invalid tag")`; normalized tags are stored on the bookmark.
 - Focused: `pnpm --filter @sample/api test` 8 passed; `pnpm lint packages/api` and `pnpm --filter @sample/api typecheck` clean.
 
 Task 3 — `POST /bookmarks` passes `tags` to the store
+(commit 35c1f0b)
 - The handler passes `body.tags` through unchanged; `GET /bookmarks` returns stored tags as before. Tests cover 201 with normalized tags, default `[]`, 400 `{"error":"invalid tag"}` for a 33-character tag and inner whitespace with the list unchanged, and the GET list.
 - Focused: `pnpm --filter @sample/api test` 8 passed; `pnpm lint packages/api` and `pnpm --filter @sample/api typecheck` clean.
 
 Task 4 — web page shows tags after the title
+(commit 899d31a)
 - `renderList` appends `<span class="tags">` with the tags joined by `", "` between the title link and Remove only when the bookmark has tags. Tests cover the shown tags after the title, no element for `tags: []`, and the updated fixture.
 - Focused: `pnpm --filter @sample/web test` 4 passed; `pnpm lint packages/web` and `pnpm --filter @sample/web typecheck` clean.
 
@@ -146,6 +150,7 @@ Task 5 — root checks
 - `pnpm test`: shared 8, api 8, web 4 tests passed. `pnpm lint`: eslint clean. `pnpm typecheck`: shared, api, web tsc clean.
 
 Task 6 — bundle size baseline
+(commit 6f9843b)
 - `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=891`, `web_bundle_gzip_delta=56` against the 835 baseline; `measure/baseline.json` `web_bundle_gzip_bytes` updated to 891. Re-measured after the update: `web_bundle_gzip_delta=0`.
 
 Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `GET /bookmarks`, `web_bundle_gzip_bytes`/835 baseline, "invalid tag"
@@ -199,3 +204,4 @@ Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
 - 2026-11-05: Stale-statement sweep: none found.
 - 2026-11-05: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-05: Quality gate recorded: concerns (one minor finding: tag length checked after lower-casing) at 6f9843b.
+- 2026-11-05: Finalize: every task and acceptance criterion has committed evidence; added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1, 2, 3, 4, and 6; File List already covers the branch diff; no bookkeeping slips found. Quality gate finding 1 left open for the Local QA review checkpoint.
