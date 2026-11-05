@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 routing:
   class: deep
@@ -181,6 +181,8 @@ Notes: none.
 Reviewed head: f0875c43475fa081a54239c2e2ce2e16fb00b53f
 
 ## Review Record
+
+- Copilot pass: review 5783865284 (COMMENTED, on head 2c83e21) raised no findings and no review threads; no fixes, no replies needed. Accepted follow-up (İ length finding, local-qa-review) stays a follow-up not filed yet.
 
 ## Change Log
 
