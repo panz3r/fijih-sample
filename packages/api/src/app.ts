@@ -20,8 +20,8 @@ export function createApp(store = new BookmarkStore()): Server {
       if (req.method === "GET" && url.pathname === "/health") return send(res, 200, { ok: true });
       if (req.method === "GET" && url.pathname === "/bookmarks") return send(res, 200, store.list());
       if (req.method === "POST" && url.pathname === "/bookmarks") {
-        const body = (await readJson(req)) as { url?: string; title?: string };
-        return send(res, 201, store.add({ url: body.url ?? "", title: body.title ?? "" }));
+        const body = (await readJson(req)) as { url?: string; title?: string; tags?: unknown };
+        return send(res, 201, store.add({ url: body.url ?? "", title: body.title ?? "", tags: body.tags as string[] | undefined }));
       }
       const match = url.pathname.match(/^\/bookmarks\/([^/]+)$/);
       if (req.method === "DELETE" && match) return send(res, store.remove(match[1]) ? 204 : 404);

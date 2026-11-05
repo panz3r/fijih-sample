@@ -57,9 +57,9 @@ so that I can group my bookmarks.
 - [x] Store tags in `packages/api/src/store.ts` (AC: 1, 2, 3, 5)
   - [x] In `BookmarkStore.add`, after the existing title and URL checks and before the duplicate-URL check, normalize `input.tags` with `normalizeTags`; throw `ValidationError("invalid tag")` on `null`; store the normalized tags on the bookmark.
   - [x] Cover it in `packages/api/src/store.test.ts`: stored tags are normalized, default `[]`, an invalid tag throws and leaves `list()` unchanged.
-- [ ] Accept and return tags over HTTP in `packages/api/src/app.ts` (AC: 1, 2, 3, 5)
-  - [ ] Pass the request body's `tags` through to `store.add` unchanged (validation lives in the store and shared).
-  - [ ] Cover it in `packages/api/src/app.test.ts`: `POST` with tags returns `201` and normalized tags; `POST` without tags returns `tags: []`; a 33-character tag and a tag with inner whitespace each answer `400` `{"error":"invalid tag"}`; `GET /bookmarks` returns each bookmark's tags.
+- [x] Accept and return tags over HTTP in `packages/api/src/app.ts` (AC: 1, 2, 3, 5)
+  - [x] Pass the request body's `tags` through to `store.add` unchanged (validation lives in the store and shared).
+  - [x] Cover it in `packages/api/src/app.test.ts`: `POST` with tags returns `201` and normalized tags; `POST` without tags returns `tags: []`; a 33-character tag and a tag with inner whitespace each answer `400` `{"error":"invalid tag"}`; `GET /bookmarks` returns each bookmark's tags.
 - [ ] Show tags on the page in `packages/web/src/render.ts` (AC: 4, 5)
   - [ ] After the title link, append an element (for example `<span class="tags">`) holding the tags joined by `", "` only when the bookmark has at least one tag (Open question 3).
   - [ ] Update the fixture in `packages/web/src/render.test.ts` for the new required `tags` field and add tests: tags shown after the title, comma separated; no tags element and no extra text when `tags` is `[]`.
@@ -109,6 +109,9 @@ None — this change needs no configuration outside the repository added, change
 
 ## File List
 
+- packages/api/src/app.ts
+- packages/api/src/app.test.ts
+
 - packages/api/src/store.ts
 - packages/api/src/store.test.ts
 
@@ -125,6 +128,10 @@ Task 2 — `BookmarkStore.add` normalizes and stores tags
 - After the title and URL checks and before the duplicate-URL check, `normalizeTags(input.tags)`; `null` throws `ValidationError("invalid tag")`; normalized tags are stored on the bookmark.
 - Focused: `pnpm --filter @sample/api test` 8 passed; `pnpm lint packages/api` and `pnpm --filter @sample/api typecheck` clean.
 
+Task 3 — `POST /bookmarks` passes `tags` to the store
+- The handler passes `body.tags` through unchanged; `GET /bookmarks` returns stored tags as before. Tests cover 201 with normalized tags, default `[]`, 400 `{"error":"invalid tag"}` for a 33-character tag and inner whitespace with the list unchanged, and the GET list.
+- Focused: `pnpm --filter @sample/api test` 8 passed; `pnpm lint packages/api` and `pnpm --filter @sample/api typecheck` clean.
+
 ## Validation Evidence
 
 ## Quality Gate
@@ -138,3 +145,4 @@ Task 2 — `BookmarkStore.add` normalizes and stores tags
 - 2026-11-05: Routed: implementation — standard (score 2; source rubric; binding inherit; signals tasks 6, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work false, figma false, open_risks 0, plan_estimate light, recorded_floor null)
 - 2026-11-05: Task 1 done: shared `normalizeTags` and tag types.
 - 2026-11-05: Task 2 done: store keeps normalized tags.
+- 2026-11-05: Task 3 done: tags accepted and returned over HTTP.
