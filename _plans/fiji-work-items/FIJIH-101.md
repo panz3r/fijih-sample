@@ -50,10 +50,10 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Shared tag model and normalization in `packages/shared/src/index.ts` (AC: 1, 2, 5)
-  - [ ] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`.
-  - [ ] Add `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(value: unknown): string[] | null` that returns `[]` for `undefined`, the trimmed, lower-cased, deduplicated tags in first-occurrence order for a valid array, and `null` when any entry is invalid (Open questions 1, 2, 5).
-  - [ ] Cover it in `packages/shared/src/index.test.ts`: default `[]`, trim, lower-case, dedup after normalization (`" News"` and `"news"` collapse), order, 32 characters accepted, 33 rejected, inner whitespace rejected, and the invalid shapes from Open question 1.
+- [x] Shared tag model and normalization in `packages/shared/src/index.ts` (AC: 1, 2, 5)
+  - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags?: readonly string[]` to `NewBookmark`.
+  - [x] Add `MAX_TAG_LENGTH = 32` and a pure `normalizeTags(value: unknown): string[] | null` that returns `[]` for `undefined`, the trimmed, lower-cased, deduplicated tags in first-occurrence order for a valid array, and `null` when any entry is invalid (Open questions 1, 2, 5).
+  - [x] Cover it in `packages/shared/src/index.test.ts`: default `[]`, trim, lower-case, dedup after normalization (`" News"` and `"news"` collapse), order, 32 characters accepted, 33 rejected, inner whitespace rejected, and the invalid shapes from Open question 1.
 - [ ] Store tags in `packages/api/src/store.ts` (AC: 1, 2, 3, 5)
   - [ ] In `BookmarkStore.add`, after the existing title and URL checks and before the duplicate-URL check, normalize `input.tags` with `normalizeTags`; throw `ValidationError("invalid tag")` on `null`; store the normalized tags on the bookmark.
   - [ ] Cover it in `packages/api/src/store.test.ts`: stored tags are normalized, default `[]`, an invalid tag throws and leaves `list()` unchanged.
@@ -109,7 +109,14 @@ None — this change needs no configuration outside the repository added, change
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
+
+Task 1 — shared tag model and `normalizeTags`
+- Added `tags` to `Bookmark`, optional `tags` to `NewBookmark`, `MAX_TAG_LENGTH = 32`, and `normalizeTags` (defaults `[]`, trim, lower-case, dedup in first-occurrence order, `null` for non-array, non-string, blank, over 32 code points, or whitespace-containing entries).
+- Focused: `pnpm --filter @sample/shared test` 8 passed; `pnpm lint packages/shared` clean; `pnpm --filter @sample/shared typecheck` clean. Root typecheck of the dependents is covered by tasks 2-4.
 
 ## Validation Evidence
 
@@ -122,3 +129,4 @@ None — this change needs no configuration outside the repository added, change
 - 2026-11-05: Plan drafted from Jira FIJIH-101 at revision 2026-11-05T13:19:02.567+0100; issue assigned to Mattia Panzeri.
 - 2026-11-05: Approved: plan-approval — Approve with the proposed defaults for all five questions. Nothing to defer or grant. Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review. Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review. (answering: planned-check question) (answering: outside-write question)
 - 2026-11-05: Routed: implementation — standard (score 2; source rubric; binding inherit; signals tasks 6, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work false, figma false, open_risks 0, plan_estimate light, recorded_floor null)
+- 2026-11-05: Task 1 done: shared `normalizeTags` and tag types.
