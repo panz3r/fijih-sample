@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 routing:
   class: standard
@@ -190,6 +190,8 @@ Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
 
 ## Review Record
 
+Copilot pass (2026-11-05): Copilot review 5784923435 (submitted 2026-11-05T12:29:58Z on head 61b7e58) is a COMMENTED overview recommending approval with no open issues. It has no review threads and no requests or questions to answer, so there are no findings, fixes, replies, or resolutions. The İ (U+0130) length finding stays deferred to a follow-up, per the local-qa-review approval (follow-up not filed yet).
+
 ## Change Log
 
 - 2026-11-05: Plan drafted from Jira FIJIH-101 at revision 2026-11-05T13:19:02.567+0100; issue assigned to Mattia Panzeri.
@@ -207,3 +209,4 @@ Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
 - 2026-11-05: Approved: local-qa-review — Approve, accept the İ length finding as a follow-up.
 - 2026-11-05: Delivery: changeset `.changeset/add-tags-to-bookmarks.md` added (commit 61b7e58, minor for @sample/shared, @sample/api, @sample/web); branch pushed; draft pull request #31 created (title `[FIJIH-101] Add tags to bookmarks`, label enhancement, assignee panz3r, base main); Copilot review requested (timeline review_requested event at 2026-11-05T12:28:14Z). Human review not requested: ready-for-review is not approved yet.
 - 2026-11-05: Finalize: every task and acceptance criterion has committed evidence; added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1, 2, 3, 4, and 6; File List already covers the branch diff; no bookkeeping slips found. Quality gate finding 1 left open for the Local QA review checkpoint.
+- 2026-11-05: Copilot pass: Copilot review 5784923435 on head 61b7e58 raised no findings; no fixes. Checkpoint ready-for-review.
