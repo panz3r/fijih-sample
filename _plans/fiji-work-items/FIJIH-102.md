@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 routing:
   class: standard
@@ -22,7 +22,7 @@ artifacts:
   branch: FIJIH-102-add-bookmark-tags
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/32
-  jira_context_comment_id: null
+  jira_context_comment_id: "10015"
 ---
 
 # Work Item FIJIH-102: Add tags to bookmarks
@@ -220,3 +220,5 @@ Residual risks: none. Operational or documentation steps: none.
 - 2026-11-05: Late drift kept: Acceptance criterion 2 tag length limit changed from 32 to 24 characters (Jira changelog 10395) — Jira description: "A tag longer than 24 characters or containing whitespace answers 400 with {\"error\":\"invalid tag\"}." Implementation, tests and the Open question 3 default stay at 32; the 24-character limit is a follow-up.
 - 2026-11-05: Approved: ready-for-review — Approve. Jira question 1: keep the 24-character limit as a follow-up.
 - 2026-11-05: Ready for review: pull request #32 marked ready; review requested from `duckyduff369` (QA Engineer, Bookmarks team; the author `panz3r` excluded). Copilot thread resolved before the request. Commits 18788e5, ca2fdff, 29fc61c and this commit are work-item-only and held locally.
+- 2026-11-05: Approved: jira-handoff — Approve, post the comment as drafted.
+- 2026-11-05: Jira handoff recorded: comment 10015 posted on FIJIH-102 (marker `FIJI-CONTEXT:FIJIH-102:fiji/orchestrate-development/v1`) and read back; the Jira copy matches the approved text (Markdown bullets rendered as `*`). Work-item-only commit held locally.
