@@ -7,11 +7,15 @@ source:
   key: FIJIH-103
   revision: 2026-11-05T16:10:06.551+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
+routing:
+  class: deep
+  source: rubric
+  implementation_tier: deep
 quality:
   gate: pending
 artifacts:
@@ -134,3 +138,6 @@ None — this change needs no configuration outside the repository added, change
 ## Review Record
 
 ## Change Log
+
+- Approved: plan-approval — Approve with the proposed defaults for all four questions. Nothing to defer or grant. Grant Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review. Grant Notify: when Copilot's review needs no change and every required check passes, mark the pull request ready without stopping at ready-for-review. (answering: Planned-check question) (answering: Outside-write question)
+- Routed: implementation — deep (score 5; source rubric; binding inherit; signals 6 tasks, 8 criteria, 0 CI-measured, integration_or_migration_work true, no operational requirements, no Figma, 0 open risks, Plan estimate standard, no recorded floor)
