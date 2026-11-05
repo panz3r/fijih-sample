@@ -59,10 +59,10 @@ so that I can group related bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] 1. Shared tag model and normalization in `packages/shared/src/index.ts` (AC: 1, 2, 3, 4, 7)
-  - [ ] 1.1 Add `tags: string[]` to `Bookmark`, and an optional `tags` input to `NewBookmark` (typed so the store can pass an unvalidated request value through).
-  - [ ] 1.2 Add a pure `normalizeTags(value: unknown): string[] | null`: `undefined` gives `[]`; a non-array or a non-string element gives `null`; otherwise trim and lower-case (`toLowerCase()`) each tag, give `null` when any result is empty, longer than 32 code points, or contains whitespace (`/\s/`), and drop later duplicates keeping input order.
-  - [ ] 1.3 Add Vitest cases in `packages/shared/src/index.test.ts`: default `[]`, trim plus lower-case plus dedupe order, exactly 32 accepted, 33 rejected, inner whitespace rejected, empty after trim rejected, non-array and non-string element rejected, input not mutated.
+- [x] 1. Shared tag model and normalization in `packages/shared/src/index.ts` (AC: 1, 2, 3, 4, 7)
+  - [x] 1.1 Add `tags: string[]` to `Bookmark`, and an optional `tags` input to `NewBookmark` (typed so the store can pass an unvalidated request value through).
+  - [x] 1.2 Add a pure `normalizeTags(value: unknown): string[] | null`: `undefined` gives `[]`; a non-array or a non-string element gives `null`; otherwise trim and lower-case (`toLowerCase()`) each tag, give `null` when any result is empty, longer than 32 code points, or contains whitespace (`/\s/`), and drop later duplicates keeping input order.
+  - [x] 1.3 Add Vitest cases in `packages/shared/src/index.test.ts`: default `[]`, trim plus lower-case plus dedupe order, exactly 32 accepted, 33 rejected, inner whitespace rejected, empty after trim rejected, non-array and non-string element rejected, input not mutated.
 - [ ] 2. Store validation in `packages/api/src/store.ts` (AC: 1, 2, 3, 4, 5, 7)
   - [ ] 2.1 In `BookmarkStore.add`, call `normalizeTags(input.tags)`; on `null` throw `ValidationError("invalid tag")` before anything is stored; save the normalized list on the bookmark.
   - [ ] 2.2 Add Vitest cases in `packages/api/src/store.test.ts`: default `[]`, normalized tags listed by `list()`, and an invalid tag throws `ValidationError` with message `invalid tag` and leaves the store unchanged.
@@ -128,8 +128,11 @@ None — this change needs no configuration outside the repository added, change
 - Other repositories: none are touched.
 
 ## File List
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
 
 ## Implementation Record
+Task 1 — add Bookmark.tags and normalizeTags with shared tests (shared test, lint, typecheck pass; 10 tests)
 
 ## Validation Evidence
 
@@ -141,3 +144,4 @@ None — this change needs no configuration outside the repository added, change
 
 - Approved: plan-approval — Approve with the proposed defaults for all four questions. Nothing to defer or grant. Grant Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review. Grant Notify: when Copilot's review needs no change and every required check passes, mark the pull request ready without stopping at ready-for-review. (answering: Planned-check question) (answering: Outside-write question)
 - Routed: implementation — deep (score 5; source rubric; binding inherit; signals 6 tasks, 8 criteria, 0 CI-measured, integration_or_migration_work true, no operational requirements, no Figma, 0 open risks, Plan estimate standard, no recorded floor)
+Task 1 done
