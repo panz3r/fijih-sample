@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T13:19:02.567+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 routing:
   class: standard
@@ -210,3 +210,5 @@ Copilot pass (2026-11-05): Copilot review 5784923435 (submitted 2026-11-05T12:29
 - 2026-11-05: Delivery: changeset `.changeset/add-tags-to-bookmarks.md` added (commit 61b7e58, minor for @sample/shared, @sample/api, @sample/web); branch pushed; draft pull request #31 created (title `[FIJIH-101] Add tags to bookmarks`, label enhancement, assignee panz3r, base main); Copilot review requested (timeline review_requested event at 2026-11-05T12:28:14Z). Human review not requested: ready-for-review is not approved yet.
 - 2026-11-05: Finalize: every task and acceptance criterion has committed evidence; added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1, 2, 3, 4, and 6; File List already covers the branch diff; no bookkeeping slips found. Quality gate finding 1 left open for the Local QA review checkpoint.
 - 2026-11-05: Copilot pass: Copilot review 5784923435 on head 61b7e58 raised no findings; no fixes. Checkpoint ready-for-review.
+- 2026-11-05: Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review."; verified at 4fe4c7684d820e366eb60cf914b23d7dc21b5e84)
+- 2026-11-05: Ready for review: pull request #31 marked ready and review requested from duckyduff369 (QA Engineer, Bookmarks team per TEAMS.md); timeline review_requested at 2026-11-05T12:31:52Z. Required checks on 61b7e58 passed (test, lint, typecheck, measure, scenarios).
