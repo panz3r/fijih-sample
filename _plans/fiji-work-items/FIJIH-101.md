@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: jira-handoff
-  transition: handoff-drafted
+  checkpoint: null
+  transition: handoff-recorded
   attempt: 1
 routing:
   class: standard
@@ -22,7 +22,7 @@ artifacts:
   branch: FIJIH-101-add-tags-to-bookmarks
   base_branch: null
   pull_request: https://github.com/panz3r/fijih-sample/pull/31
-  jira_context_comment_id: null
+  jira_context_comment_id: "10013"
 ---
 
 # Work Item FIJIH-101: Add tags to bookmarks
@@ -231,6 +231,8 @@ Review remediation (2026-11-05): human review 5784956756 by duckyduff369 (APPROV
 - 2026-11-05: Ready for review: pull request #31 marked ready and review requested from duckyduff369 (QA Engineer, Bookmarks team per TEAMS.md); timeline review_requested at 2026-11-05T12:31:52Z. Required checks on 61b7e58 passed (test, lint, typecheck, measure, scenarios).
 - 2026-11-05: Review remediation: addressed review-body request 5784956756#1 with README tag limits (ce69839, pushed); no open findings.
 - 2026-11-05: Quality gate recorded (review-fix re-review): concerns (finding 1 carried forward; new minor finding: README tag rules omit blank, non-string, and non-array rejections) at 4239db2.
+- 2026-11-05: Approved: jira-handoff — Approve, post the comment as drafted.
+- 2026-11-05: Jira handoff posted: comment 10013 on FIJIH-101 (marker `FIJI-CONTEXT:FIJIH-101:fiji/orchestrate-development/v1`); read back, first line is the marker and the body matches the approved draft.
 
 Jira handoff draft:
 Tags for bookmarks are implemented and in review in pull request #31 (https://github.com/panz3r/fijih-sample/pull/31, `[FIJIH-101] Add tags to bookmarks`, ready for review, base `main`).
