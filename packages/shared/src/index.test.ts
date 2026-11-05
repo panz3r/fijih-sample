@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,39 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("returns [] when tags are omitted or empty", () => {
+    expect(normalizeTags(undefined)).toEqual([]);
+    expect(normalizeTags([])).toEqual([]);
+  });
+  it("trims, lower-cases, and deduplicates keeping the first occurrence in input order", () => {
+    expect(normalizeTags(["  Work ", "home", "WORK", "Home", "a"])).toEqual(["work", "home", "a"]);
+  });
+  it("accepts a 32-character tag and rejects 33", () => {
+    expect(normalizeTags(["a".repeat(32)])).toEqual(["a".repeat(32)]);
+    expect(normalizeTags(["a".repeat(33)])).toBeNull();
+  });
+  it("counts the limit in code points", () => {
+    expect(normalizeTags(["😀".repeat(32)])).toEqual(["😀".repeat(32)]);
+    expect(normalizeTags(["😀".repeat(33)])).toBeNull();
+  });
+  it("measures the limit on the trimmed tag", () => {
+    expect(normalizeTags([` ${"a".repeat(32)} `])).toEqual(["a".repeat(32)]);
+  });
+  it("rejects a tag with internal whitespace", () => {
+    expect(normalizeTags(["two words"])).toBeNull();
+    expect(normalizeTags(["tab\tbed"])).toBeNull();
+  });
+  it("rejects empty and blank tags", () => {
+    expect(normalizeTags([""])).toBeNull();
+    expect(normalizeTags(["   "])).toBeNull();
+  });
+  it("rejects a non-array value and non-string entries", () => {
+    expect(normalizeTags("work")).toBeNull();
+    expect(normalizeTags(null)).toBeNull();
+    expect(normalizeTags(["ok", 1])).toBeNull();
   });
 });

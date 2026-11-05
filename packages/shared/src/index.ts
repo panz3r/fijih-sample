@@ -2,10 +2,11 @@ export interface Bookmark {
   id: string;
   url: string;
   title: string;
+  tags: string[];
   createdAt: string;
 }
 
-export type NewBookmark = Pick<Bookmark, "url" | "title">;
+export type NewBookmark = Pick<Bookmark, "url" | "title"> & { tags?: string[] };
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
@@ -34,4 +35,24 @@ export function normalizeUrl(value: string): string {
 /** Sorts newest first; ties keep their input order. */
 export function sortByCreatedDesc<T extends { createdAt: string }>(items: readonly T[]): T[] {
   return [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+const MAX_TAG_LENGTH = 32;
+
+/**
+ * Trims, lower-cases, and deduplicates tags (first occurrence kept, input order).
+ * `undefined` gives `[]`. Returns `null` when `input` is not an array of strings, or a tag is empty,
+ * longer than 32 characters (code points), or contains whitespace.
+ */
+export function normalizeTags(input: unknown): string[] | null {
+  if (input === undefined) return [];
+  if (!Array.isArray(input)) return null;
+  const seen = new Set<string>();
+  for (const raw of input) {
+    if (typeof raw !== "string") return null;
+    const tag = raw.trim().toLowerCase();
+    if (tag === "" || /\s/u.test(tag) || [...tag].length > MAX_TAG_LENGTH) return null;
+    seen.add(tag);
+  }
+  return [...seen];
 }

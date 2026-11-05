@@ -52,10 +52,10 @@ Source: Jira [FIJIH-102](https://external-team-p2ipk4vi.atlassian.net/browse/FIJ
 
 ## Tasks and Subtasks
 
-- [ ] Shared: add tag types and normalization (AC: 1, 2, 5)
-  - [ ] Add `tags: string[]` to `Bookmark`, and an optional `tags` input to `NewBookmark` in `packages/shared/src/index.ts`.
-  - [ ] Add a pure `normalizeTags(input)` that trims, lower-cases, and deduplicates (first occurrence kept), returns `[]` for `undefined`, and reports invalid input (a tag over 32 characters or with whitespace after trimming, and the Open questions 1–3 cases at their defaults).
-  - [ ] Add tests in `packages/shared/src/index.test.ts` for normalization, deduplication, order, the default, and each invalid case.
+- [x] Shared: add tag types and normalization (AC: 1, 2, 5)
+  - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags` input to `NewBookmark` in `packages/shared/src/index.ts`.
+  - [x] Add a pure `normalizeTags(input)` that trims, lower-cases, and deduplicates (first occurrence kept), returns `[]` for `undefined`, and reports invalid input (a tag over 32 characters or with whitespace after trimming, and the Open questions 1–3 cases at their defaults).
+  - [x] Add tests in `packages/shared/src/index.test.ts` for normalization, deduplication, order, the default, and each invalid case.
 - [ ] API: accept, validate, store, and return tags (AC: 1, 2, 3, 5)
   - [ ] In `packages/api/src/store.ts`, normalize tags in `BookmarkStore.add` with `normalizeTags`. On invalid input, throw `ValidationError("invalid tag")` before the bookmark is stored. Store the normalized tags on the bookmark.
   - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add`.
@@ -108,9 +108,19 @@ None — this change needs no configuration outside the repository added, change
 
 ## File List
 
+- packages/shared/src/index.ts
+- packages/shared/src/index.test.ts
+
 ## Implementation Record
 
+Task 1 — Shared: `Bookmark.tags`, optional `NewBookmark.tags`, and pure `normalizeTags(input: unknown): string[] | null` (`null` means invalid; `undefined` gives `[]`).
+- Hypothesis: a single pure function covering the Open questions 1-4 defaults satisfies AC 1 and 2 at the shared level. Confirmed by 8 new tests (12 total in shared).
+- Focused: `pnpm --filter @sample/shared test` passed; `pnpm --filter @sample/shared typecheck` passed; `pnpm lint packages/shared` passed.
+
 ## Validation Evidence
+
+- AC-1: partial — shared `normalizeTags` trims, lower-cases, dedupes, defaults to `[]` (shared tests pass); API wiring pending.
+- AC-2: partial — shared rejects over 32 code points and whitespace (shared tests pass); API wiring pending.
 
 ## Quality Gate
 
@@ -121,3 +131,4 @@ None — this change needs no configuration outside the repository added, change
 - 2026-11-05: Plan drafted from FIJIH-102 at revision `2026-11-05T15:02:12.721+0100`. Issue assigned to the current user.
 - 2026-11-05: Approved: plan-approval — Approve with the proposed defaults for all six questions. Nothing to defer or grant. (answering: planned-check question: the plan has no manual, live-app or end-to-end check tasks) (answering: outside-write question: the plan names no writes outside the repository)
 - 2026-11-05: Routed: implementation — standard (score 4; source rubric; binding inherit; signals tasks 5, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work true, figma false, open_risks 0, plan_estimate standard, recorded_floor null)
+- 2026-11-05: Task 1 implemented (shared tag types and `normalizeTags`).
