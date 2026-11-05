@@ -60,9 +60,9 @@ Source: Jira [FIJIH-102](https://external-team-p2ipk4vi.atlassian.net/browse/FIJ
   - [x] In `packages/api/src/store.ts`, normalize tags in `BookmarkStore.add` with `normalizeTags`. On invalid input, throw `ValidationError("invalid tag")` before the bookmark is stored. Store the normalized tags on the bookmark.
   - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add`.
   - [x] Add tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalized tags; POST without tags returns `[]`; a tag over 32 characters and a tag with internal whitespace each answer `400 {"error":"invalid tag"}` and the bookmark is not listed; GET returns each bookmark's tags.
-- [ ] Web: show tags after the title (AC: 4, 5)
-  - [ ] In `packages/web/src/render.ts`, after the link, append the bookmark's tags joined by the Open question 5 separator. Append nothing when `tags` is empty.
-  - [ ] Update `packages/web/src/render.test.ts` fixtures for the new `tags` field. Add tests for a bookmark with tags (comma-separated text after the title) and one without (no tags text).
+- [x] Web: show tags after the title (AC: 4, 5)
+  - [x] In `packages/web/src/render.ts`, after the link, append the bookmark's tags joined by the Open question 5 separator. Append nothing when `tags` is empty.
+  - [x] Update `packages/web/src/render.test.ts` fixtures for the new `tags` field. Add tests for a bookmark with tags (comma-separated text after the title) and one without (no tags text).
 - [ ] Release: re-measure the web bundle (AC: 4)
   - [ ] Run `pnpm build` then `pnpm measure`. When the gzipped web bundle size differs from `measure/baseline.json` (`web_bundle_gzip_bytes: 835`), update `measure/baseline.json` in this change, as `AGENTS.md` requires.
 - [ ] Run the repository checks (AC: 5)
@@ -114,6 +114,8 @@ None — this change needs no configuration outside the repository added, change
 - packages/api/src/app.ts
 - packages/api/src/store.test.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 
@@ -125,10 +127,15 @@ Task 2 — API: `BookmarkStore.add` normalizes tags with `normalizeTags` after t
 - Hypothesis: store-level validation maps to `400 {"error":"invalid tag"}` through the existing `ValidationError` handler. Confirmed by store and HTTP tests.
 - Focused: `pnpm --filter @sample/api test` passed (17 tests); `pnpm --filter @sample/api typecheck` passed; `pnpm lint packages/api` passed.
 
+Task 3 — Web: `renderList` appends a `span.tags` with `tags.join(", ")` after the link and before Remove, and nothing when `tags` is empty; existing fixture gets `tags: []`.
+- Hypothesis: one conditional element satisfies AC 4 with no stray separator. Confirmed by two new jsdom tests.
+- Focused: `pnpm --filter @sample/web test` passed (4 tests); `pnpm --filter @sample/web typecheck` passed; `pnpm lint packages/web` passed.
+
 ## Validation Evidence
 
 - AC-1: passed — `packages/api/src/app.test.ts` POST with mixed-case, padded, duplicate tags returns 201 with `["work","home"]`; omitted gives `[]`; shared and store tests pass.
 - AC-2: passed — `app.test.ts` 33-character and internal-whitespace tags answer 400 `{"error":"invalid tag"}` and the bookmark is not listed.
+- AC-4: passed — `render.test.ts` tags render as `work, home` directly after the title link and before Remove; no `.tags` element and `ExampleRemove` text when none.
 - AC-3: passed — `app.test.ts` GET returns each bookmark's `tags` (`[]` when none).
 
 ## Quality Gate
@@ -142,3 +149,4 @@ Task 2 — API: `BookmarkStore.add` normalizes tags with `normalizeTags` after t
 - 2026-11-05: Routed: implementation — standard (score 4; source rubric; binding inherit; signals tasks 5, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work true, figma false, open_risks 0, plan_estimate standard, recorded_floor null)
 - 2026-11-05: Task 1 implemented (shared tag types and `normalizeTags`).
 - 2026-11-05: Task 2 implemented (API accepts, validates, stores, returns tags).
+- 2026-11-05: Task 3 implemented (web shows tags after the title).
