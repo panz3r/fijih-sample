@@ -60,9 +60,9 @@ so that I can group my bookmarks.
 - [x] Accept and return tags over HTTP in `packages/api/src/app.ts` (AC: 1, 2, 3, 5)
   - [x] Pass the request body's `tags` through to `store.add` unchanged (validation lives in the store and shared).
   - [x] Cover it in `packages/api/src/app.test.ts`: `POST` with tags returns `201` and normalized tags; `POST` without tags returns `tags: []`; a 33-character tag and a tag with inner whitespace each answer `400` `{"error":"invalid tag"}`; `GET /bookmarks` returns each bookmark's tags.
-- [ ] Show tags on the page in `packages/web/src/render.ts` (AC: 4, 5)
-  - [ ] After the title link, append an element (for example `<span class="tags">`) holding the tags joined by `", "` only when the bookmark has at least one tag (Open question 3).
-  - [ ] Update the fixture in `packages/web/src/render.test.ts` for the new required `tags` field and add tests: tags shown after the title, comma separated; no tags element and no extra text when `tags` is `[]`.
+- [x] Show tags on the page in `packages/web/src/render.ts` (AC: 4, 5)
+  - [x] After the title link, append an element (for example `<span class="tags">`) holding the tags joined by `", "` only when the bookmark has at least one tag (Open question 3).
+  - [x] Update the fixture in `packages/web/src/render.test.ts` for the new required `tags` field and add tests: tags shown after the title, comma separated; no tags element and no extra text when `tags` is `[]`.
 - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5).
 - [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in this change, per `AGENTS.md` (AC: 4).
 
@@ -109,6 +109,9 @@ None — this change needs no configuration outside the repository added, change
 
 ## File List
 
+- packages/web/src/render.ts
+- packages/web/src/render.test.ts
+
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
 
@@ -132,6 +135,10 @@ Task 3 — `POST /bookmarks` passes `tags` to the store
 - The handler passes `body.tags` through unchanged; `GET /bookmarks` returns stored tags as before. Tests cover 201 with normalized tags, default `[]`, 400 `{"error":"invalid tag"}` for a 33-character tag and inner whitespace with the list unchanged, and the GET list.
 - Focused: `pnpm --filter @sample/api test` 8 passed; `pnpm lint packages/api` and `pnpm --filter @sample/api typecheck` clean.
 
+Task 4 — web page shows tags after the title
+- `renderList` appends `<span class="tags">` with the tags joined by `", "` between the title link and Remove only when the bookmark has tags. Tests cover the shown tags after the title, no element for `tags: []`, and the updated fixture.
+- Focused: `pnpm --filter @sample/web test` 4 passed; `pnpm lint packages/web` and `pnpm --filter @sample/web typecheck` clean.
+
 ## Validation Evidence
 
 ## Quality Gate
@@ -146,3 +153,4 @@ Task 3 — `POST /bookmarks` passes `tags` to the store
 - 2026-11-05: Task 1 done: shared `normalizeTags` and tag types.
 - 2026-11-05: Task 2 done: store keeps normalized tags.
 - 2026-11-05: Task 3 done: tags accepted and returned over HTTP.
+- 2026-11-05: Task 4 done: page renders tags.
