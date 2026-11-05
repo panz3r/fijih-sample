@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidBookmarkUrl, normalizeUrl, sortByCreatedDesc } from "./index.js";
+import { isValidBookmarkUrl, MAX_TAG_LENGTH, normalizeTags, normalizeUrl, sortByCreatedDesc } from "./index.js";
 
 describe("isValidBookmarkUrl", () => {
   it("accepts http and https", () => {
@@ -27,5 +27,39 @@ describe("sortByCreatedDesc", () => {
     const out = sortByCreatedDesc(input);
     expect(out.map((i) => i.createdAt)).toEqual(["2026-03-01", "2026-02-01", "2026-01-01"]);
     expect(input[0].createdAt).toBe("2026-01-01");
+  });
+});
+
+describe("normalizeTags", () => {
+  it("defaults to an empty list", () => {
+    expect(normalizeTags(undefined)).toEqual([]);
+    expect(normalizeTags([])).toEqual([]);
+  });
+  it("trims and lower-cases", () => {
+    expect(normalizeTags(["  Work "])).toEqual(["work"]);
+  });
+  it("dedupes after case-folding, keeping first-occurrence order", () => {
+    expect(normalizeTags([" Work ", "work", "Read", "READ"])).toEqual(["work", "read"]);
+  });
+  it("accepts 32 characters and rejects 33, counting code points", () => {
+    expect(MAX_TAG_LENGTH).toBe(32);
+    expect(normalizeTags(["a".repeat(32)])).toEqual(["a".repeat(32)]);
+    expect(normalizeTags(["a".repeat(33)])).toBeNull();
+    expect(normalizeTags(["😀".repeat(32)])).toEqual(["😀".repeat(32)]);
+    expect(normalizeTags(["😀".repeat(33)])).toBeNull();
+  });
+  it("rejects inner whitespace", () => {
+    expect(normalizeTags(["to read"])).toBeNull();
+    expect(normalizeTags(["a\tb"])).toBeNull();
+  });
+  it("rejects a tag that is empty after trimming", () => {
+    expect(normalizeTags([""])).toBeNull();
+    expect(normalizeTags(["   "])).toBeNull();
+  });
+  it("rejects a non-array and non-string entries", () => {
+    expect(normalizeTags("work")).toBeNull();
+    expect(normalizeTags(null)).toBeNull();
+    expect(normalizeTags({})).toBeNull();
+    expect(normalizeTags(["a", 1])).toBeNull();
   });
 });

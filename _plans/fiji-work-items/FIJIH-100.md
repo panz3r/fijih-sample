@@ -59,10 +59,10 @@ so that I can group my bookmarks.
 
 ## Tasks and Subtasks
 
-- [ ] Add tags to the shared model and a pure tag normaliser in `packages/shared/src/index.ts` (AC: 1, 2, 3, 4)
-  - [ ] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `readonly string[]`) input to `NewBookmark`.
-  - [ ] Export `MAX_TAG_LENGTH = 32` and `normalizeTags(value: unknown): string[] | null`: `undefined` returns `[]`; a non-array, a non-string entry, or a tag that after trimming is empty, longer than 32 code points, or contains `/\s/` returns `null`; otherwise returns the trimmed, lower-cased tags deduplicated in first-occurrence order.
-  - [ ] Vitest cases in `packages/shared/src/index.test.ts`: default, trim and lower-case, dedupe after case-folding and order, 32 vs 33 characters, inner whitespace, empty after trim, non-array, non-string entry.
+- [x] Add tags to the shared model and a pure tag normaliser in `packages/shared/src/index.ts` (AC: 1, 2, 3, 4)
+  - [x] Add `tags: string[]` to `Bookmark` and an optional `tags?: unknown` (or `readonly string[]`) input to `NewBookmark`.
+  - [x] Export `MAX_TAG_LENGTH = 32` and `normalizeTags(value: unknown): string[] | null`: `undefined` returns `[]`; a non-array, a non-string entry, or a tag that after trimming is empty, longer than 32 code points, or contains `/\s/` returns `null`; otherwise returns the trimmed, lower-cased tags deduplicated in first-occurrence order.
+  - [x] Vitest cases in `packages/shared/src/index.test.ts`: default, trim and lower-case, dedupe after case-folding and order, 32 vs 33 characters, inner whitespace, empty after trim, non-array, non-string entry.
 - [ ] Store and validate tags in the API (AC: 1, 2, 3, 4, 5)
   - [ ] In `packages/api/src/store.ts` `add`, call `normalizeTags(input.tags)` and throw `ValidationError("invalid tag")` on `null`, after the existing title and URL checks and before the bookmark is stored; save the normalised `tags` on the bookmark.
   - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add` unchanged (the body type gains `tags?: unknown`).
@@ -111,7 +111,13 @@ None — this change needs no configuration outside the repository added, change
 
 ## File List
 
+- `packages/shared/src/index.ts`
+- `packages/shared/src/index.test.ts`
+
 ## Implementation Record
+
+Task 1 — shared tags model and normalizeTags
+Added `tags: string[]` to `Bookmark`, `tags?: unknown` to `NewBookmark`, `MAX_TAG_LENGTH = 32`, and `normalizeTags` with 7 Vitest cases. Shared test (11 passed), typecheck, and lint pass.
 
 ## Validation Evidence
 
