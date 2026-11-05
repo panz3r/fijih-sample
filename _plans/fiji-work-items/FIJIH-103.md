@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 routing:
   class: deep
@@ -73,8 +73,8 @@ so that I can group related bookmarks.
   - [x] 4.1 In `renderList`, after the title link, append a `<span class="tags">` whose text is `bookmark.tags.join(", ")` only when the bookmark has at least one tag; keep the link and the tags together so the existing flex layout keeps Remove at the end of the row.
   - [x] 4.2 Add a `.tags` rule in `packages/web/index.html` that separates the tags from the title (for example a left margin and a muted colour).
   - [x] 4.3 Update the bookmark fixtures in `packages/web/src/render.test.ts` with `tags`, and add Vitest cases: tags render after the title joined by `", "`, and no `.tags` element exists when `tags` is `[]`.
-- [ ] 5. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence (AC: 7)
-- [ ] 6. Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in the same change and rerun `pnpm measure` to show delta 0 (AC: 8)
+- [x] 5. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence (AC: 7)
+- [x] 6. Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in the same change and rerun `pnpm measure` to show delta 0 (AC: 8)
 
 ## Engineering Context
 
@@ -137,14 +137,29 @@ None — this change needs no configuration outside the repository added, change
 - packages/web/src/render.ts
 - packages/web/index.html
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 Task 1 — add Bookmark.tags and normalizeTags with shared tests (shared test, lint, typecheck pass; 10 tests)
 Task 2 — BookmarkStore.add validates and stores normalized tags (api tests pass)
 Task 3 — POST /bookmarks passes tags to the store; HTTP tests for 201/400 paths
 Task 4 — renderList shows tags span after the title; .tags style; web tests
+Task 5 — ran pnpm test, lint, typecheck from the root; all pass
+  (checked at 6276535)
+Task 6 — baseline.json web_bundle_gzip_bytes 835 -> 881; pnpm build then pnpm measure prints web_bundle_gzip_delta=0
+  (commit 6276535)
+Stale-statement sweep — Bookmark, NewBookmark, tags, normalizeTags, POST /bookmarks, createdAt
+  none found (README endpoint line and scenarios/ remain accurate)
 
 ## Validation Evidence
+- AC-1: passed — api app.test.ts and store.test.ts default tags []
+- AC-2: passed — shared and api tests for trim, lower-case, dedupe
+- AC-3: passed — 32 accepted, 33 and whitespace rejected with 400 invalid tag
+- AC-4: passed — non-array, non-string element, empty tag give 400 invalid tag
+- AC-5: passed — GET /bookmarks test returns tags
+- AC-6: passed — web render.test.ts tags text and no element when empty
+- AC-7: passed — pnpm test (10/10/4 tests), pnpm lint, pnpm typecheck pass at root
+- AC-8: passed — pnpm measure prints web_bundle_gzip_bytes=881, web_bundle_gzip_delta=0
 
 ## Quality Gate
 
@@ -158,3 +173,4 @@ Task 1 done
 Task 2 done
 Task 3 done
 Task 4 done
+- Implementation complete; validations passed.
