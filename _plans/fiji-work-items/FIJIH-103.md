@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T16:10:06.551+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 routing:
   class: deep
@@ -208,3 +208,6 @@ Task 4 done
 - Finalize (local QA review): reconciled Implementation Record with commits; added `(commit <short hash>)` to the Task 1–4 entries (their own commits a6dcc10, 5b28158, ba5676a, 4969601). File List matches the branch diff (10 files). No task or criterion lacks evidence; no discrepancies.
 - Approved: local-qa-review — automatic (no risk triggers; Publish consent at plan-approval: "Grant Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review."; verified at 56939ef40dbc727e89a429c290e45b1875684383)
 - Delivery: change intent `.changeset/bookmark-tags.md` added (commit 9facfbb, summary "Add tags to bookmarks"); branch pushed; draft pull request #33 (https://github.com/panz3r/fijih-sample/pull/33) created with label `enhancement`, assignee panz3r, base main; Copilot review requested (timeline `review_requested` event for Copilot confirmed). No `(verify: ci)` criterion, so no CI measurement.
+- Review requests: by the project's process — "Mark the pull request ready with no reviewers requested. The pull request author then runs the pre-review step `scripts/check-scenarios`. When it passes, the author requests review from the owning team's QA Engineer; when it fails, the author fixes it first."; next: the user (author) runs `scripts/check-scenarios`, then requests review from `duckyduff369` (QA Engineer, TEAMS.md)
+- Ready-for-review: pull request #33 marked ready (`gh pr ready`); Copilot review 5787343598 clean; CI on 9facfbb all pass. Note: GitHub shows `duckyduff369` as a requested reviewer, requested one second after the ready event under actor panz3r (not requested by FIJIₕ); left in place, to be confirmed by the user against the project process.
+- Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Grant Notify: when Copilot's review needs no change and every required check passes, mark the pull request ready without stopping at ready-for-review."; verified at 83668df9d45360cbd5ba019b6584f3b12ba3ecd1)
