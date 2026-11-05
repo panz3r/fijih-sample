@@ -56,10 +56,10 @@ Source: Jira [FIJIH-102](https://external-team-p2ipk4vi.atlassian.net/browse/FIJ
   - [x] Add `tags: string[]` to `Bookmark`, and an optional `tags` input to `NewBookmark` in `packages/shared/src/index.ts`.
   - [x] Add a pure `normalizeTags(input)` that trims, lower-cases, and deduplicates (first occurrence kept), returns `[]` for `undefined`, and reports invalid input (a tag over 32 characters or with whitespace after trimming, and the Open questions 1–3 cases at their defaults).
   - [x] Add tests in `packages/shared/src/index.test.ts` for normalization, deduplication, order, the default, and each invalid case.
-- [ ] API: accept, validate, store, and return tags (AC: 1, 2, 3, 5)
-  - [ ] In `packages/api/src/store.ts`, normalize tags in `BookmarkStore.add` with `normalizeTags`. On invalid input, throw `ValidationError("invalid tag")` before the bookmark is stored. Store the normalized tags on the bookmark.
-  - [ ] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add`.
-  - [ ] Add tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalized tags; POST without tags returns `[]`; a tag over 32 characters and a tag with internal whitespace each answer `400 {"error":"invalid tag"}` and the bookmark is not listed; GET returns each bookmark's tags.
+- [x] API: accept, validate, store, and return tags (AC: 1, 2, 3, 5)
+  - [x] In `packages/api/src/store.ts`, normalize tags in `BookmarkStore.add` with `normalizeTags`. On invalid input, throw `ValidationError("invalid tag")` before the bookmark is stored. Store the normalized tags on the bookmark.
+  - [x] In `packages/api/src/app.ts`, pass `body.tags` through to `store.add`.
+  - [x] Add tests in `packages/api/src/store.test.ts` and `packages/api/src/app.test.ts`: POST with tags returns normalized tags; POST without tags returns `[]`; a tag over 32 characters and a tag with internal whitespace each answer `400 {"error":"invalid tag"}` and the bookmark is not listed; GET returns each bookmark's tags.
 - [ ] Web: show tags after the title (AC: 4, 5)
   - [ ] In `packages/web/src/render.ts`, after the link, append the bookmark's tags joined by the Open question 5 separator. Append nothing when `tags` is empty.
   - [ ] Update `packages/web/src/render.test.ts` fixtures for the new `tags` field. Add tests for a bookmark with tags (comma-separated text after the title) and one without (no tags text).
@@ -110,6 +110,10 @@ None — this change needs no configuration outside the repository added, change
 
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
+- packages/api/src/store.ts
+- packages/api/src/app.ts
+- packages/api/src/store.test.ts
+- packages/api/src/app.test.ts
 
 ## Implementation Record
 
@@ -117,10 +121,15 @@ Task 1 — Shared: `Bookmark.tags`, optional `NewBookmark.tags`, and pure `norma
 - Hypothesis: a single pure function covering the Open questions 1-4 defaults satisfies AC 1 and 2 at the shared level. Confirmed by 8 new tests (12 total in shared).
 - Focused: `pnpm --filter @sample/shared test` passed; `pnpm --filter @sample/shared typecheck` passed; `pnpm lint packages/shared` passed.
 
+Task 2 — API: `BookmarkStore.add` normalizes tags with `normalizeTags` after the title and URL checks and before the duplicate-URL check, throwing `ValidationError("invalid tag")`; `app.ts` passes `body.tags`.
+- Hypothesis: store-level validation maps to `400 {"error":"invalid tag"}` through the existing `ValidationError` handler. Confirmed by store and HTTP tests.
+- Focused: `pnpm --filter @sample/api test` passed (17 tests); `pnpm --filter @sample/api typecheck` passed; `pnpm lint packages/api` passed.
+
 ## Validation Evidence
 
-- AC-1: partial — shared `normalizeTags` trims, lower-cases, dedupes, defaults to `[]` (shared tests pass); API wiring pending.
-- AC-2: partial — shared rejects over 32 code points and whitespace (shared tests pass); API wiring pending.
+- AC-1: passed — `packages/api/src/app.test.ts` POST with mixed-case, padded, duplicate tags returns 201 with `["work","home"]`; omitted gives `[]`; shared and store tests pass.
+- AC-2: passed — `app.test.ts` 33-character and internal-whitespace tags answer 400 `{"error":"invalid tag"}` and the bookmark is not listed.
+- AC-3: passed — `app.test.ts` GET returns each bookmark's `tags` (`[]` when none).
 
 ## Quality Gate
 
@@ -132,3 +141,4 @@ Task 1 — Shared: `Bookmark.tags`, optional `NewBookmark.tags`, and pure `norma
 - 2026-11-05: Approved: plan-approval — Approve with the proposed defaults for all six questions. Nothing to defer or grant. (answering: planned-check question: the plan has no manual, live-app or end-to-end check tasks) (answering: outside-write question: the plan names no writes outside the repository)
 - 2026-11-05: Routed: implementation — standard (score 4; source rubric; binding inherit; signals tasks 5, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work true, figma false, open_risks 0, plan_estimate standard, recorded_floor null)
 - 2026-11-05: Task 1 implemented (shared tag types and `normalizeTags`).
+- 2026-11-05: Task 2 implemented (API accepts, validates, stores, returns tags).

@@ -43,4 +43,38 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  it("normalizes tags on create and returns them from GET", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/tagged", title: "T", tags: [" Work ", "home", "WORK", "Home"] }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["work", "home"]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { title: string; tags: string[] }[];
+    expect(list.find((b) => b.title === "T")?.tags).toEqual(["work", "home"]);
+  });
+
+  it("defaults tags to [] when omitted", async () => {
+    const res = await fetch(`${base}/bookmarks`, {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com/untagged", title: "U" }),
+    });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { title: string; tags: string[] }[];
+    expect(list.find((b) => b.title === "U")?.tags).toEqual([]);
+  });
+
+  it.each([
+    ["longer than 32 characters", ["a".repeat(33)]],
+    ["with internal whitespace", ["two words"]],
+  ])("answers 400 invalid tag for a tag %s and creates nothing", async (_name, tags) => {
+    const url = `https://example.com/bad-${tags[0].length}`;
+    const res = await fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify({ url, title: "Bad", tags }) });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid tag" });
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[];
+    expect(list.some((b) => b.url === url)).toBe(false);
+  });
 });
