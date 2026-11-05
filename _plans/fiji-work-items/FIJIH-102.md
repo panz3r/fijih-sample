@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: automated-review
-  checkpoint: null
-  transition: delivery-complete
+  checkpoint: ready-for-review
+  transition: ready-for-review
   attempt: 1
 routing:
   class: standard
@@ -180,6 +180,10 @@ Reviewed head: 104eda901b909bd6bd2de0c7ef230f1b0508c182
 
 ## Review Record
 
+Copilot pass (review 5786298785 on 8e36bd3, 2026-11-05): one inline finding, no review-body requests.
+
+- Thread `PRRT_kwDOVaYq_M60GrRT` (`packages/web/src/render.ts:26`, tags span is a third flex item, not beside the title): disposition `deferred`, follow-up not filed yet. It repeats Quality Gate finding 1, which the user accepted at `local-qa-review` ("Approve, accept both minor findings as follow-ups."). Reply: quoted that decision, said the follow-up is not filed yet; thread resolved.
+
 ## Change Log
 
 - 2026-11-05: Plan drafted from FIJIH-102 at revision `2026-11-05T15:02:12.721+0100`. Issue assigned to the current user.
@@ -195,3 +199,4 @@ Reviewed head: 104eda901b909bd6bd2de0c7ef230f1b0508c182
 - 2026-11-05: Local QA review finalize: every task and acceptance criterion has committed evidence on the branch since main; no task/evidence discrepancies. Routine reconciliation: added `(commit <short hash>)` lines under the Task 1–4 Implementation Record entries (238573d, 0dbec87, 360924b, cf8d2d5); File List already matched the branch diff. Two minor quality-review findings are carried as follow-ups, not fixed here.
 - 2026-11-05: Approved: local-qa-review — Approve, accept both minor findings as follow-ups.
 - 2026-11-05: Delivery: added changeset `.changeset/add-tags-to-bookmarks.md` and pushed it; opened draft pull request #32 (https://github.com/panz3r/fijih-sample/pull/32) with label `enhancement`, base `main`, and requested a Copilot automated review (`review_requested` for Copilot on the timeline). Pull request stays draft; human reviewers not requested yet.
+- 2026-11-05: Copilot pass: 1 finding, deferred (repeats accepted Quality Gate finding 1); no fix commits; Copilot raised nothing else.
