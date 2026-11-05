@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T15:11:00.116+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 routing:
   class: standard
@@ -203,3 +203,5 @@ Copilot pass (review 5786298785 on 8e36bd3, 2026-11-05): one inline finding, no 
 - 2026-11-05: Late drift decision (ready-for-review): "Jira question 1: keep the 24-character limit as a follow-up."
 - 2026-11-05: Late drift adopted: New Jira comment 10014 (Mattia Panzeri) asks whether tags could be in a future CSV export; states no requirement for this change and no CSV export exists. Possible follow-up only.
 - 2026-11-05: Late drift kept: Acceptance criterion 2 tag length limit changed from 32 to 24 characters (Jira changelog 10395) — Jira description: "A tag longer than 24 characters or containing whitespace answers 400 with {\"error\":\"invalid tag\"}." Implementation, tests and the Open question 3 default stay at 32; the 24-character limit is a follow-up.
+- 2026-11-05: Approved: ready-for-review — Approve. Jira question 1: keep the 24-character limit as a follow-up.
+- 2026-11-05: Ready for review: pull request #32 marked ready; review requested from `duckyduff369` (QA Engineer, Bookmarks team; the author `panz3r` excluded). Copilot thread resolved before the request. Commits 18788e5, ca2fdff, 29fc61c and this commit are work-item-only and held locally.
