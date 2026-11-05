@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 routing:
   class: deep
@@ -183,6 +183,17 @@ Reviewed head: f0875c43475fa081a54239c2e2ce2e16fb00b53f
 ## Review Record
 
 - Copilot pass: review 5783865284 (COMMENTED, on head 2c83e21) raised no findings and no review threads; no fixes, no replies needed. Accepted follow-up (İ length finding, local-qa-review) stays a follow-up not filed yet.
+
+Jira handoff draft:
+Outcome: bookmarks now carry an optional `tags` list. `POST /bookmarks` accepts `tags`, trims, lower-cases, and deduplicates them in first-occurrence order (default `[]`), and answers 400 `{"error":"invalid tag"}` for a tag that is longer than 32 characters, contains whitespace, is empty after trimming, or when `tags` is not an array of strings. `GET /bookmarks` returns the tags, and the web page shows them after each title, joined by `", "`, with nothing rendered when there are none. Pull request: https://github.com/panz3r/fijih-sample/pull/30 (approved by duckyduff369, the QA Engineer, on head 2c83e21).
+
+Validation: Vitest tests in `packages/shared`, `packages/api`, and `packages/web` cover the new behaviour; the local QA review ran `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root (all exit 0) and `pnpm build && pnpm measure` (web_bundle_gzip_bytes=881, delta 0). The `ci` workflow run 42015754624 on head 2c83e21 concluded success.
+
+Decisions taken at plan approval (defaults accepted): tags are set through the API only, and the page's add form has no tags input; the 32-character limit counts the trimmed tag in Unicode code points; an invalid, non-array, or empty-after-trim tag is a 400 `invalid tag`; `measure/baseline.json` was updated from 835 to 881 bytes because the change moves the bundle size.
+
+Follow-up, not filed yet: `normalizeTags` in `packages/shared/src/index.ts` measures the 32-code-point limit after `toLowerCase()` instead of on the trimmed tag. U+0130 (LATIN CAPITAL LETTER I WITH DOT ABOVE) lower-cases to two code points, so a tag of exactly 32 of that character is rejected with 400 even though its trimmed length is 32. Only tags at the limit made of that character are affected. Fix: check the length on the trimmed tag before lower-casing, or amend the limit to apply to the stored tag. The user accepted this as a follow-up at the local QA review; no Jira issue exists for it yet.
+
+Out of scope per the issue and not done: filtering or searching by tag, and editing tags of an existing bookmark.
 
 ## Change Log
 
