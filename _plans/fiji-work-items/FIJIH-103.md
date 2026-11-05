@@ -69,10 +69,10 @@ so that I can group related bookmarks.
 - [x] 3. HTTP surface in `packages/api/src/app.ts` (AC: 1, 2, 3, 4, 5, 7)
   - [x] 3.1 Pass `body.tags` from the `POST /bookmarks` body to `store.add` unchanged; the existing `ValidationError` handler already answers 400 with the message.
   - [x] 3.2 Add Vitest cases in `packages/api/src/app.test.ts`: POST without tags answers 201 with `tags: []`; POST with mixed-case, padded, duplicate tags answers 201 with the normalized list and `GET /bookmarks` returns it; a 33-character tag, a tag with inner whitespace, an empty tag, and a non-array `tags` each answer 400 `{"error":"invalid tag"}` and the next `GET /bookmarks` does not contain the rejected bookmark. Use URLs distinct from the existing tests, since the suite shares one server and the duplicate-URL check applies.
-- [ ] 4. Tags on the page in `packages/web/src/render.ts` and `packages/web/index.html` (AC: 6, 7)
-  - [ ] 4.1 In `renderList`, after the title link, append a `<span class="tags">` whose text is `bookmark.tags.join(", ")` only when the bookmark has at least one tag; keep the link and the tags together so the existing flex layout keeps Remove at the end of the row.
-  - [ ] 4.2 Add a `.tags` rule in `packages/web/index.html` that separates the tags from the title (for example a left margin and a muted colour).
-  - [ ] 4.3 Update the bookmark fixtures in `packages/web/src/render.test.ts` with `tags`, and add Vitest cases: tags render after the title joined by `", "`, and no `.tags` element exists when `tags` is `[]`.
+- [x] 4. Tags on the page in `packages/web/src/render.ts` and `packages/web/index.html` (AC: 6, 7)
+  - [x] 4.1 In `renderList`, after the title link, append a `<span class="tags">` whose text is `bookmark.tags.join(", ")` only when the bookmark has at least one tag; keep the link and the tags together so the existing flex layout keeps Remove at the end of the row.
+  - [x] 4.2 Add a `.tags` rule in `packages/web/index.html` that separates the tags from the title (for example a left margin and a muted colour).
+  - [x] 4.3 Update the bookmark fixtures in `packages/web/src/render.test.ts` with `tags`, and add Vitest cases: tags render after the title joined by `", "`, and no `.tags` element exists when `tags` is `[]`.
 - [ ] 5. Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results in Validation Evidence (AC: 7)
 - [ ] 6. Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, set `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in the same change and rerun `pnpm measure` to show delta 0 (AC: 8)
 
@@ -134,11 +134,15 @@ None — this change needs no configuration outside the repository added, change
 - packages/api/src/store.test.ts
 - packages/api/src/app.ts
 - packages/api/src/app.test.ts
+- packages/web/src/render.ts
+- packages/web/index.html
+- packages/web/src/render.test.ts
 
 ## Implementation Record
 Task 1 — add Bookmark.tags and normalizeTags with shared tests (shared test, lint, typecheck pass; 10 tests)
 Task 2 — BookmarkStore.add validates and stores normalized tags (api tests pass)
 Task 3 — POST /bookmarks passes tags to the store; HTTP tests for 201/400 paths
+Task 4 — renderList shows tags span after the title; .tags style; web tests
 
 ## Validation Evidence
 
@@ -153,3 +157,4 @@ Task 3 — POST /bookmarks passes tags to the store; HTTP tests for 201/400 path
 Task 1 done
 Task 2 done
 Task 3 done
+Task 4 done
