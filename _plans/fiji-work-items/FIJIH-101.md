@@ -10,7 +10,7 @@ lifecycle:
   status: active
   phase: remote-review
   checkpoint: null
-  transition: review-remediated
+  transition: quality-gate-recorded
   attempt: 1
 routing:
   class: standard
@@ -173,27 +173,34 @@ Review remediation — README documents the tag limits (review 5784956756#1)
 
 ## Quality Gate
 
-Gate: concerns — every criterion is evidenced; one minor finding remains.
+Gate: concerns — every criterion is evidenced; two minor findings remain (one carried forward, one new in the README).
 
-Acceptance trace (checks re-run at 6f9843b: `pnpm test` exit 0 with shared 8, api 8, web 4 tests passed; `pnpm lint` exit 0; `pnpm typecheck` exit 0; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=891`, `web_bundle_gzip_delta=0`):
-- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (trim, lower-case, dedup in first-occurrence order, `[]` for `undefined`), `packages/api/src/store.ts` `BookmarkStore.add` stores the normalized tags, `packages/api/src/app.ts` passes `body.tags`; verification `packages/shared/src/index.test.ts` "defaults to an empty list" and "trims, lower-cases, and deduplicates…", `packages/api/src/store.test.ts` "stores normalized tags and defaults to an empty list", `packages/api/src/app.test.ts` "accepts tags, normalizes them, and lists them" (201 with `["news","tech"]`, omitted gives `[]`).
-- AC-2: implementation `normalizeTags` returns `null` for over 32 code points or `\s` after trim and lower-case, `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing, mapped to 400 by `app.ts`; verification `index.test.ts` "accepts 32 characters and rejects 33" and "rejects inner whitespace, blank tags, non-strings, and non-arrays", `store.test.ts` "rejects an invalid tag and stores nothing", `app.test.ts` "rejects an invalid tag and stores nothing" (33 characters and `two words` answer 400 `{"error":"invalid tag"}`, list unchanged). See finding 1 for an edge the lower-casing creates.
-- AC-3: implementation `GET /bookmarks` returns `store.list()` with the stored `tags`; verification `app.test.ts` "accepts tags, normalizes them, and lists them" (`["news","tech"]` and `[]` in the list).
-- AC-4: implementation `packages/web/src/render.ts` appends `<span class="tags">` joined by `", "` between the title link and Remove only when tags exist; verification `packages/web/src/render.test.ts` "shows tags after the title, comma separated" (`news, tech`, next sibling of the link) and "shows no tags element for a bookmark without tags" (`li` text `ExampleRemove`); bundle baseline moved to 891 and `pnpm measure` delta 0 at 6f9843b.
-- AC-5: Vitest tests added in all three packages; root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass at 6f9843b (re-run by this review).
+Scope (review-fix re-review): commits since the previous Reviewed head 6f9843b — cf86bd8, b024ce5, 9862f28, 4fe4c76, 53c2735, 4239db2 (work item only), 61b7e58 (`.changeset/add-tags-to-bookmarks.md`), and ce69839 (`README.md` "Bookmark tags" section). No source, test, task, `(AC: …)` mapping, or Validation Evidence line changed, and no Validation Evidence line or task Implementation Record entry names `README.md` or `.changeset/`, so no criterion is in scope beyond the README and changeset review; AC-1 to AC-5 are carried forward and traced from their current Validation Evidence lines.
+
+Validation at or after the latest product commit: at 4239db2 (only the work item changed since ce69839) this review re-ran `pnpm test` exit 0 (shared 8, api 8, web 4 tests passed), `pnpm lint` exit 0 (eslint clean), and `pnpm typecheck` exit 0 (shared, api, web tsc clean). CI run 42028184473 (`ci`, `pull_request`) on ce69839 (pull request #31 head): jobs `test`, `lint`, `typecheck`, `measure`, and `scenarios` all succeeded.
+
+Acceptance trace (carried forward from the Validation Evidence lines, confirmed by the re-run above):
+- AC-1: passed — `normalizeTags` (`packages/shared/src/index.ts`), `BookmarkStore.add`, and `POST /bookmarks` pass-through; `index.test.ts`, `store.test.ts`, and `app.test.ts` "accepts tags, normalizes them, and lists them" (201 with normalized tags; omitted gives `[]`).
+- AC-2: passed — `normalizeTags` returns `null`, `BookmarkStore.add` throws `ValidationError("invalid tag")`; `index.test.ts` "accepts 32 characters and rejects 33", `store.test.ts` and `app.test.ts` "rejects an invalid tag and stores nothing" (400 `{"error":"invalid tag"}`, list unchanged). See finding 1.
+- AC-3: passed — `GET /bookmarks` returns stored `tags`; `app.test.ts` lists `["news","tech"]` and `[]`.
+- AC-4: passed — `packages/web/src/render.ts` `<span class="tags">`; `render.test.ts` "shows tags after the title, comma separated" and "shows no tags element for a bookmark without tags"; CI `measure` job succeeded on ce69839 (baseline 891).
+- AC-5: passed — Vitest tests in all three packages; root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass at 4239db2 (this review) and in CI on ce69839.
+
+Changeset review (61b7e58): `.changeset/add-tags-to-bookmarks.md` bumps `@sample/shared`, `@sample/api`, `@sample/web` (the names in each `package.json`) as `minor`, and its summary `Add tags to bookmarks` equals pull request #31's title `[FIJIH-101] Add tags to bookmarks` without the Jira key, per `AGENTS.md`.
 
 Findings:
-1. minor — `packages/shared/src/index.ts:54`: the length check runs after `toLowerCase()` (approved Open question 5), which contradicts AC-2's "longer than 32 characters … (checked after trimming)" for characters whose lower-case form is longer. U+0130 (`İ`) lower-cases to two code points, so `POST /bookmarks` with one tag `"a".repeat(31) + "İ"` (32 code points after trimming) answers 400 `{"error":"invalid tag"}` instead of 201 (reproduced against `createApp()`; `normalizeTags(["İ".repeat(32)])` also returns `null`). Fix by measuring the trimmed tag before lower-casing, or amend AC-2 to say the check follows lower-casing.
+1. minor (carried forward from the review at 6f9843b, still present at 4239db2; accepted as a follow-up at local-qa-review, follow-up not filed yet) — `packages/shared/src/index.ts:53-54`: the length check runs after `toLowerCase()` (approved Open question 5), which contradicts AC-2's "longer than 32 characters … (checked after trimming)" for characters whose lower-case form is longer: U+0130 (`İ`) lower-cases to two code points, so `POST /bookmarks` with one tag `"a".repeat(31) + "İ"` (32 code points after trimming) answers 400 `{"error":"invalid tag"}` instead of 201. The new `README.md:18` sentence "A tag longer than 32 characters … is rejected" restates the same rule and is untrue for that input. Fix by measuring the trimmed tag before lower-casing, or amend AC-2 and the README to say the check follows lower-casing.
+2. minor (new, ce69839) — `README.md:18`: the "Bookmark tags" section, added to answer review request 5784956756#1 ("mention the tag limits"), names only two rejection rules (over 32 characters, whitespace), but `POST /bookmarks` also answers 400 `{"error":"invalid tag"}` for a blank tag (`""` or `"  "`), a non-string entry, and a `tags` value that is not an array (approved Open question 1; `packages/shared/src/index.ts:49,52,54`, covered by `packages/shared/src/index.test.ts:45-53` "rejects inner whitespace, blank tags, non-strings, and non-arrays"). Add those cases to the README sentence.
 
 Residual risks: none.
 
 Unmet validations: none.
 
-Stale statements: none found. Searched `*.md`, `*.html`, `*.json`, `*.yml` and code comments for `/bookmarks`, `tags`, `NewBookmark`, `Bookmark`, `web_bundle_gzip_bytes`, and the 835 baseline; `README.md` lines 10–11 remain true.
+Stale statements: none beyond findings 1 and 2. The diff since 6f9843b renames or changes no name, route, flag, configuration key, environment variable, command, or message; `README.md` lines 9–10 (layout table) and line 35 (CI jobs) remain true.
 
 Notes: none.
 
-Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
+Reviewed head: 4239db2aba1b0a6441348ee8d54d2c6801be259c
 
 ## Review Record
 
@@ -223,3 +230,4 @@ Review remediation (2026-11-05): human review 5784956756 by duckyduff369 (APPROV
 - 2026-11-05: Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review."; verified at 4fe4c7684d820e366eb60cf914b23d7dc21b5e84)
 - 2026-11-05: Ready for review: pull request #31 marked ready and review requested from duckyduff369 (QA Engineer, Bookmarks team per TEAMS.md); timeline review_requested at 2026-11-05T12:31:52Z. Required checks on 61b7e58 passed (test, lint, typecheck, measure, scenarios).
 - 2026-11-05: Review remediation: addressed review-body request 5784956756#1 with README tag limits (ce69839, pushed); no open findings.
+- 2026-11-05: Quality gate recorded (review-fix re-review): concerns (finding 1 carried forward; new minor finding: README tag rules omit blank, non-string, and non-array rejections) at 4239db2.
