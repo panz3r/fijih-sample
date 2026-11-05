@@ -8,16 +8,16 @@ source:
   revision: 2026-11-05T13:19:02.567+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 routing:
   class: standard
   source: rubric
   implementation_tier: standard
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-101-add-tags-to-bookmarks
   base_branch: null
@@ -161,6 +161,28 @@ Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `G
 
 ## Quality Gate
 
+Gate: concerns — every criterion is evidenced; one minor finding remains.
+
+Acceptance trace (checks re-run at 6f9843b: `pnpm test` exit 0 with shared 8, api 8, web 4 tests passed; `pnpm lint` exit 0; `pnpm typecheck` exit 0; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=891`, `web_bundle_gzip_delta=0`):
+- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (trim, lower-case, dedup in first-occurrence order, `[]` for `undefined`), `packages/api/src/store.ts` `BookmarkStore.add` stores the normalized tags, `packages/api/src/app.ts` passes `body.tags`; verification `packages/shared/src/index.test.ts` "defaults to an empty list" and "trims, lower-cases, and deduplicates…", `packages/api/src/store.test.ts` "stores normalized tags and defaults to an empty list", `packages/api/src/app.test.ts` "accepts tags, normalizes them, and lists them" (201 with `["news","tech"]`, omitted gives `[]`).
+- AC-2: implementation `normalizeTags` returns `null` for over 32 code points or `\s` after trim and lower-case, `BookmarkStore.add` throws `ValidationError("invalid tag")` before storing, mapped to 400 by `app.ts`; verification `index.test.ts` "accepts 32 characters and rejects 33" and "rejects inner whitespace, blank tags, non-strings, and non-arrays", `store.test.ts` "rejects an invalid tag and stores nothing", `app.test.ts` "rejects an invalid tag and stores nothing" (33 characters and `two words` answer 400 `{"error":"invalid tag"}`, list unchanged). See finding 1 for an edge the lower-casing creates.
+- AC-3: implementation `GET /bookmarks` returns `store.list()` with the stored `tags`; verification `app.test.ts` "accepts tags, normalizes them, and lists them" (`["news","tech"]` and `[]` in the list).
+- AC-4: implementation `packages/web/src/render.ts` appends `<span class="tags">` joined by `", "` between the title link and Remove only when tags exist; verification `packages/web/src/render.test.ts` "shows tags after the title, comma separated" (`news, tech`, next sibling of the link) and "shows no tags element for a bookmark without tags" (`li` text `ExampleRemove`); bundle baseline moved to 891 and `pnpm measure` delta 0 at 6f9843b.
+- AC-5: Vitest tests added in all three packages; root `pnpm test`, `pnpm lint`, `pnpm typecheck` pass at 6f9843b (re-run by this review).
+
+Findings:
+1. minor — `packages/shared/src/index.ts:54`: the length check runs after `toLowerCase()` (approved Open question 5), which contradicts AC-2's "longer than 32 characters … (checked after trimming)" for characters whose lower-case form is longer. U+0130 (`İ`) lower-cases to two code points, so `POST /bookmarks` with one tag `"a".repeat(31) + "İ"` (32 code points after trimming) answers 400 `{"error":"invalid tag"}` instead of 201 (reproduced against `createApp()`; `normalizeTags(["İ".repeat(32)])` also returns `null`). Fix by measuring the trimmed tag before lower-casing, or amend AC-2 to say the check follows lower-casing.
+
+Residual risks: none.
+
+Unmet validations: none.
+
+Stale statements: none found. Searched `*.md`, `*.html`, `*.json`, `*.yml` and code comments for `/bookmarks`, `tags`, `NewBookmark`, `Bookmark`, `web_bundle_gzip_bytes`, and the 835 baseline; `README.md` lines 10–11 remain true.
+
+Notes: none.
+
+Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
+
 ## Review Record
 
 ## Change Log
@@ -175,3 +197,5 @@ Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `G
 - 2026-11-05: Task 5 done: root test, lint, typecheck pass.
 - 2026-11-05: Task 6 done: baseline moved from 835 to 891 gzipped bytes.
 - 2026-11-05: Stale-statement sweep: none found.
+- 2026-11-05: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-05: Quality gate recorded: concerns (one minor finding: tag length checked after lower-casing) at 6f9843b.
