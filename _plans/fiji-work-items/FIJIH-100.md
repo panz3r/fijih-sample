@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T11:53:51.680+0100
 lifecycle:
   status: active
-  phase: automated-review
-  checkpoint: ready-for-review
-  transition: ready-for-review
+  phase: remote-review
+  checkpoint: null
+  transition: review-requested
   attempt: 1
 routing:
   class: deep
@@ -192,3 +192,5 @@ Reviewed head: f0875c43475fa081a54239c2e2ce2e16fb00b53f
 - Reconciled: finalize — commit citations added to the Implementation Record entries of Tasks 1, 2, 3, and 5 (their own commits 597cf74, bffe1e6, a6087da, e2b4ad8); File List matches the branch diff; no task or evidence discrepancies; checkpoint local-qa-review.
 - Approved: local-qa-review — Approve, accept the İ length finding as a follow-up.
 - Delivered: automated-review — draft pull request #30 opened (https://github.com/panz3r/fijih-sample/pull/30) with changeset commit 2c83e21 pushed; Copilot review requested. No (verify: ci) criteria in this work item.
+- Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review."; verified at 9202a01f770a065c91aad2498c10e8302482e883)
+- Ready for review: pull request #30 marked ready and review requested from duckyduff369 (QA Engineer; the only team member besides the author panz3r). Copilot review 5783865284 needed no change; required check `test` passed on 2c83e21.
