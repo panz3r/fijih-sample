@@ -7,11 +7,15 @@ source:
   key: FIJIH-101
   revision: 2026-11-05T13:19:02.567+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
+routing:
+  class: standard
+  source: rubric
+  implementation_tier: standard
 quality:
   gate: pending
 artifacts:
@@ -116,3 +120,5 @@ None — this change needs no configuration outside the repository added, change
 ## Change Log
 
 - 2026-11-05: Plan drafted from Jira FIJIH-101 at revision 2026-11-05T13:19:02.567+0100; issue assigned to Mattia Panzeri.
+- 2026-11-05: Approved: plan-approval — Approve with the proposed defaults for all five questions. Nothing to defer or grant. Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review. Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review. (answering: planned-check question) (answering: outside-write question)
+- 2026-11-05: Routed: implementation — standard (score 2; source rubric; binding inherit; signals tasks 6, criteria 5, ci_criteria 0, operational_requirements false, integration_or_migration_work false, figma false, open_risks 0, plan_estimate light, recorded_floor null)
