@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 routing:
   class: deep
@@ -194,6 +194,19 @@ Reviewed head: e95f5e1ab33f5b68e12b2b624c246993c2eb1558
 ## Review Record
 
 Copilot pass (PR #33, head 9facfbb): Copilot review 5787343598 (COMMENTED, 2026-11-05T15:20:17Z) reported no open issues; no review threads, no review-body requests, no conversation comments. No findings to classify; no fixes.
+
+Jira handoff draft:
+Bookmark tags are implemented in pull request #33 (https://github.com/panz3r/fijih-sample/pull/33, ready for review, head 9facfbb). Review: Copilot's review reported no open issues, and duckyduff369 (QA Engineer) approved with "Looks good."; there are no review threads or comments. CI run 42053652525 on 9facfbb: test, lint, typecheck, measure and scenarios all succeeded. Locally, `pnpm test` (shared 10, api 10, web 4 tests), `pnpm lint`, `pnpm typecheck` passed, and `pnpm measure` printed `web_bundle_gzip_delta=0` after `measure/baseline.json` `web_bundle_gzip_bytes` was changed from 835 to 881.
+
+Implementation decisions:
+- Tags are validated after trimming and lower-casing, so " News " is accepted and "Breaking News" (inner whitespace) is rejected. The 32-character limit counts Unicode code points, not UTF-16 units; a 32-character tag is accepted.
+- `POST /bookmarks` also answers 400 `{"error":"invalid tag"}` for a `tags` value that is not an array of strings (a string, `null`, an array holding a number) and for a tag that is empty after trimming. The issue did not specify these cases; they were decided as defaults at plan approval.
+- Validation order in the store is title, URL, tags, then the duplicate-URL check, so a request with an invalid tag never reaches the duplicate check.
+- The page renders tags in a `<span class="tags">` next to the title link, outside the link, so clicking a tag does not open the bookmark; no element is rendered when a bookmark has no tags.
+
+Known limitation: the add form on the web page has no tags input (`packages/web/src/main.ts` is unchanged), so tags can currently be set only through `POST /bookmarks`. Filtering by tag and editing the tags of an existing bookmark remain out of scope, as the issue states.
+
+No operational or documentation steps are required, and no follow-up issues were filed or are linked to FIJIH-103.
 
 ## Change Log
 
