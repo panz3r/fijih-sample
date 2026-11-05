@@ -33,6 +33,7 @@ Every behaviour change comes with a Vitest test in the package it changes. `pnpm
 - Change intent: every pull request that changes a package adds a changeset in `.changeset/` (`pnpm changeset`). Its summary is the pull request title without the Jira key. A pull request that changes only non-product files or CI adds none.
 - Labels: `bug` when the Jira issue type is Bug, otherwise `enhancement`.
 - Reviewers: the owning team in [TEAMS.md](TEAMS.md). A pull request needs one approval, from the team's QA Engineer, before it is ready to merge.
+- Review process: mark the pull request ready with no reviewers requested. The pull request author then runs the pre-review step `scripts/check-scenarios`. When it passes, the author requests review from the owning team's QA Engineer; when it fails, the author fixes it first.
 - Required check: the `test` job of the `ci` workflow (enforced by the `main` ruleset).
 
 ## Jira
