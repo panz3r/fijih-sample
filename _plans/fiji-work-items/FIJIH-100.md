@@ -7,11 +7,15 @@ source:
   key: FIJIH-100
   revision: 2026-11-05T11:53:51.680+0100
 lifecycle:
-  status: draft
-  phase: plan
-  checkpoint: plan-approval
+  status: active
+  phase: implementation
+  checkpoint: null
   transition: plan-complete
   attempt: 1
+routing:
+  class: deep
+  source: rubric
+  implementation_tier: deep
 quality:
   gate: pending
 artifacts:
@@ -116,3 +120,6 @@ None — this change needs no configuration outside the repository added, change
 ## Review Record
 
 ## Change Log
+
+- Approved: plan-approval — Approve with the proposed defaults for Q1–Q6. Nothing to defer or grant.
+- Routed: implementation — deep (score 5; source rubric; binding inherit)
