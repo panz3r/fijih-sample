@@ -8,16 +8,16 @@ source:
   revision: 2026-11-05T11:53:51.680+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 routing:
   class: deep
   source: rubric
   implementation_tier: deep
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-100-add-tags
   base_branch: null
@@ -151,9 +151,35 @@ AC-8: passed — `pnpm measure` prints web_bundle_gzip_bytes=881, web_bundle_gzi
 
 ## Quality Gate
 
+Gate: concerns
+
+Acceptance trace (reviewed head f0875c4; full branch diff against `main`):
+
+- AC-1: implementation `packages/shared/src/index.ts` `normalizeTags` (`undefined` gives `[]`), `packages/api/src/store.ts` `add`; verification `store.test.ts` "defaults tags to an empty list", `app.test.ts` "defaults to an empty list, normalises, and returns tags on GET" (201 body `tags: []`). Root `pnpm test` exit 0 at f0875c4.
+- AC-2: implementation `normalizeTags` (trim, lower-case, `Set` in first-occurrence order); verification shared "trims and lower-cases" and "dedupes after case-folding", store "normalises tags", app round trip `[" Work ", "work", "Read"]` gives `["work","read"]`.
+- AC-3: implementation `normalizeTags` length (`[...tag].length > 32`) and `/\s/` checks, `store.add` throws `ValidationError("invalid tag")` before storing; verification shared 32/33 ASCII and emoji cases, store 32 accepted and 33/whitespace rejected with empty list, app 400 `{"error":"invalid tag"}` for 33 characters and inner whitespace with list length unchanged. See finding 1 for one edge case.
+- AC-4: implementation `normalizeTags` non-array, non-string entry, and empty-after-trim branches; verification shared (`"work"`, `null`, `{}`, `["a", 1]`, `""`, `"   "`), store (string, null, number entry, empty), app (non-array, null, empty) each 400 `invalid tag` and nothing stored.
+- AC-5: implementation `store.ts` saves `tags` on the bookmark, `GET /bookmarks` returns `store.list()`; verification `app.test.ts` GET returns `["work","read"]` and `[]`.
+- AC-6: implementation `packages/web/src/render.ts` appends `span.tags` with `textContent = tags.join(", ")` between link and Remove only when tags exist; verification `render.test.ts` children `A, SPAN, BUTTON`, text `work, read`, and no `.tags` with `li` text `ExampleRemove` when empty.
+- AC-7: tests in all three packages cover AC 1–6; this review ran `pnpm test` (shared 11, api 19, web 4 passed), `pnpm lint`, and `pnpm typecheck` from the root at f0875c4, each exit 0.
+- AC-8: `measure/baseline.json` is 881; this review ran `pnpm build && pnpm measure` at f0875c4: `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`.
+
+Findings:
+
+1. minor — `packages/shared/src/index.ts:54`: `normalizeTags` measures the 32-code-point limit after `toLowerCase()`, but AC-3 and Open question 4 (approved default) count it on the trimmed tag. U+0130 (LATIN CAPITAL LETTER I WITH DOT ABOVE) lower-cases to two code points, so a trimmed tag of exactly 32 code points is rejected. Repro: `POST /bookmarks` with `{"url":"https://x.example.com","title":"X","tags":["İ" repeated 32 times]}` answers 400 `{"error":"invalid tag"}` (trimmed length 32, lower-cased length 64). Only this character in Unicode expands on lower-casing, and only tags near the limit are affected. Fix: check the length on the trimmed tag before lower-casing, or decide in the product that the limit applies to the stored tag and amend AC-3.
+
+Residual risks: none.
+
+Stale statements: none. The README `packages/shared` row lists examples ("URL validation and normalisation, sorting") and is still true. The README route list is unchanged and accurate.
+
+Notes: none.
+
+Reviewed head: f0875c43475fa081a54239c2e2ce2e16fb00b53f
+
 ## Review Record
 
 ## Change Log
 
 - Approved: plan-approval — Approve with the proposed defaults for Q1–Q6. Nothing to defer or grant.
 - Routed: implementation — deep (score 5; source rubric; binding inherit)
+- Approved: implementation-approval — automatic (no risk triggers)
