@@ -63,8 +63,8 @@ Source: Jira [FIJIH-102](https://external-team-p2ipk4vi.atlassian.net/browse/FIJ
 - [x] Web: show tags after the title (AC: 4, 5)
   - [x] In `packages/web/src/render.ts`, after the link, append the bookmark's tags joined by the Open question 5 separator. Append nothing when `tags` is empty.
   - [x] Update `packages/web/src/render.test.ts` fixtures for the new `tags` field. Add tests for a bookmark with tags (comma-separated text after the title) and one without (no tags text).
-- [ ] Release: re-measure the web bundle (AC: 4)
-  - [ ] Run `pnpm build` then `pnpm measure`. When the gzipped web bundle size differs from `measure/baseline.json` (`web_bundle_gzip_bytes: 835`), update `measure/baseline.json` in this change, as `AGENTS.md` requires.
+- [x] Release: re-measure the web bundle (AC: 4)
+  - [x] Run `pnpm build` then `pnpm measure`. When the gzipped web bundle size differs from `measure/baseline.json` (`web_bundle_gzip_bytes: 835`), update `measure/baseline.json` in this change, as `AGENTS.md` requires.
 - [ ] Run the repository checks (AC: 5)
   - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
 
@@ -116,6 +116,7 @@ None — this change needs no configuration outside the repository added, change
 - packages/api/src/app.test.ts
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
+- measure/baseline.json
 
 ## Implementation Record
 
@@ -131,11 +132,14 @@ Task 3 — Web: `renderList` appends a `span.tags` with `tags.join(", ")` after 
 - Hypothesis: one conditional element satisfies AC 4 with no stray separator. Confirmed by two new jsdom tests.
 - Focused: `pnpm --filter @sample/web test` passed (4 tests); `pnpm --filter @sample/web typecheck` passed; `pnpm lint packages/web` passed.
 
+Task 4 — Release: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46` against the 835 baseline; `measure/baseline.json` updated to 881.
+- Re-run `pnpm measure` after the update: `web_bundle_gzip_delta=0`.
+
 ## Validation Evidence
 
 - AC-1: passed — `packages/api/src/app.test.ts` POST with mixed-case, padded, duplicate tags returns 201 with `["work","home"]`; omitted gives `[]`; shared and store tests pass.
 - AC-2: passed — `app.test.ts` 33-character and internal-whitespace tags answer 400 `{"error":"invalid tag"}` and the bookmark is not listed.
-- AC-4: passed — `render.test.ts` tags render as `work, home` directly after the title link and before Remove; no `.tags` element and `ExampleRemove` text when none.
+- AC-4: passed — web bundle re-measured at 881 gzip bytes (baseline updated from 835); `render.test.ts` tags render as `work, home` directly after the title link and before Remove; no `.tags` element and `ExampleRemove` text when none.
 - AC-3: passed — `app.test.ts` GET returns each bookmark's `tags` (`[]` when none).
 
 ## Quality Gate
@@ -150,3 +154,4 @@ Task 3 — Web: `renderList` appends a `span.tags` with `tags.join(", ")` after 
 - 2026-11-05: Task 1 implemented (shared tag types and `normalizeTags`).
 - 2026-11-05: Task 2 implemented (API accepts, validates, stores, returns tags).
 - 2026-11-05: Task 3 implemented (web shows tags after the title).
+- 2026-11-05: Task 4 done (bundle 835 -> 881 gzip bytes; baseline updated).
