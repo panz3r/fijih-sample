@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 routing:
   class: standard
@@ -121,18 +121,22 @@ None — this change needs no configuration outside the repository added, change
 ## Implementation Record
 
 Task 1 — Shared: `Bookmark.tags`, optional `NewBookmark.tags`, and pure `normalizeTags(input: unknown): string[] | null` (`null` means invalid; `undefined` gives `[]`).
+(commit 238573d)
 - Hypothesis: a single pure function covering the Open questions 1-4 defaults satisfies AC 1 and 2 at the shared level. Confirmed by 8 new tests (12 total in shared).
 - Focused: `pnpm --filter @sample/shared test` passed; `pnpm --filter @sample/shared typecheck` passed; `pnpm lint packages/shared` passed.
 
 Task 2 — API: `BookmarkStore.add` normalizes tags with `normalizeTags` after the title and URL checks and before the duplicate-URL check, throwing `ValidationError("invalid tag")`; `app.ts` passes `body.tags`.
+(commit 0dbec87)
 - Hypothesis: store-level validation maps to `400 {"error":"invalid tag"}` through the existing `ValidationError` handler. Confirmed by store and HTTP tests.
 - Focused: `pnpm --filter @sample/api test` passed (17 tests); `pnpm --filter @sample/api typecheck` passed; `pnpm lint packages/api` passed.
 
 Task 3 — Web: `renderList` appends a `span.tags` with `tags.join(", ")` after the link and before Remove, and nothing when `tags` is empty; existing fixture gets `tags: []`.
+(commit 360924b)
 - Hypothesis: one conditional element satisfies AC 4 with no stray separator. Confirmed by two new jsdom tests.
 - Focused: `pnpm --filter @sample/web test` passed (4 tests); `pnpm --filter @sample/web typecheck` passed; `pnpm lint packages/web` passed.
 
 Task 4 — Release: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46` against the 835 baseline; `measure/baseline.json` updated to 881.
+(commit cf8d2d5)
 - Re-run `pnpm measure` after the update: `web_bundle_gzip_delta=0`.
 
 Task 5 — Repository checks from the root: `pnpm test` passed (shared 12, api 17, web 4 tests), `pnpm lint` passed, `pnpm typecheck` passed.
@@ -188,3 +192,4 @@ Reviewed head: 104eda901b909bd6bd2de0c7ef230f1b0508c182
 - 2026-11-05: Task 5 checks passed; stale-statement sweep found nothing; implementation complete, awaiting `implementation-approval`.
 - 2026-11-05: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-05: Quality gate recorded: concerns (two minor findings) at 104eda9.
+- 2026-11-05: Local QA review finalize: every task and acceptance criterion has committed evidence on the branch since main; no task/evidence discrepancies. Routine reconciliation: added `(commit <short hash>)` lines under the Task 1–4 Implementation Record entries (238573d, 0dbec87, 360924b, cf8d2d5); File List already matched the branch diff. Two minor quality-review findings are carried as follow-ups, not fixed here.
