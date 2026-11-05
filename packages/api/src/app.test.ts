@@ -43,4 +43,36 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+
+  it("defaults tags to an empty array", async () => {
+    const res = await post({ url: "https://tags.example.com/none", title: "No tags" });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual([]);
+  });
+
+  it("normalizes tags and returns them from GET", async () => {
+    const res = await post({ url: "https://tags.example.com/some", title: "Tags", tags: [" News ", "news", "Tech"] });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { tags: string[] }).tags).toEqual(["news", "tech"]);
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string; tags: string[] }[];
+    expect(list.find((b) => b.url === "https://tags.example.com/some")?.tags).toEqual(["news", "tech"]);
+  });
+
+  it("rejects invalid tags with 400 and stores nothing", async () => {
+    const bad: unknown[] = [["a".repeat(33)], ["breaking news"], [""], "news", null, [1]];
+    for (const [i, tags] of bad.entries()) {
+      const res = await post({ url: `https://tags.example.com/bad${i}`, title: "Bad", tags });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "invalid tag" });
+    }
+    const list = (await (await fetch(`${base}/bookmarks`)).json()) as { url: string }[];
+    expect(list.some((b) => b.url.includes("/bad"))).toBe(false);
+  });
+
+  it("accepts a 32-character tag", async () => {
+    const res = await post({ url: "https://tags.example.com/edge", title: "Edge", tags: ["a".repeat(32)] });
+    expect(res.status).toBe(201);
+  });
 });
