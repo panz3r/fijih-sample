@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T13:19:02.567+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 routing:
   class: standard
@@ -21,7 +21,7 @@ quality:
 artifacts:
   branch: FIJIH-101-add-tags-to-bookmarks
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/31
   jira_context_comment_id: null
 ---
 
@@ -204,4 +204,6 @@ Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
 - 2026-11-05: Stale-statement sweep: none found.
 - 2026-11-05: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-05: Quality gate recorded: concerns (one minor finding: tag length checked after lower-casing) at 6f9843b.
+- 2026-11-05: Approved: local-qa-review — Approve, accept the İ length finding as a follow-up.
+- 2026-11-05: Delivery: changeset `.changeset/add-tags-to-bookmarks.md` added (commit 61b7e58, minor for @sample/shared, @sample/api, @sample/web); branch pushed; draft pull request #31 created (title `[FIJIH-101] Add tags to bookmarks`, label enhancement, assignee panz3r, base main); Copilot review requested (timeline review_requested event at 2026-11-05T12:28:14Z). Human review not requested: ready-for-review is not approved yet.
 - 2026-11-05: Finalize: every task and acceptance criterion has committed evidence; added `(commit <hash>)` lines to the Implementation Record entries for Tasks 1, 2, 3, 4, and 6; File List already covers the branch diff; no bookkeeping slips found. Quality gate finding 1 left open for the Local QA review checkpoint.
