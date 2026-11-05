@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T15:02:12.721+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 routing:
   class: standard
@@ -21,7 +21,7 @@ quality:
 artifacts:
   branch: FIJIH-102-add-bookmark-tags
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/32
   jira_context_comment_id: null
 ---
 
@@ -193,3 +193,5 @@ Reviewed head: 104eda901b909bd6bd2de0c7ef230f1b0508c182
 - 2026-11-05: Approved: implementation-approval — automatic (no risk triggers)
 - 2026-11-05: Quality gate recorded: concerns (two minor findings) at 104eda9.
 - 2026-11-05: Local QA review finalize: every task and acceptance criterion has committed evidence on the branch since main; no task/evidence discrepancies. Routine reconciliation: added `(commit <short hash>)` lines under the Task 1–4 Implementation Record entries (238573d, 0dbec87, 360924b, cf8d2d5); File List already matched the branch diff. Two minor quality-review findings are carried as follow-ups, not fixed here.
+- 2026-11-05: Approved: local-qa-review — Approve, accept both minor findings as follow-ups.
+- 2026-11-05: Delivery: added changeset `.changeset/add-tags-to-bookmarks.md` and pushed it; opened draft pull request #32 (https://github.com/panz3r/fijih-sample/pull/32) with label `enhancement`, base `main`, and requested a Copilot automated review (`review_requested` for Copilot on the timeline). Pull request stays draft; human reviewers not requested yet.
