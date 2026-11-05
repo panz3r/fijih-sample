@@ -8,16 +8,16 @@ source:
   revision: 2026-11-05T15:02:12.721+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 routing:
   class: standard
   source: rubric
   implementation_tier: standard
 quality:
-  gate: pending
+  gate: concerns
 artifacts:
   branch: FIJIH-102-add-bookmark-tags
   base_branch: null
@@ -151,6 +151,29 @@ Stale-statement sweep — `NewBookmark`, `POST /bookmarks`, `GET /bookmarks`, `r
 
 ## Quality Gate
 
+Gate: `concerns` — every acceptance criterion is evidenced and every required validation passed; two `minor` findings remain as follow-ups.
+
+Acceptance trace:
+
+- AC-1: implementation `packages/shared/src/index.ts` (`normalizeTags`, `NewBookmark.tags`), `packages/api/src/store.ts:17-23` (normalized tags stored), `packages/api/src/app.ts:23-24` (`body.tags` passed through). Verification: `packages/shared/src/index.test.ts` (trim, lower-case, first-occurrence dedup, `[]` default), `packages/api/src/store.test.ts` ("stores normalized tags and defaults to []"), `packages/api/src/app.test.ts` (201 with `["work","home"]`; omitted gives `[]`). Re-run at 104eda9: `pnpm test` passed (shared 12, api 17, web 4).
+- AC-2: implementation `packages/shared/src/index.ts` (length over 32 code points, whitespace, empty, non-array, non-string rejected), `packages/api/src/store.ts:18` (`ValidationError("invalid tag")` before the bookmark is stored). Verification: `store.test.ts` six rejected cases leave the list empty, 32-character tag accepted; `app.test.ts` 33-character and internal-whitespace tags answer `400 {"error":"invalid tag"}` and are not listed. Live probe at 104eda9: `tags: null`, `tags: {}`, and `["x y"]` each answered `{"error":"invalid tag"}`.
+- AC-3: implementation `packages/api/src/store.ts:23` (every stored bookmark carries `tags`). Verification: `app.test.ts` GET returns `["work","home"]` and `[]`; live probe GET listed `tags` on every bookmark.
+- AC-4: implementation `packages/web/src/render.ts:21-28` (`span.tags` with `tags.join(", ")` after the link, before Remove, omitted when empty; `textContent`, so tag text is not parsed as HTML). Verification: `packages/web/src/render.test.ts` ("work, home" is the link's next sibling and precedes the button; no `.tags` and `li` text `ExampleRemove` when none). Release: `pnpm build` then `pnpm measure` at 104eda9 printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0` against the updated `measure/baseline.json`.
+- AC-5: new Vitest tests in all three packages; at 104eda9 `pnpm test` exit 0, `pnpm lint` exit 0, `pnpm typecheck` exit 0.
+
+Findings:
+
+1. `minor` — `packages/web/index.html:11` with `packages/web/src/render.ts:21-28`: the list item style is `li { display: flex; justify-content: space-between; }`, so the new `span.tags` becomes the middle of three flex items and is laid out centred between the title and the Remove button, not next to the title as the issue context asks ("the page shows them next to the title"); with no gap, a title long enough to use the free space leaves the tags text touching the title with no space (for example `Long titlework, home`). AC-4 (tags after the title, comma separated) and the Open question 5 DOM placement still hold. Follow-up: give `.tags` a left margin and keep it beside the title (for example wrap link and tags, or `margin-right: auto` on `.tags`).
+2. `minor` — stale statement: `README.md:9` describes `packages/shared` as "Types and pure functions (URL validation and normalisation, sorting)"; the change adds tag normalisation (`normalizeTags`) to that package, so the list no longer describes it. The Implementation Record sweep checked `README.md` line 10 only.
+
+Residual risks: none.
+
+Notes: none.
+
+Not findings (checked): a JSON body of `null` answers `500` because `body.url` is read from `null` in `packages/api/src/app.ts:24`; this is unchanged from the base (the same expression existed there), not introduced by this change. `"İSTANBUL"` lower-cases to `"i̇stanbul"` (an added combining dot), consistent with the approved Open question 3 default of checking the normalized tag.
+
+Reviewed head: 104eda901b909bd6bd2de0c7ef230f1b0508c182
+
 ## Review Record
 
 ## Change Log
@@ -163,3 +186,5 @@ Stale-statement sweep — `NewBookmark`, `POST /bookmarks`, `GET /bookmarks`, `r
 - 2026-11-05: Task 3 implemented (web shows tags after the title).
 - 2026-11-05: Task 4 done (bundle 835 -> 881 gzip bytes; baseline updated).
 - 2026-11-05: Task 5 checks passed; stale-statement sweep found nothing; implementation complete, awaiting `implementation-approval`.
+- 2026-11-05: Approved: implementation-approval — automatic (no risk triggers)
+- 2026-11-05: Quality gate recorded: concerns (two minor findings) at 104eda9.
