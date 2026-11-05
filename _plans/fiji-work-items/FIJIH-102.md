@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: remote-review
-  checkpoint: null
-  transition: review-requested
+  checkpoint: jira-handoff
+  transition: handoff-drafted
   attempt: 1
 routing:
   class: standard
@@ -183,6 +183,21 @@ Reviewed head: 104eda901b909bd6bd2de0c7ef230f1b0508c182
 Copilot pass (review 5786298785 on 8e36bd3, 2026-11-05): one inline finding, no review-body requests.
 
 - Thread `PRRT_kwDOVaYq_M60GrRT` (`packages/web/src/render.ts:26`, tags span is a third flex item, not beside the title): disposition `deferred`, follow-up not filed yet. It repeats Quality Gate finding 1, which the user accepted at `local-qa-review` ("Approve, accept both minor findings as follow-ups."). Reply: quoted that decision, said the follow-up is not filed yet; thread resolved.
+
+Jira handoff draft:
+Outcome: bookmarks now carry optional tags. `POST /bookmarks` accepts a `tags` array (trimmed, lower-cased, deduplicated in input order, `[]` when omitted) and answers `400 {"error":"invalid tag"}` for an invalid tag; `GET /bookmarks` returns each bookmark's `tags`; the web page shows them after the title, comma separated, and nothing when there are none. Pull request: https://github.com/panz3r/fijih-sample/pull/32 (approved by `duckyduff369`, the QA Engineer).
+
+Validation: `pnpm test` (shared 12, api 17, web 4 tests), `pnpm lint`, and `pnpm typecheck` passed from the repository root at 104eda9. The `ci` workflow run 42042653181 on pull request head 8e36bd3 concluded `success`. The gzipped web bundle moved from 835 to 881 bytes and `measure/baseline.json` was updated in this change.
+
+Decisions: tags are validated once, in `BookmarkStore.add`, using a pure `normalizeTags` in `packages/shared`. The six planning questions were approved at their defaults: a non-array `tags` or a non-string entry, and an empty tag after trimming, answer `400 {"error":"invalid tag"}`; the length limit applies to the normalized tag, counted in Unicode code points; the page separator is `", "`; the add form has no tags input, so tags are set through the API only.
+
+Follow-ups (none filed yet):
+- Tag length limit: after implementation, Jira acceptance criterion 2 changed from 32 to 24 characters. The implementation and its tests stay at 32 characters; changing the limit is a follow-up.
+- Tag placement: `li` is `display: flex; justify-content: space-between` in `packages/web/index.html:11`, so the tags span is laid out between the title and the Remove button instead of next to the title, and a long title can touch the tags text with no space. Acceptance criterion 4 still holds. Fix: give `.tags` a left margin and keep it beside the title.
+- Stale README: `README.md:9` describes `packages/shared` without tag normalisation.
+- Possible follow-up: a Jira comment asked whether tags could be in a future CSV export. It states no requirement for this change, and no CSV export exists.
+
+Residual risks: none. Operational or documentation steps: none.
 
 ## Change Log
 
