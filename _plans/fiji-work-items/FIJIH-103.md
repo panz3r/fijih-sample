@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 routing:
   class: deep
@@ -141,9 +141,13 @@ None — this change needs no configuration outside the repository added, change
 
 ## Implementation Record
 Task 1 — add Bookmark.tags and normalizeTags with shared tests (shared test, lint, typecheck pass; 10 tests)
+  (commit a6dcc10)
 Task 2 — BookmarkStore.add validates and stores normalized tags (api tests pass)
+  (commit 5b28158)
 Task 3 — POST /bookmarks passes tags to the store; HTTP tests for 201/400 paths
+  (commit ba5676a)
 Task 4 — renderList shows tags span after the title; .tags style; web tests
+  (commit 4969601)
 Task 5 — ran pnpm test, lint, typecheck from the root; all pass
   (checked at 6276535)
 Task 6 — baseline.json web_bundle_gzip_bytes 835 -> 881; pnpm build then pnpm measure prints web_bundle_gzip_delta=0
@@ -199,3 +203,4 @@ Task 3 done
 Task 4 done
 - Implementation complete; validations passed.
 - Approved: implementation-approval — automatic (no risk triggers)
+- Finalize (local QA review): reconciled Implementation Record with commits; added `(commit <short hash>)` to the Task 1–4 entries (their own commits a6dcc10, 5b28158, ba5676a, 4969601). File List matches the branch diff (10 files). No task or criterion lacks evidence; no discrepancies.
