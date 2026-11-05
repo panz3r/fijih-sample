@@ -10,7 +10,7 @@ lifecycle:
   status: active
   phase: remote-review
   checkpoint: null
-  transition: review-requested
+  transition: review-remediated
   attempt: 1
 routing:
   class: standard
@@ -123,6 +123,8 @@ None — this change needs no configuration outside the repository added, change
 - packages/shared/src/index.ts
 - packages/shared/src/index.test.ts
 
+- README.md
+
 ## Implementation Record
 
 Task 1 — shared tag model and `normalizeTags`
@@ -155,6 +157,11 @@ Task 6 — bundle size baseline
 
 Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `GET /bookmarks`, `web_bundle_gzip_bytes`/835 baseline, "invalid tag"
 - none found: README.md endpoint list and the baseline note remain true; scenario notes describe FIJIₕ behaviour, not product statements. Searched `*.md`, `*.json`, `*.yml`, `*.html`.
+
+Review remediation — README documents the tag limits (review 5784956756#1)
+(commit ce69839)
+- Added a "Bookmark tags" section to `README.md`: optional `tags`, normalization, the 32-character and no-whitespace limits, `400 {"error":"invalid tag"}`. Docs only, no behaviour change, so no new test and no changeset or baseline change.
+- Validation at ce69839: `pnpm test`, `pnpm lint`, `pnpm typecheck` pass; CI run 42028184473 (`ci`) succeeded on that head.
 
 ## Validation Evidence
 
@@ -192,6 +199,9 @@ Reviewed head: 6f9843b8bb7372d4c584e6b20d1d1b81b6a65f3b
 
 Copilot pass (2026-11-05): Copilot review 5784923435 (submitted 2026-11-05T12:29:58Z on head 61b7e58) is a COMMENTED overview recommending approval with no open issues. It has no review threads and no requests or questions to answer, so there are no findings, fixes, replies, or resolutions. The İ (U+0130) length finding stays deferred to a follow-up, per the local-qa-review approval (follow-up not filed yet).
 
+Review remediation (2026-11-05): human review 5784956756 by duckyduff369 (APPROVED on head 61b7e58) has no threads and one request in its body.
+- 5784956756#1 — "Please also mention the tag limits in the README before merging." Disposition: valid. Fix: commit ce69839 (README "Bookmark tags" section). Reply: pull request conversation comment https://github.com/panz3r/fijih-sample/pull/31#issuecomment-6658091921 quoting the request and citing ce69839. Resolved: true. No re-review requested: the review is a non-blocking approval.
+
 ## Change Log
 
 - 2026-11-05: Plan drafted from Jira FIJIH-101 at revision 2026-11-05T13:19:02.567+0100; issue assigned to Mattia Panzeri.
@@ -212,3 +222,4 @@ Copilot pass (2026-11-05): Copilot review 5784923435 (submitted 2026-11-05T12:29
 - 2026-11-05: Copilot pass: Copilot review 5784923435 on head 61b7e58 raised no findings; no fixes. Checkpoint ready-for-review.
 - 2026-11-05: Approved: ready-for-review — automatic (no risk triggers; Notify consent at plan-approval: "Notify: when Copilot's review needed no change and every required check passes, mark the pull request ready and request review from duckyduff369 without stopping at ready-for-review."; verified at 4fe4c7684d820e366eb60cf914b23d7dc21b5e84)
 - 2026-11-05: Ready for review: pull request #31 marked ready and review requested from duckyduff369 (QA Engineer, Bookmarks team per TEAMS.md); timeline review_requested at 2026-11-05T12:31:52Z. Required checks on 61b7e58 passed (test, lint, typecheck, measure, scenarios).
+- 2026-11-05: Review remediation: addressed review-body request 5784956756#1 with README tag limits (ce69839, pushed); no open findings.
