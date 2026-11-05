@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 routing:
   class: standard
@@ -65,8 +65,8 @@ Source: Jira [FIJIH-102](https://external-team-p2ipk4vi.atlassian.net/browse/FIJ
   - [x] Update `packages/web/src/render.test.ts` fixtures for the new `tags` field. Add tests for a bookmark with tags (comma-separated text after the title) and one without (no tags text).
 - [x] Release: re-measure the web bundle (AC: 4)
   - [x] Run `pnpm build` then `pnpm measure`. When the gzipped web bundle size differs from `measure/baseline.json` (`web_bundle_gzip_bytes: 835`), update `measure/baseline.json` in this change, as `AGENTS.md` requires.
-- [ ] Run the repository checks (AC: 5)
-  - [ ] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
+- [x] Run the repository checks (AC: 5)
+  - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root.
 
 ## Engineering Context
 
@@ -135,11 +135,18 @@ Task 3 — Web: `renderList` appends a `span.tags` with `tags.join(", ")` after 
 Task 4 — Release: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=46` against the 835 baseline; `measure/baseline.json` updated to 881.
 - Re-run `pnpm measure` after the update: `web_bundle_gzip_delta=0`.
 
+Task 5 — Repository checks from the root: `pnpm test` passed (shared 12, api 17, web 4 tests), `pnpm lint` passed, `pnpm typecheck` passed.
+(checked at cf8d2d5)
+
+Stale-statement sweep — `NewBookmark`, `POST /bookmarks`, `GET /bookmarks`, `renderList`, `tags`, `createdAt`, `835`, `web_bundle_gzip_bytes`
+- none found. `README.md` line 10 (`GET/POST /bookmarks`) remains true. Scenario notes and work items are historical records and left as written.
+
 ## Validation Evidence
 
 - AC-1: passed — `packages/api/src/app.test.ts` POST with mixed-case, padded, duplicate tags returns 201 with `["work","home"]`; omitted gives `[]`; shared and store tests pass.
 - AC-2: passed — `app.test.ts` 33-character and internal-whitespace tags answer 400 `{"error":"invalid tag"}` and the bookmark is not listed.
 - AC-4: passed — web bundle re-measured at 881 gzip bytes (baseline updated from 835); `render.test.ts` tags render as `work, home` directly after the title link and before Remove; no `.tags` element and `ExampleRemove` text when none.
+- AC-5: passed — `pnpm test` (shared 12, api 17, web 4 tests), `pnpm lint`, and `pnpm typecheck` pass from the repository root; new Vitest tests exist in all three packages.
 - AC-3: passed — `app.test.ts` GET returns each bookmark's `tags` (`[]` when none).
 
 ## Quality Gate
@@ -155,3 +162,4 @@ Task 4 — Release: `pnpm build` then `pnpm measure` printed `web_bundle_gzip_by
 - 2026-11-05: Task 2 implemented (API accepts, validates, stores, returns tags).
 - 2026-11-05: Task 3 implemented (web shows tags after the title).
 - 2026-11-05: Task 4 done (bundle 835 -> 881 gzip bytes; baseline updated).
+- 2026-11-05: Task 5 checks passed; stale-statement sweep found nothing; implementation complete, awaiting `implementation-approval`.
