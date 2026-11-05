@@ -43,4 +43,31 @@ describe("bookmarks api", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "url must be http or https" });
   });
+
+  describe("tags", () => {
+    const post = (body: unknown) => fetch(`${base}/bookmarks`, { method: "POST", body: JSON.stringify(body) });
+
+    it("defaults to an empty list, normalises, and returns tags on GET", async () => {
+      const plain = await post({ url: "https://tags.example.com/plain", title: "Plain" });
+      expect(plain.status).toBe(201);
+      expect(((await plain.json()) as { tags: string[] }).tags).toEqual([]);
+      const tagged = await post({ url: "https://tags.example.com/tagged", title: "Tagged", tags: [" Work ", "work", "Read"] });
+      expect(tagged.status).toBe(201);
+      expect(((await tagged.json()) as { tags: string[] }).tags).toEqual(["work", "read"]);
+      const list = (await (await fetch(`${base}/bookmarks`)).json()) as { title: string; tags: string[] }[];
+      expect(list.find((b) => b.title === "Tagged")?.tags).toEqual(["work", "read"]);
+      expect(list.find((b) => b.title === "Plain")?.tags).toEqual([]);
+    });
+
+    it.each([["33 characters", ["a".repeat(33)]], ["inner whitespace", ["to read"]], ["non-array", "work"], ["null", null], ["empty", [" "]]])(
+      "answers 400 for an invalid tag (%s) and stores nothing",
+      async (_name, tags) => {
+        const before = ((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length;
+        const res = await post({ url: "https://tags.example.com/bad", title: "Bad", tags });
+        expect(res.status).toBe(400);
+        expect(await res.json()).toEqual({ error: "invalid tag" });
+        expect(((await (await fetch(`${base}/bookmarks`)).json()) as unknown[]).length).toBe(before);
+      },
+    );
+  });
 });
