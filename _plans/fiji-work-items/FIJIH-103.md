@@ -8,16 +8,16 @@ source:
   revision: 2026-11-05T16:10:06.551+0100
 lifecycle:
   status: active
-  phase: implementation
-  checkpoint: implementation-approval
-  transition: implementation-complete
+  phase: qa-review
+  checkpoint: null
+  transition: quality-gate-recorded
   attempt: 1
 routing:
   class: deep
   source: rubric
   implementation_tier: deep
 quality:
-  gate: pending
+  gate: pass
 artifacts:
   branch: FIJIH-103-add-tags-to-bookmarks
   base_branch: null
@@ -163,6 +163,30 @@ Stale-statement sweep — Bookmark, NewBookmark, tags, normalizeTags, POST /book
 
 ## Quality Gate
 
+Gate: pass
+
+Acceptance trace (validations rerun at e95f5e1: `pnpm test` exit 0 with shared 10, api 10, web 4 tests; `pnpm lint` exit 0; `pnpm typecheck` exit 0; `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=881`, `web_bundle_gzip_delta=0`):
+- AC-1: `packages/shared/src/index.ts` `normalizeTags(undefined)` gives `[]`; `packages/api/src/store.ts` stores it; `packages/api/src/app.ts` passes `body.tags`. Verified by `index.test.ts` "defaults to an empty list", `store.test.ts` "defaults tags to [] …", `app.test.ts` "defaults tags to an empty array" (201, `tags: []`).
+- AC-2: `normalizeTags` trims, lower-cases, and dedupes through a `Set` that keeps insertion order. Verified by `index.test.ts` "trims, lower-cases, and dedupes keeping input order" and `[]` case, `store.test.ts` list check, `app.test.ts` "normalizes tags and returns them from GET" (`[" News ", "news", "Tech"]` → `["news", "tech"]`).
+- AC-3: `[...tag].length > 32` and `/\s/` checks after trim and lower-case; `ValidationError("invalid tag")` thrown before the store is changed. Verified by `index.test.ts` 32/33 ASCII and emoji code points, inner whitespace; `app.test.ts` 33-character and `"breaking news"` tags answer 400 `{"error":"invalid tag"}` with nothing stored, "accepts a 32-character tag" answers 201.
+- AC-4: non-array, `null`, non-string element, and empty-after-trim tags give `null`, so 400 `invalid tag`. Verified by `index.test.ts`, `store.test.ts` "throws invalid tag and stores nothing", and `app.test.ts` "rejects invalid tags with 400 and stores nothing" (`""`, `"news"`, `null`, `[1]`).
+- AC-5: `GET /bookmarks` returns `store.list()` whose items hold `tags`. Verified by `app.test.ts` "normalizes tags and returns them from GET".
+- AC-6: `packages/web/src/render.ts` appends `<span class="tags">` with `tags.join(", ")` after the `<a>`, only when tags exist; `.tags` style in `packages/web/index.html`. Verified by `render.test.ts` "renders tags after the title link, joined by a comma" and "renders no tags element when there are no tags".
+- AC-7: tests in all three packages cover AC 1–6; `pnpm test`, `pnpm lint`, `pnpm typecheck` pass at the root (rerun above).
+- AC-8: `measure/baseline.json` `web_bundle_gzip_bytes` 881; `pnpm measure` prints `web_bundle_gzip_delta=0` (rerun above).
+
+Product decisions: the design decisions (validation after trim and lower-case, code-point length, title → URL → tags → duplicate order, tags outside the link) and Open question defaults 1–4 match the acceptance criteria; none contradicts one.
+
+Findings: none.
+
+Residual risks: none.
+
+Stale-statement check: searched README.md, AGENTS.md, scenarios/, scripts/, `packages/web/vite.config.ts`, and source doc comments for `Bookmark`, `NewBookmark`, `tags`, `createdAt`, and `/bookmarks`; none is made untrue (README's `GET/POST /bookmarks` line still holds).
+
+Notes: none.
+
+Reviewed head: e95f5e1ab33f5b68e12b2b624c246993c2eb1558
+
 ## Review Record
 
 ## Change Log
@@ -174,3 +198,4 @@ Task 2 done
 Task 3 done
 Task 4 done
 - Implementation complete; validations passed.
+- Approved: implementation-approval — automatic (no risk triggers)
