@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: qa-review
-  checkpoint: null
-  transition: quality-gate-recorded
+  checkpoint: local-qa-review
+  transition: qa-reviewed
   attempt: 1
 routing:
   class: deep
@@ -124,15 +124,19 @@ None — this change needs no configuration outside the repository added, change
 ## Implementation Record
 
 Task 1 — shared tags model and normalizeTags
+(commit 597cf74)
 Added `tags: string[]` to `Bookmark`, `tags?: unknown` to `NewBookmark`, `MAX_TAG_LENGTH = 32`, and `normalizeTags` with 7 Vitest cases. Shared test (11 passed), typecheck, and lint pass.
 Task 2 — API stores and validates tags
+(commit bffe1e6)
 `BookmarkStore.add` normalises tags after title/URL/duplicate checks and throws `ValidationError("invalid tag")`; `POST /bookmarks` forwards `body.tags`. API test (19 passed), typecheck, and lint pass.
 Task 3 — web page renders tags
+(commit a6087da)
 `renderList` appends a `span.tags` (textContent `tags.join(", ")`) between the title link and Remove when tags exist. Web test (4 passed), typecheck, and lint pass.
 Task 4 — root checks
 (checked at a6087da)
 `pnpm test`, `pnpm lint`, `pnpm typecheck` from the root all exit 0; nothing to fix.
 Task 5 — bundle baseline
+(commit e2b4ad8)
 `pnpm build && pnpm measure` printed web_bundle_gzip_bytes=881 (delta 46 against 835); baseline set to 881, re-measure prints delta 0.
 
 Stale-statement sweep — Bookmark shape, NewBookmark, POST /bookmarks, renderList, web_bundle_gzip_bytes, createdAt
@@ -183,3 +187,4 @@ Reviewed head: f0875c43475fa081a54239c2e2ce2e16fb00b53f
 - Approved: plan-approval — Approve with the proposed defaults for Q1–Q6. Nothing to defer or grant.
 - Routed: implementation — deep (score 5; source rubric; binding inherit)
 - Approved: implementation-approval — automatic (no risk triggers)
+- Reconciled: finalize — commit citations added to the Implementation Record entries of Tasks 1, 2, 3, and 5 (their own commits 597cf74, bffe1e6, a6087da, e2b4ad8); File List matches the branch diff; no task or evidence discrepancies; checkpoint local-qa-review.
