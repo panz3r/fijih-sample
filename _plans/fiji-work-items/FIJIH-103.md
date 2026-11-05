@@ -8,9 +8,9 @@ source:
   revision: 2026-11-05T16:10:06.551+0100
 lifecycle:
   status: active
-  phase: qa-review
-  checkpoint: local-qa-review
-  transition: qa-reviewed
+  phase: automated-review
+  checkpoint: null
+  transition: delivery-complete
   attempt: 1
 routing:
   class: deep
@@ -21,7 +21,7 @@ quality:
 artifacts:
   branch: FIJIH-103-add-tags-to-bookmarks
   base_branch: null
-  pull_request: null
+  pull_request: https://github.com/panz3r/fijih-sample/pull/33
   jira_context_comment_id: null
 ---
 
@@ -204,3 +204,5 @@ Task 4 done
 - Implementation complete; validations passed.
 - Approved: implementation-approval — automatic (no risk triggers)
 - Finalize (local QA review): reconciled Implementation Record with commits; added `(commit <short hash>)` to the Task 1–4 entries (their own commits a6dcc10, 5b28158, ba5676a, 4969601). File List matches the branch diff (10 files). No task or criterion lacks evidence; no discrepancies.
+- Approved: local-qa-review — automatic (no risk triggers; Publish consent at plan-approval: "Grant Publish: when Local QA passes cleanly, push this branch to origin, create or update its draft pull request, and request Copilot review without stopping at local-qa-review."; verified at 56939ef40dbc727e89a429c290e45b1875684383)
+- Delivery: change intent `.changeset/bookmark-tags.md` added (commit 9facfbb, summary "Add tags to bookmarks"); branch pushed; draft pull request #33 (https://github.com/panz3r/fijih-sample/pull/33) created with label `enhancement`, assignee panz3r, base main; Copilot review requested (timeline `review_requested` event for Copilot confirmed). No `(verify: ci)` criterion, so no CI measurement.
