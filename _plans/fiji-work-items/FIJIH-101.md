@@ -9,8 +9,8 @@ source:
 lifecycle:
   status: active
   phase: implementation
-  checkpoint: null
-  transition: plan-complete
+  checkpoint: implementation-approval
+  transition: implementation-complete
   attempt: 1
 routing:
   class: standard
@@ -64,7 +64,7 @@ so that I can group my bookmarks.
   - [x] After the title link, append an element (for example `<span class="tags">`) holding the tags joined by `", "` only when the bookmark has at least one tag (Open question 3).
   - [x] Update the fixture in `packages/web/src/render.test.ts` for the new required `tags` field and add tests: tags shown after the title, comma separated; no tags element and no extra text when `tags` is `[]`.
 - [x] Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` from the repository root and record the results (AC: 5).
-- [ ] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in this change, per `AGENTS.md` (AC: 4).
+- [x] Run `pnpm build` then `pnpm measure`; when `web_bundle_gzip_delta` is not 0, update `measure/baseline.json` `web_bundle_gzip_bytes` to the printed `web_bundle_gzip_bytes` in this change, per `AGENTS.md` (AC: 4).
 
 ## Engineering Context
 
@@ -109,6 +109,8 @@ None — this change needs no configuration outside the repository added, change
 
 ## File List
 
+- measure/baseline.json
+
 - packages/web/src/render.ts
 - packages/web/src/render.test.ts
 
@@ -143,7 +145,19 @@ Task 5 — root checks
 (checked at 899d31a)
 - `pnpm test`: shared 8, api 8, web 4 tests passed. `pnpm lint`: eslint clean. `pnpm typecheck`: shared, api, web tsc clean.
 
+Task 6 — bundle size baseline
+- `pnpm build` then `pnpm measure` printed `web_bundle_gzip_bytes=891`, `web_bundle_gzip_delta=56` against the 835 baseline; `measure/baseline.json` `web_bundle_gzip_bytes` updated to 891. Re-measured after the update: `web_bundle_gzip_delta=0`.
+
+Stale-statement sweep — `NewBookmark`, `Bookmark` shape, `POST /bookmarks`, `GET /bookmarks`, `web_bundle_gzip_bytes`/835 baseline, "invalid tag"
+- none found: README.md endpoint list and the baseline note remain true; scenario notes describe FIJIₕ behaviour, not product statements. Searched `*.md`, `*.json`, `*.yml`, `*.html`.
+
 ## Validation Evidence
+
+- AC-1: passed — `packages/shared` `normalizeTags` tests, `packages/api` store and `POST /bookmarks` tests (201 with normalized tags; omitted gives `[]`).
+- AC-2: passed — store and API tests: 33-character tag and inner whitespace answer 400 `{"error":"invalid tag"}`, `GET /bookmarks` unchanged.
+- AC-3: passed — API test: `GET /bookmarks` returns each bookmark's `tags` (`[]` when none).
+- AC-4: passed — `packages/web` `render.test.ts`: tags shown after the title as `news, tech`; no tags element for `tags: []`. `pnpm measure`: delta 0 after baseline update to 891.
+- AC-5: passed — `pnpm test` (shared 8, api 8, web 4), `pnpm lint`, `pnpm typecheck` clean from the repository root (checked at 899d31a).
 
 ## Quality Gate
 
@@ -159,3 +173,5 @@ Task 5 — root checks
 - 2026-11-05: Task 3 done: tags accepted and returned over HTTP.
 - 2026-11-05: Task 4 done: page renders tags.
 - 2026-11-05: Task 5 done: root test, lint, typecheck pass.
+- 2026-11-05: Task 6 done: baseline moved from 835 to 891 gzipped bytes.
+- 2026-11-05: Stale-statement sweep: none found.
